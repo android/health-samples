@@ -1,7 +1,8 @@
 Health Services Samples Repository
 ======================
 
-This repository contains a set of individual Android Studio projects to help you get started writing Health Services apps on Wear OS.
+This repository contains a set of individual Android Studio projects to help you
+get started writing Health Services apps on Wear OS.
 
 Read below for a description of each sample.
 
@@ -9,3 +10,7 @@ Read below for a description of each sample.
 Samples
 -------
 
+**PassiveData**
+
+Demonstrates receiving background data updates from Health Services using
+`PassiveMonitoringClient`.
