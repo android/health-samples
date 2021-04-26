@@ -19,3 +19,8 @@ Demonstrates receiving background data updates from Health Services using
 
 Demonstrates receiving event notifications in the background from Health
 Services using `PassiveMonitoringClient`.
+
+**MeasureData**
+
+Demonstrates receiving receiving rapid data updates in the foreground using
+`MeasureClient`.
