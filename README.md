@@ -24,3 +24,7 @@ Services using `PassiveMonitoringClient`.
 
 Demonstrates receiving receiving rapid data updates in the foreground using
 `MeasureClient`.
+
+**ExerciseSample**
+
+Demonstrates managing an exercise experience using the `ExerciseClient` API.
