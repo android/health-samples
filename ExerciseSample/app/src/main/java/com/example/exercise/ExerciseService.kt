@@ -25,16 +25,17 @@ import android.os.Binder
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.health.services.client.data.DataPoint
+import androidx.health.services.client.data.DataType
+import androidx.health.services.client.data.ExerciseState
+import androidx.health.services.client.data.ExerciseUpdate
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDeepLinkBuilder
 import androidx.wear.ongoing.OngoingActivity
 import androidx.wear.ongoing.OngoingActivityStatus
-import com.google.android.libraries.wear.whs.data.DataPoint
-import com.google.android.libraries.wear.whs.data.DataType
-import com.google.android.libraries.wear.whs.data.ExerciseState
-import com.google.android.libraries.wear.whs.data.ExerciseStatus
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
@@ -65,8 +66,8 @@ class ExerciseService : LifecycleService() {
     private var isStarted = false
     private var isForeground = false
 
-    private val _exerciseStatus = MutableStateFlow(ExerciseStatus.USER_ENDED)
-    val exerciseStatus: StateFlow<ExerciseStatus> = _exerciseStatus
+    private val _exerciseStatus = MutableStateFlow(ExerciseState.USER_ENDED)
+    val exerciseStatus: StateFlow<ExerciseState> = _exerciseStatus
 
     private val _exerciseMetrics = MutableStateFlow(emptyMap<DataType, List<DataPoint>>())
     val exerciseMetrics: StateFlow<Map<DataType, List<DataPoint>>> = _exerciseMetrics
@@ -93,9 +94,10 @@ class ExerciseService : LifecycleService() {
             lifecycleScope.launchWhenStarted {
                 healthServicesManager.getExerciseStateFlow().collect {
                     when (it) {
-                        is ExerciseMessage.ExerciseStateMessage -> processExerciseState(it.state)
-                        // TODO: WHS will track laps for us, but currently it does not.
-                        is ExerciseMessage.LapSummaryMessage -> _exerciseLaps.value++
+                        is ExerciseMessage.ExerciseUpdateMessage ->
+                            processExerciseUpdate(it.exerciseUpdate)
+                        is ExerciseMessage.LapSummaryMessage ->
+                            _exerciseLaps.value = it.lapSummary.lapCount
                     }
                 }
             }
@@ -119,21 +121,21 @@ class ExerciseService : LifecycleService() {
         }
     }
 
-    private fun processExerciseState(exerciseState: ExerciseState) {
-        val oldStatus = _exerciseStatus.value
-        if (!oldStatus.isEnded && exerciseState.status.isEnded) {
+    private fun processExerciseUpdate(exerciseUpdate: ExerciseUpdate) {
+        val oldState = _exerciseStatus.value
+        if (!oldState.isEnded && exerciseUpdate.state.isEnded) {
             // Our exercise ended. This could be because another app's exercise has superseded ours,
             // so dismiss any ongoing activity notification.
             removeOngoingActivityNotification()
-        } else if (oldStatus.isEnded && exerciseState.status == ExerciseStatus.ACTIVE) {
+        } else if (oldState.isEnded && exerciseUpdate.state == ExerciseState.ACTIVE) {
             // Reset laps.
             _exerciseLaps.value = 0
         }
 
-        _exerciseStatus.value = exerciseState.status
-        _exerciseMetrics.value = exerciseState.latestMetrics
+        _exerciseStatus.value = exerciseUpdate.state
+        _exerciseMetrics.value = exerciseUpdate.latestMetrics
         _exerciseDurationUpdate.value =
-            ActiveDurationUpdate(exerciseState.activeDuration, Instant.now())
+            ActiveDurationUpdate(exerciseUpdate.activeDuration, Instant.now())
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -159,8 +161,15 @@ class ExerciseService : LifecycleService() {
 
     override fun onUnbind(intent: Intent?): Boolean {
         isBound = false
-        // Manage our lifetime accordingly.
-        goForegroundOrStopSelf()
+        lifecycleScope.launch {
+            // Client can unbind because it went through a configuration change, in which case it
+            // will be recreated and bind again shortly. Wait a few seconds, and if still not bound,
+            // manage our lifetime accordingly.
+            delay(UNBIND_DELAY_MILLIS)
+            if (!isBound) {
+                goForegroundOrStopSelf()
+            }
+        }
         // Allow clients to re-bind. We will be informed of this in onRebind().
         return true
     }
@@ -237,6 +246,7 @@ class ExerciseService : LifecycleService() {
         const val NOTIFICATION_CHANNEL_DISPLAY = "Ongoing Exercise"
         const val NOTIFICATION_TITLE = "Exercise Sample"
         const val NOTIFICATION_TEXT = "Ongoing Exercise"
+        const val UNBIND_DELAY_MILLIS = 3_000L
     }
 }
 

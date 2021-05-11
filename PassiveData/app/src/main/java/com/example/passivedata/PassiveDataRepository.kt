@@ -19,8 +19,8 @@ package com.example.passivedata
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.floatPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -42,11 +42,11 @@ class PassiveDataRepository @Inject constructor(
         }
     }
 
-    val lastestHeartRate: Flow<Float> = dataStore.data.map { prefs ->
-        prefs[LATEST_HEART_RATE] ?: 0f
+    val lastestHeartRate: Flow<Double> = dataStore.data.map { prefs ->
+        prefs[LATEST_HEART_RATE] ?: 0.0
     }
 
-    suspend fun storeLatestHeartRate(heartRate: Float) {
+    suspend fun storeLatestHeartRate(heartRate: Double) {
         dataStore.edit { prefs ->
             prefs[LATEST_HEART_RATE] = heartRate
         }
@@ -55,6 +55,6 @@ class PassiveDataRepository @Inject constructor(
     companion object {
         const val PREFERENCES_FILENAME = "passive_data_prefs"
         private val PASSIVE_DATA_ENABLED = booleanPreferencesKey("passive_data_enabled")
-        private val LATEST_HEART_RATE = floatPreferencesKey("latest_heart_rate")
+        private val LATEST_HEART_RATE = doublePreferencesKey("latest_heart_rate")
     }
 }

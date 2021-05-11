@@ -36,7 +36,7 @@ command:
 
 ```shell
 adb shell am broadcast \
--a "com.google.android.wearable.healthservices.tracker.defaultmanager.providers.synthetic.USE_SYNTHETIC_TRACKER" \
+-a "whs.USE_SYNTHETIC_PROVIDERS" \
 com.google.android.wearable.healthservices
 ```
 
@@ -44,13 +44,13 @@ Then, to simulate the user is running:
 
 ```git exclude
 adb shell am broadcast \
--a "com.google.android.wearable.healthservices.tracker.defaultmanager.providers.synthetic.user.START_RUNNING" \
+-a "whs.synthetic.user.START_RUNNING" \
 com.google.android.wearable.healthservices
 ```
 
 To stop using the synthetic provider, run this command:
 ```shell
 adb shell am broadcast -a \
-"com.google.android.wearable.healthservices.tracker.defaultmanager.providers.synthetic.USE_SENSORS_TRACKER" \
+"whs.USE_SENSOR_PROVIDERS" \
 com.google.android.wearable.healthservices
 ```

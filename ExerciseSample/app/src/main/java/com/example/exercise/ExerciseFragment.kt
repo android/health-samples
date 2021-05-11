@@ -29,13 +29,13 @@ import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.health.services.client.data.DataPoint
+import androidx.health.services.client.data.DataType
+import androidx.health.services.client.data.ExerciseState
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.wear.ambient.AmbientModeSupport
 import com.example.exercise.databinding.FragmentExerciseBinding
-import com.google.android.libraries.wear.whs.data.DataPoint
-import com.google.android.libraries.wear.whs.data.DataType
-import com.google.android.libraries.wear.whs.data.ExerciseStatus
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -61,7 +61,7 @@ class ExerciseFragment : Fragment() {
 
     private var serviceConnection = ExerciseServiceConnection()
 
-    private var cachedExerciseStatus = ExerciseStatus.USER_ENDED
+    private var cachedExerciseState = ExerciseState.USER_ENDED
     private var activeDurationUpdate = ActiveDurationUpdate()
     private var chronoTickJob: Job? = null
     private var uiBindingJob: Job? = null
@@ -102,7 +102,7 @@ class ExerciseFragment : Fragment() {
         lifecycleScope.launchWhenCreated {
             val capabilities =
                 healthServicesManager.getExerciseCapabilities() ?: return@launchWhenCreated
-            val supportedTypes = capabilities.supportedDataTypes()
+            val supportedTypes = capabilities.supportedDataTypes
 
             // Set enabled state for relevant text elements.
             binding.heartRateText.isEnabled = DataType.HEART_RATE_BPM in supportedTypes
@@ -140,7 +140,7 @@ class ExerciseFragment : Fragment() {
     }
 
     private fun startEndExercise() {
-        if (cachedExerciseStatus.isEnded) {
+        if (cachedExerciseState.isEnded) {
             // Check permissions first.
             permissionLauncher.launch(PERMISSIONS)
         } else {
@@ -162,7 +162,7 @@ class ExerciseFragment : Fragment() {
     }
 
     private fun pauseResumeExercise() {
-        if (cachedExerciseStatus.isPaused) {
+        if (cachedExerciseState.isPaused) {
             lifecycleScope.launch {
                 healthServicesManager.resumeExercise()
             }
@@ -210,38 +210,38 @@ class ExerciseFragment : Fragment() {
         uiBindingJob = null
     }
 
-    private fun updateExerciseStatus(status: ExerciseStatus) {
-        val previousStatus = cachedExerciseStatus
-        if (previousStatus.isEnded && !status.isEnded) {
+    private fun updateExerciseStatus(state: ExerciseState) {
+        val previousStatus = cachedExerciseState
+        if (previousStatus.isEnded && !state.isEnded) {
             // We're starting a new exercise. Clear metrics from any prior exercise.
             resetDisplayedFields()
         }
 
-        if (status == ExerciseStatus.ACTIVE && !ambientController.isAmbient) {
+        if (state == ExerciseState.ACTIVE && !ambientController.isAmbient) {
             startChronometer()
         } else {
             stopChronometer()
         }
 
-        updateButtons(status)
-        cachedExerciseStatus = status
+        updateButtons(state)
+        cachedExerciseState = state
     }
 
-    private fun updateButtons(status: ExerciseStatus) {
-        binding.startEndButton.setText(if (status.isEnded) R.string.start else R.string.end)
-        binding.pauseResumeButton.setText(if (status.isPaused) R.string.resume else R.string.pause)
-        binding.pauseResumeButton.isEnabled = !status.isEnded
+    private fun updateButtons(state: ExerciseState) {
+        binding.startEndButton.setText(if (state.isEnded) R.string.start else R.string.end)
+        binding.pauseResumeButton.setText(if (state.isPaused) R.string.resume else R.string.pause)
+        binding.pauseResumeButton.isEnabled = !state.isEnded
     }
 
     private fun updateMetrics(data: Map<DataType, List<DataPoint>>) {
         data[DataType.HEART_RATE_BPM]?.let {
-            binding.heartRateText.text = it.last().value.asFloat().roundToInt().toString()
+            binding.heartRateText.text = it.last().value.asDouble().roundToInt().toString()
         }
         data[DataType.AGGREGATE_CALORIES_EXPENDED]?.let {
-            binding.caloriesText.text = formatCalories(it.last().value.asFloat())
+            binding.caloriesText.text = formatCalories(it.last().value.asDouble())
         }
         data[DataType.AGGREGATE_DISTANCE]?.let {
-            binding.distanceText.text = formatDistanceKm(it.last().value.asFloat())
+            binding.distanceText.text = formatDistanceKm(it.last().value.asDouble())
         }
     }
 
@@ -269,7 +269,7 @@ class ExerciseFragment : Fragment() {
         // We update the chronometer on our own regular intervals independent of the exercise
         // duration value received. If the exercise is still active, add the difference between
         // the last duratoin update and now.
-        val difference = if (cachedExerciseStatus == ExerciseStatus.ACTIVE) {
+        val difference = if (cachedExerciseState == ExerciseState.ACTIVE) {
             Duration.between(activeDurationUpdate.timestamp, Instant.now())
         } else {
             Duration.ZERO

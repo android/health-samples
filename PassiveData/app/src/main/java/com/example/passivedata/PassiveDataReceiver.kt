@@ -20,8 +20,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import com.google.android.libraries.wear.whs.data.DataType
-import com.google.android.libraries.wear.whs.data.PassiveActivityState
+import androidx.health.services.client.data.DataType
+import androidx.health.services.client.data.PassiveMonitoringUpdate
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
@@ -35,7 +35,7 @@ class PassiveDataReceiver : BroadcastReceiver() {
     @Inject lateinit var repository: PassiveDataRepository
 
     override fun onReceive(context: Context, intent: Intent) {
-        val state = PassiveActivityState.fromIntent(intent) ?: return
+        val state = PassiveMonitoringUpdate.fromIntent(intent) ?: return
         // Get the most recent heart rate measurement.
         val latestDataPoint = state.dataPoints
             // dataPoints can have multiple types (e.g. if the app registered for multiple types).
@@ -45,7 +45,7 @@ class PassiveDataReceiver : BroadcastReceiver() {
             // If there were no data points, the previous function returns null.
             ?: return
 
-        val latestHeartRate = latestDataPoint.value.asFloat() // HEART_RATE_BPM is a Float type.
+        val latestHeartRate = latestDataPoint.value.asDouble() // HEART_RATE_BPM is a Float type.
         Log.d(TAG, "Received latest heart rate in background: $latestHeartRate")
 
         runBlocking {

@@ -21,20 +21,25 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.concurrent.futures.await
-import com.google.android.libraries.wear.whs.client.WearHealthServicesClient
-import com.google.android.libraries.wear.whs.data.*
-import com.google.android.libraries.wear.whs.data.event.Event
+import androidx.health.services.client.HealthServicesClient
+import androidx.health.services.client.data.ComparisonType
+import androidx.health.services.client.data.DataType
+import androidx.health.services.client.data.DataTypeCondition
+import androidx.health.services.client.data.Value
+import androidx.health.services.client.data.event.Event
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 /**
- * Entry point for [WearHealthServicesClient] APIs. This also provides suspend functions around
+ * Entry point for [HealthServicesClient] APIs. This also provides suspend functions around
  * those APIs to enable use in coroutines.
  */
 class HealthServicesManager @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val whsClient: WearHealthServicesClient
+    healthServicesClient: HealthServicesClient
 ) {
+    private val passiveMonitoringClient = healthServicesClient.passiveMonitoringClient
+
     private fun broadcastEvent(actionString: String) = lazy {
         val intent = Intent(context, PassiveEventsReceiver::class.java).apply {
             action = actionString
@@ -53,44 +58,42 @@ class HealthServicesManager @Inject constructor(
     // Events we want to subscribe to.
     private val fastStepsEvent by lazy {
         // steps per minute >= 150
-        val condition = DataTypeCondition.builder()
-            .setDataType(DataType.STEPS_PER_MINUTE)
-            .setComparisonType(ComparisonType.GREATER_THAN_OR_EQUAL)
-            .setThreshold(Value.ofInt(150))
-            .build()
+        val condition = DataTypeCondition(
+            dataType = DataType.STEPS_PER_MINUTE,
+            threshold = Value.ofLong(150),
+            comparisonType = ComparisonType.GREATER_THAN_OR_EQUAL
+        )
         // REPEATED means we will be notified on every occurrence until we unsubscribe.
-        Event.create(condition, Event.TriggerType.REPEATED)
+        Event(condition, Event.TriggerType.REPEATED)
     }
     private val slowStepsEvent by lazy {
         // steps per minute <= 60
-        val condition = DataTypeCondition.builder()
-            .setDataType(DataType.STEPS_PER_MINUTE)
-            .setComparisonType(ComparisonType.LESS_THAN_OR_EQUAL)
-            .setThreshold(Value.ofInt(60))
-            .build()
+        val condition = DataTypeCondition(
+            dataType = DataType.STEPS_PER_MINUTE,
+            threshold = Value.ofLong(60),
+            comparisonType = ComparisonType.LESS_THAN_OR_EQUAL
+        )
         // REPEATED means we will be notified on every occurrence until we unsubscribe.
-        Event.create(condition, Event.TriggerType.REPEATED)
+        Event(condition, Event.TriggerType.REPEATED)
     }
 
     suspend fun hasStepsPerMinuteCapability(): Boolean {
-        val capabilities = whsClient.capabilities.await()
-        return (DataType.STEPS_PER_MINUTE in capabilities.supportedDataTypesEvents())
+        val capabilities = passiveMonitoringClient.capabilities.await()
+        return (DataType.STEPS_PER_MINUTE in capabilities.supportedDataTypesEvents)
     }
 
     suspend fun subscribeForEvents() {
         Log.i(TAG, "Subscribing for events")
         // Each event is a separate subscription.
-        whsClient.passiveMonitoringClient
-            .registerEventCallback(fastStepsEvent, fastStepsPendingIntent)
+        passiveMonitoringClient.registerEventCallback(fastStepsEvent, fastStepsPendingIntent)
             .await()
-        whsClient.passiveMonitoringClient
-            .registerEventCallback(slowStepsEvent, slowStepsPendingIntent)
+        passiveMonitoringClient.registerEventCallback(slowStepsEvent, slowStepsPendingIntent)
             .await()
     }
 
     suspend fun unsubscribeFromEvents() {
         Log.i(TAG, "Unsubscribing from events")
-        whsClient.passiveMonitoringClient.unregisterEventCallback(fastStepsEvent).await()
-        whsClient.passiveMonitoringClient.unregisterEventCallback(slowStepsEvent).await()
+        passiveMonitoringClient.unregisterEventCallback(fastStepsEvent).await()
+        passiveMonitoringClient.unregisterEventCallback(slowStepsEvent).await()
     }
 }

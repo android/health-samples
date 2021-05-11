@@ -54,7 +54,7 @@ fun formatElapsedTime(elapsedDuration: Duration, includeSeconds: Boolean) = buil
 }
 
 /** Format a distance to two decimals with a "km" suffix. */
-fun formatDistanceKm(meters: Float) = buildSpannedString {
+fun formatDistanceKm(meters: Double) = buildSpannedString {
     append("%02.2f".format(meters / 1_000))
     inSpans(RelativeSizeSpan(UNITS_RELATIVE_SIZE)) {
         append("km")
@@ -62,7 +62,7 @@ fun formatDistanceKm(meters: Float) = buildSpannedString {
 }
 
 /** Format calories burned to an integer with a "cal" suffix. */
-fun formatCalories(calories: Float) = buildSpannedString {
+fun formatCalories(calories: Double) = buildSpannedString {
     append(calories.roundToInt().toString())
     inSpans(RelativeSizeSpan(UNITS_RELATIVE_SIZE)) {
         append(" cal")

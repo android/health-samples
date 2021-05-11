@@ -21,19 +21,21 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.concurrent.futures.await
-import com.google.android.libraries.wear.whs.client.WearHealthServicesClient
-import com.google.android.libraries.wear.whs.data.DataType
+import androidx.health.services.client.HealthServicesClient
+import androidx.health.services.client.data.DataType
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 /**
- * Entry point for [WearHealthServicesClient] APIs. This also provides suspend functions around
+ * Entry point for [HealthServicesClient] APIs. This also provides suspend functions around
  * those APIs to enable use in coroutines.
  */
 class HealthServicesManager @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val whsClient: WearHealthServicesClient
+    healthServicesClient: HealthServicesClient
 ) {
+    private val passiveMonitoringClient = healthServicesClient.passiveMonitoringClient
+
     private val dataTypes = setOf(DataType.HEART_RATE_BPM)
 
     private val pendingIntent by lazy {
@@ -42,17 +44,17 @@ class HealthServicesManager @Inject constructor(
     }
 
     suspend fun hasHeartRateCapability(): Boolean {
-        val capabilities = whsClient.capabilities.await()
-        return (DataType.HEART_RATE_BPM in capabilities.supportedDataTypesBackground())
+        val capabilities = passiveMonitoringClient.capabilities.await()
+        return (DataType.HEART_RATE_BPM in capabilities.supportedDataTypesPassiveMonitoring)
     }
 
     suspend fun registerForHeartRateData() {
         Log.i(TAG, "Registering for background data.")
-        whsClient.passiveMonitoringClient.registerDataCallback(dataTypes, pendingIntent).await()
+        passiveMonitoringClient.registerDataCallback(dataTypes, pendingIntent).await()
     }
 
     suspend fun unregisterForHeartRateData() {
         Log.i(TAG, "Unregistering for background data.")
-        whsClient.passiveMonitoringClient.unregisterDataCallback().await()
+        passiveMonitoringClient.unregisterDataCallback().await()
     }
 }

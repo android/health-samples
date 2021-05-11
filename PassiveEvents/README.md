@@ -30,7 +30,7 @@ or logcat messages to see these data updates.
 
 ```shell
 adb shell am broadcast \
--a "com.google.android.wearable.healthservices.tracker.defaultmanager.providers.synthetic.USE_SYNTHETIC_TRACKER" \
+-a "whs.USE_SYNTHETIC_PROVIDERS" \
 com.google.android.wearable.healthservices
 ```
 
@@ -38,7 +38,7 @@ To trigger the event when steps per minute exceeds 150, simulate the user is run
 ```shell
 # running
 adb shell am broadcast \
--a "com.google.android.wearable.healthservices.tracker.defaultmanager.providers.synthetic.user.START_RUNNING" \
+-a "whs.synthetic.user.START_RUNNING" \
 com.google.android.wearable.healthservices
 ```
 
@@ -46,7 +46,7 @@ To trigger the event when steps per minute falls below 60, simulate an exercise 
 ```shell
 # running
 adb shell am broadcast \
--a "com.google.android.wearable.healthservices.tracker.defaultmanager.providers.synthetic.user.START_EXERCISE" \
+-a "whs.synthetic.user.START_EXERCISE" \
 --ef activity_options_average_speed 1.0 \
 com.google.android.wearable.healthservices
 ```
@@ -54,6 +54,6 @@ com.google.android.wearable.healthservices
 To stop using the synthetic tracker, run this command:
 ```shell
 adb shell am broadcast -a \
-"com.google.android.wearable.healthservices.tracker.defaultmanager.providers.synthetic.USE_SENSORS_TRACKER" \
+"whs.USE_SENSOR_PROVIDERS" \
 com.google.android.wearable.healthservices
 ```

@@ -17,9 +17,9 @@
 package com.example.measuredata
 
 import android.util.Log
+import androidx.health.services.client.data.Availability
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.libraries.wear.whs.data.Availability
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -42,8 +42,8 @@ class MainViewModel @Inject constructor(
     private val _heartRateAvailable = MutableStateFlow(Availability.UNKNOWN)
     val heartRateAvailable: StateFlow<Availability> = _heartRateAvailable
 
-    private val _heartRateBpm = MutableStateFlow(0f)
-    val heartRateBpm: StateFlow<Float> = _heartRateBpm
+    private val _heartRateBpm = MutableStateFlow(0.0)
+    val heartRateBpm: StateFlow<Double> = _heartRateBpm
 
     init {
         // Check that the device has the heart rate capability and progress to the next state
@@ -65,7 +65,7 @@ class MainViewModel @Inject constructor(
                     _heartRateAvailable.value = it.availability
                 }
                 is MeasureMessage.MeasureData -> {
-                    val bpm = it.data.last().value.asFloat()
+                    val bpm = it.data.last().value.asDouble()
                     Log.d(TAG, "Data update: $bpm")
                     _heartRateBpm.value = bpm
                 }

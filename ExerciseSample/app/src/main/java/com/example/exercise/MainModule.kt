@@ -17,8 +17,8 @@
 package com.example.exercise
 
 import android.content.Context
-import com.google.android.libraries.wear.whs.WearHealthServices
-import com.google.android.libraries.wear.whs.client.WearHealthServicesClient
+import androidx.health.services.client.HealthServices
+import androidx.health.services.client.HealthServicesClient
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -34,6 +34,6 @@ import javax.inject.Singleton
 class MainModule {
     @Singleton
     @Provides
-    fun provideWhsClient(@ApplicationContext appContext: Context): WearHealthServicesClient =
-        WearHealthServices.getClient(appContext)
+    fun provideHealthServicesClient(@ApplicationContext context: Context): HealthServicesClient =
+        HealthServices.getClient(context)
 }

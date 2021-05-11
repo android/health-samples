@@ -18,25 +18,27 @@ package com.example.measuredata
 
 import android.util.Log
 import androidx.concurrent.futures.await
-import com.google.android.libraries.wear.whs.client.MeasureCallback
-import com.google.android.libraries.wear.whs.client.WearHealthServicesClient
-import com.google.android.libraries.wear.whs.data.Availability
-import com.google.android.libraries.wear.whs.data.DataPoint
-import com.google.android.libraries.wear.whs.data.DataType
+import androidx.health.services.client.HealthServicesClient
+import androidx.health.services.client.MeasureCallback
+import androidx.health.services.client.data.Availability
+import androidx.health.services.client.data.DataPoint
+import androidx.health.services.client.data.DataType
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.callbackFlow
 import javax.inject.Inject
 
 /**
- * Entry point for [WearHealthServicesClient] APIs, wrapping them in coroutine-friendly APIs.
+ * Entry point for [HealthServicesClient] APIs, wrapping them in coroutine-friendly APIs.
  */
 class HealthServicesManager @Inject constructor(
-    private val whsClient: WearHealthServicesClient
+    healthServicesClient: HealthServicesClient
 ) {
+    private val measureClient = healthServicesClient.measureClient
+
     suspend fun hasHeartRateCapability(): Boolean {
-        val capabilities = whsClient.capabilities.await()
-        return (DataType.HEART_RATE_BPM in capabilities.supportedDataTypesMeasure())
+        val capabilities = measureClient.capabilities.await()
+        return (DataType.HEART_RATE_BPM in capabilities.supportedDataTypesMeasure)
     }
 
     /**
@@ -48,21 +50,21 @@ class HealthServicesManager @Inject constructor(
      */
     fun heartRateMeasureFlow() = callbackFlow<MeasureMessage> {
         val callback = object : MeasureCallback {
-            override fun onAvailabilityChanged(type: DataType, availability: Availability) {
+            override fun onAvailabilityChanged(dataType: DataType, availability: Availability) {
                 sendBlocking(MeasureMessage.MeasureAvailabilty(availability))
             }
 
-            override fun onData(dataPoints: List<DataPoint>) {
-                sendBlocking(MeasureMessage.MeasureData(dataPoints))
+            override fun onData(data: List<DataPoint>) {
+                sendBlocking(MeasureMessage.MeasureData(data))
             }
         }
 
         Log.d(TAG, "Registering for data")
-        whsClient.measureClient.registerCallback(DataType.HEART_RATE_BPM, callback)
+        measureClient.registerCallback(DataType.HEART_RATE_BPM, callback)
 
         awaitClose {
             Log.d(TAG, "Unregistering for data")
-            whsClient.measureClient.unregisterCallback(DataType.HEART_RATE_BPM, callback)
+            measureClient.unregisterCallback(DataType.HEART_RATE_BPM, callback)
         }
     }
 }
