@@ -75,38 +75,59 @@ class HealthServicesManager @Inject constructor(
     suspend fun startExercise() {
         Log.d(TAG, "Starting exercise")
         // Types for which we want to receive metrics. Only ask for ones that are supported.
-        val supportedTypes = getExerciseCapabilities()?.supportedDataTypes ?: return
+        val capabilities = getExerciseCapabilities() ?: return
         val dataTypes = setOf(
             DataType.HEART_RATE_BPM,
             DataType.AGGREGATE_CALORIES_EXPENDED,
             DataType.AGGREGATE_DISTANCE
-        ).intersect(supportedTypes)
+        ).intersect(capabilities.supportedDataTypes)
 
-        // Create a one-time goal.
-        val calorieGoal = ExerciseGoal.createOneTimeGoal(
-            DataTypeCondition(
-                dataType = DataType.AGGREGATE_CALORIES_EXPENDED,
-                threshold = Value.ofDouble(CALORIES_THRESHOLD),
-                comparisonType = ComparisonType.GREATER_THAN_OR_EQUAL
+        val exerciseGoals = mutableListOf<ExerciseGoal>()
+        if (supportsCalorieGoal(capabilities)) {
+            // Create a one-time goal.
+            exerciseGoals.add(
+                ExerciseGoal.createOneTimeGoal(
+                    DataTypeCondition(
+                        dataType = DataType.AGGREGATE_CALORIES_EXPENDED,
+                        threshold = Value.ofDouble(CALORIES_THRESHOLD),
+                        comparisonType = ComparisonType.GREATER_THAN_OR_EQUAL
+                    )
+                )
             )
-        )
-        // Create a milestone goal. To make a milestone for every kilometer, set the initial
-        // threshold to 1km and the period to 1km.
-        val distanceGoal = ExerciseGoal.createMilestone(
-            condition = DataTypeCondition(
-                dataType = DataType.AGGREGATE_DISTANCE,
-                threshold = Value.ofDouble(DISTANCE_THRESHOLD),
-                comparisonType = ComparisonType.GREATER_THAN_OR_EQUAL
-            ),
-            period = Value.ofDouble(DISTANCE_THRESHOLD)
-        )
+        }
+
+        if (supportsDistanceMilestone(capabilities)) {
+            // Create a milestone goal. To make a milestone for every kilometer, set the initial
+            // threshold to 1km and the period to 1km.
+            exerciseGoals.add(
+                ExerciseGoal.createMilestone(
+                    condition = DataTypeCondition(
+                        dataType = DataType.AGGREGATE_DISTANCE,
+                        threshold = Value.ofDouble(DISTANCE_THRESHOLD),
+                        comparisonType = ComparisonType.GREATER_THAN_OR_EQUAL
+                    ),
+                    period = Value.ofDouble(DISTANCE_THRESHOLD)
+                )
+            )
+        }
+
         val config = ExerciseConfig.builder()
             .setExerciseType(ExerciseType.RUNNING)
             .setAutoPauseAndResume(false)
             .setDataTypes(dataTypes)
-            .setExerciseGoals(listOf(calorieGoal, distanceGoal))
+            .setExerciseGoals(exerciseGoals)
             .build()
         exerciseClient.startExercise(config).await()
+    }
+
+    private fun supportsCalorieGoal(capabilities: ExerciseTypeCapabilities) : Boolean {
+        val supported = capabilities.supportedGoals[DataType.AGGREGATE_CALORIES_EXPENDED]
+        return supported != null && ComparisonType.GREATER_THAN_OR_EQUAL in supported
+    }
+
+    private fun supportsDistanceMilestone(capabilities: ExerciseTypeCapabilities) : Boolean {
+        val supported = capabilities.supportedMilestones[DataType.AGGREGATE_DISTANCE]
+        return supported != null && ComparisonType.GREATER_THAN_OR_EQUAL in supported
     }
 
     suspend fun endExercise() {
