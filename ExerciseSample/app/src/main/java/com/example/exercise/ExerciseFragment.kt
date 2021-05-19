@@ -177,29 +177,30 @@ class ExerciseFragment : Fragment() {
         if (uiBindingJob != null) return
 
         uiBindingJob = lifecycleScope.launchWhenStarted {
-            // Use the coroutineContext so that these coroutines become children of this job and
-            // will be canceled properly.
-            serviceConnection.launchWhenConnected(coroutineContext) { service ->
-                service.exerciseStatus.collect {
-                    updateExerciseStatus(it)
+            serviceConnection.repeatWhenConnected { service ->
+                // Use separate launch blocks because each .collect executes indefinitely.
+                launch {
+                    service.exerciseState.collect {
+                        updateExerciseStatus(it)
+                    }
                 }
-            }
-            serviceConnection.launchWhenConnected(coroutineContext) { service ->
-                service.exerciseMetrics.collect {
-                    updateMetrics(it)
+                launch {
+                    service.exerciseMetrics.collect {
+                        updateMetrics(it)
+                    }
                 }
-            }
-            serviceConnection.launchWhenConnected(coroutineContext) { service ->
-                service.exerciseLaps.collect {
-                    updateLaps(it)
+                launch {
+                    service.exerciseLaps.collect {
+                        updateLaps(it)
+                    }
                 }
-            }
-            serviceConnection.launchWhenConnected(coroutineContext) { service ->
-                service.exerciseDurationUpdate.collect {
-                    // We don't update the chronometer here since these updates come at irregular
-                    // intervals. Instead we store the duration and update the chronometer with
-                    // our own regularly-timed intervals.
-                    activeDurationUpdate = it
+                launch {
+                    service.exerciseDurationUpdate.collect {
+                        // We don't update the chronometer here since these updates come at irregular
+                        // intervals. Instead we store the duration and update the chronometer with
+                        // our own regularly-timed intervals.
+                        activeDurationUpdate = it
+                    }
                 }
             }
         }
@@ -315,7 +316,7 @@ class ExerciseFragment : Fragment() {
 
     private fun performOneTimeUiUpdate() {
         serviceConnection.exerciseService?.let { service ->
-            updateExerciseStatus(service.exerciseStatus.value)
+            updateExerciseStatus(service.exerciseState.value)
             updateMetrics(service.exerciseMetrics.value)
             updateLaps(service.exerciseLaps.value)
 

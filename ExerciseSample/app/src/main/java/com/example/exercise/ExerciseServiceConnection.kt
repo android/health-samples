@@ -22,13 +22,8 @@ import android.os.IBinder
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.whenStarted
+import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * ServiceConnection implementation. This is implemented as a LifecycleOwner so we can launch
@@ -57,17 +52,14 @@ class ExerciseServiceConnection : ServiceConnection, LifecycleOwner {
     }
 
     /**
-     * Convenience function to launch a coroutine bound to the period when the service is
-     * connected and cancel it when no longer connected. The service will be passed to the block.
+     * Runs the given [block] in a new coroutine when the service is connected and suspends the
+     * execution until this Lifecycle is [Lifecycle.State.DESTROYED]. The [block] will cancel and
+     * re-launch as the service becomes connected or disconnected. The connected service is passed
+     * to the [block] so that clients can interact with it.
      */
-    fun launchWhenConnected(
-        coroutineContext: CoroutineContext = EmptyCoroutineContext,
-        block: suspend CoroutineScope.(ExerciseService) -> Unit
-    ): Job {
-        return lifecycleScope.launch(coroutineContext) {
-            lifecycle.whenStarted {
-                block(exerciseService as ExerciseService)
-            }
+    suspend fun repeatWhenConnected(block: suspend CoroutineScope.(ExerciseService) -> Unit) {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            block(exerciseService as ExerciseService)
         }
     }
 }

@@ -66,8 +66,8 @@ class ExerciseService : LifecycleService() {
     private var isStarted = false
     private var isForeground = false
 
-    private val _exerciseStatus = MutableStateFlow(ExerciseState.USER_ENDED)
-    val exerciseStatus: StateFlow<ExerciseState> = _exerciseStatus
+    private val _exerciseState = MutableStateFlow(ExerciseState.USER_ENDED)
+    val exerciseState: StateFlow<ExerciseState> = _exerciseState
 
     private val _exerciseMetrics = MutableStateFlow(emptyMap<DataType, List<DataPoint>>())
     val exerciseMetrics: StateFlow<Map<DataType, List<DataPoint>>> = _exerciseMetrics
@@ -122,7 +122,7 @@ class ExerciseService : LifecycleService() {
     }
 
     private fun processExerciseUpdate(exerciseUpdate: ExerciseUpdate) {
-        val oldState = _exerciseStatus.value
+        val oldState = _exerciseState.value
         if (!oldState.isEnded && exerciseUpdate.state.isEnded) {
             // Our exercise ended. This could be because another app's exercise has superseded ours,
             // so dismiss any ongoing activity notification.
@@ -132,7 +132,7 @@ class ExerciseService : LifecycleService() {
             _exerciseLaps.value = 0
         }
 
-        _exerciseStatus.value = exerciseUpdate.state
+        _exerciseState.value = exerciseUpdate.state
         _exerciseMetrics.value = exerciseUpdate.latestMetrics
         _exerciseDurationUpdate.value =
             ActiveDurationUpdate(exerciseUpdate.activeDuration, Instant.now())
