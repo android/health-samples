@@ -31,16 +31,20 @@ import androidx.health.services.client.data.ExerciseType
 import androidx.health.services.client.data.ExerciseTypeCapabilities
 import androidx.health.services.client.data.ExerciseUpdate
 import androidx.health.services.client.data.Value
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.sendBlocking
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.shareIn
 import javax.inject.Inject
 
 /**
  * Entry point for [HealthServicesClient] APIs, wrapping them in coroutine-friendly APIs.
  */
 class HealthServicesManager @Inject constructor(
-    healthServicesClient: HealthServicesClient
+    healthServicesClient: HealthServicesClient,
+    coroutineScope: CoroutineScope
 ) {
     private val exerciseClient = healthServicesClient.exerciseClient
 
@@ -152,13 +156,18 @@ class HealthServicesManager @Inject constructor(
     }
 
     /**
-     * Returns a cold flow. When activated, the flow will register a listener for exercise state
-     * and start to emit messages. When the consuming coroutine is cancelled, the exercise listener
-     * is unregistered.
+     * A shared flow for [ExerciseUpdate]s.
+     *
+     * When the flow starts, it will register an [ExerciseUpdateListener] and start to emit
+     * messages. When there are no more subscribers, or when the coroutine scope of [shareIn] is
+     * cancelled, this flow will unregister the listener.
+     *
+     * A shared flow is used because only a single [ExerciseUpdateListener] can be reigstered at a
+     * time, even if there are multiple consumers of the flow.
      *
      * [callbackFlow] is used to bridge between a callback-based API and Kotlin flows.
      */
-    fun getExerciseStateFlow() = callbackFlow<ExerciseMessage> {
+    val exerciseUpdateFlow = callbackFlow<ExerciseMessage> {
         val listener = object : ExerciseUpdateListener {
             override fun onExerciseUpdate(update: ExerciseUpdate) {
                 sendBlocking(ExerciseMessage.ExerciseUpdateMessage(update))
@@ -172,7 +181,7 @@ class HealthServicesManager @Inject constructor(
         awaitClose {
             exerciseClient.clearUpdateListener(listener)
         }
-    }
+    }.shareIn(coroutineScope, SharingStarted.WhileSubscribed(1000L, replayExpirationMillis = 0L))
 
     private companion object {
         const val CALORIES_THRESHOLD = 250.0

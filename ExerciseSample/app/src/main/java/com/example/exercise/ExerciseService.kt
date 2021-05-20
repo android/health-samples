@@ -92,7 +92,7 @@ class ExerciseService : LifecycleService() {
             // Start collecting exercise information. We might stop shortly (see above), in which
             // case launchWhenStarted takes care of canceling this coroutine.
             lifecycleScope.launchWhenStarted {
-                healthServicesManager.getExerciseStateFlow().collect {
+                healthServicesManager.exerciseUpdateFlow.collect {
                     when (it) {
                         is ExerciseMessage.ExerciseUpdateMessage ->
                             processExerciseUpdate(it.exerciseUpdate)
