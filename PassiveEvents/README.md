@@ -47,7 +47,7 @@ To trigger the event when steps per minute falls below 60, simulate an exercise 
 # running
 adb shell am broadcast \
 -a "whs.synthetic.user.START_EXERCISE" \
---ef activity_options_average_speed 1.0 \
+--ef exercise_options_average_speed 1.0 \
 com.google.android.wearable.healthservices
 ```
 
