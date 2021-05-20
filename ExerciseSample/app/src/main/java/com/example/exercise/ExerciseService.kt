@@ -23,6 +23,7 @@ import android.app.Service
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
+import android.os.SystemClock
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.health.services.client.data.DataPoint
@@ -33,7 +34,7 @@ import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDeepLinkBuilder
 import androidx.wear.ongoing.OngoingActivity
-import androidx.wear.ongoing.OngoingActivityStatus
+import androidx.wear.ongoing.Status
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -220,8 +221,12 @@ class ExerciseService : LifecycleService() {
 
         // Ongoing Activity allows an ongoing Notification to appear on additional surfaces in the
         // Wear OS user interface, so that users can stay more engaged with long running tasks.
-        val ongoingActivityStatus = OngoingActivityStatus.Builder()
-            .addTemplate(NOTIFICATION_TEXT)
+        val lastUpdate = exerciseDurationUpdate.value
+        val duration = lastUpdate.duration + Duration.between(lastUpdate.timestamp, Instant.now())
+        val startMillis = SystemClock.elapsedRealtime() - duration.toMillis()
+        val ongoingActivityStatus = Status.Builder()
+            .addTemplate(ONGOING_STATUS_TEMPLATE)
+            .addPart("duration", Status.StopwatchPart(startMillis))
             .build()
         val ongoingActivity =
             OngoingActivity.Builder(applicationContext, NOTIFICATION_ID, notificationBuilder)
@@ -246,6 +251,7 @@ class ExerciseService : LifecycleService() {
         const val NOTIFICATION_CHANNEL_DISPLAY = "Ongoing Exercise"
         const val NOTIFICATION_TITLE = "Exercise Sample"
         const val NOTIFICATION_TEXT = "Ongoing Exercise"
+        const val ONGOING_STATUS_TEMPLATE = "Ongoing Exercise #duration#"
         const val UNBIND_DELAY_MILLIS = 3_000L
     }
 }
