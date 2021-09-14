@@ -6,6 +6,7 @@ get started writing Health Services apps on Wear OS.
 
 Read below for a description of each sample.
 
+> Note: The Health Services API is in alpha release, meaning that [APIs may be added, removed, or changed](https://developer.android.com/jetpack/androidx/versions). We do not recommend developing a production app against the API at the current time, or making plans that depend on the API becoming stable or widely available at a specific time.
 
 Samples
 -------
