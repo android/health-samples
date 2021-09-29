@@ -26,10 +26,7 @@ import android.os.IBinder
 import android.os.SystemClock
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.health.services.client.data.DataPoint
-import androidx.health.services.client.data.DataType
-import androidx.health.services.client.data.ExerciseState
-import androidx.health.services.client.data.ExerciseUpdate
+import androidx.health.services.client.data.*
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDeepLinkBuilder
@@ -79,6 +76,10 @@ class ExerciseService : LifecycleService() {
     private val _exerciseDurationUpdate = MutableStateFlow(ActiveDurationUpdate())
     val exerciseDurationUpdate: StateFlow<ActiveDurationUpdate> = _exerciseDurationUpdate
 
+    private val _locationAvailabilityState = MutableStateFlow(LocationAvailability.ACQUIRING)
+    val locationAvailabilityState: StateFlow<LocationAvailability> = _locationAvailabilityState
+
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
         Log.d(TAG, "onStartCommand")
@@ -99,6 +100,8 @@ class ExerciseService : LifecycleService() {
                             processExerciseUpdate(it.exerciseUpdate)
                         is ExerciseMessage.LapSummaryMessage ->
                             _exerciseLaps.value = it.lapSummary.lapCount
+                        is ExerciseMessage.LocationAvailabilityMessage ->
+                            _locationAvailabilityState.value = it.locationAvailability
                     }
                 }
             }
@@ -112,7 +115,8 @@ class ExerciseService : LifecycleService() {
     private fun goForegroundOrStopSelf() {
         lifecycleScope.launch {
             // We may have been restarted by the system. Check for an ongoing exercise.
-            if (healthServicesManager.isExerciseInProgress()) {
+            if (healthServicesManager.isExerciseInProgress() ||
+                _exerciseState.value == ExerciseState.PREPARING) {
                 // Our exercise is running. Give the user a way into the app.
                 postOngoingActivityNotification()
             } else {
@@ -125,9 +129,27 @@ class ExerciseService : LifecycleService() {
     private fun processExerciseUpdate(exerciseUpdate: ExerciseUpdate) {
         val oldState = _exerciseState.value
         if (!oldState.isEnded && exerciseUpdate.state.isEnded) {
-            // Our exercise ended. This could be because another app's exercise has superseded ours,
-            // so dismiss any ongoing activity notification.
+            // Our exercise ended. Gracefully handle this termination be doing the following:
+            // TODO Save partial workout state, show workout summary, and let the user know why the exercise was ended.
+
+            // Dismiss any ongoing activity notification.
             removeOngoingActivityNotification()
+
+            // Custom flow for the possible states captured by the isEnded boolean
+            when (exerciseUpdate.state) {
+                ExerciseState.TERMINATED -> {
+                    // TODO Send the user a notification (another app ended their workout)
+                    Log.d(TAG, "Your exercise was terminated because another app started tracking an exercise")
+                }
+                ExerciseState.AUTO_ENDED -> {
+                    // TODO Send the user a notification
+                    Log.d(TAG, "Your exercise was auto ended because there were no registered listeners")
+                }
+                ExerciseState.AUTO_ENDED_PERMISSION_LOST -> {
+                    // TODO Send the user a notification
+                    Log.d(TAG, "Your exercise was auto ended because it lost the required permissions")
+                }
+            }
         } else if (oldState.isEnded && exerciseUpdate.state == ExerciseState.ACTIVE) {
             // Reset laps.
             _exerciseLaps.value = 0
