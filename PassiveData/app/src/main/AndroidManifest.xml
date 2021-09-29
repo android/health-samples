@@ -66,7 +66,11 @@
         <receiver
             android:name="com.example.passivedata.PassiveDataReceiver"
             android:exported="true"
-            tools:ignore="ExportedReceiver" />
+            tools:ignore="ExportedReceiver">
+            <intent-filter>
+              <action android:name="hs.passivemonitoring.DATA" />
+            </intent-filter>
+        </receiver>
 
         <!-- Receiver that re-registers for background data after a device restart. -->
         <receiver

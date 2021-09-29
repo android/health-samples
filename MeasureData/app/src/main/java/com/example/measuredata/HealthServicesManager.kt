@@ -23,6 +23,7 @@ import androidx.health.services.client.MeasureCallback
 import androidx.health.services.client.data.Availability
 import androidx.health.services.client.data.DataPoint
 import androidx.health.services.client.data.DataType
+import androidx.health.services.client.data.DataTypeAvailability
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.callbackFlow
@@ -51,7 +52,10 @@ class HealthServicesManager @Inject constructor(
     fun heartRateMeasureFlow() = callbackFlow<MeasureMessage> {
         val callback = object : MeasureCallback {
             override fun onAvailabilityChanged(dataType: DataType, availability: Availability) {
-                sendBlocking(MeasureMessage.MeasureAvailabilty(availability))
+                // Only send back DataTypeAvailability (not LocationAvailability)
+                if (availability is DataTypeAvailability) {
+                    sendBlocking(MeasureMessage.MeasureAvailabilty(availability))
+                }
             }
 
             override fun onData(data: List<DataPoint>) {
@@ -70,6 +74,6 @@ class HealthServicesManager @Inject constructor(
 }
 
 sealed class MeasureMessage {
-    class MeasureAvailabilty(val availability: Availability) : MeasureMessage()
+    class MeasureAvailabilty(val availability: DataTypeAvailability) : MeasureMessage()
     class MeasureData(val data: List<DataPoint>): MeasureMessage()
 }
