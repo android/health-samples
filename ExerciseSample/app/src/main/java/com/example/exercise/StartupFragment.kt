@@ -37,7 +37,7 @@ class StartupFragment : Fragment(R.layout.fragment_startup) {
         super.onViewCreated(view, savedInstanceState)
         lifecycleScope.launchWhenStarted {
             val destination = if (healthServicesManager.hasExerciseCapability()) {
-                R.id.exerciseFragment
+                R.id.prepareFragment
             } else {
                 R.id.notAvailableFragment
             }

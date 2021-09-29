@@ -16,17 +16,14 @@
 
 package com.example.exercise
 
-import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.health.services.client.data.DataPoint
@@ -57,7 +54,8 @@ class ExerciseFragment : Fragment() {
 
     private val viewModel: MainViewModel by activityViewModels()
 
-    private lateinit var binding: FragmentExerciseBinding
+    private var _binding: FragmentExerciseBinding? = null
+    private val binding get() = _binding!!
 
     private var serviceConnection = ExerciseServiceConnection()
 
@@ -66,17 +64,6 @@ class ExerciseFragment : Fragment() {
     private var chronoTickJob: Job? = null
     private var uiBindingJob: Job? = null
 
-    private val permissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { result ->
-        if (result.all { it.value }) {
-            Log.i(TAG, "All required permissions granted")
-            tryStartExercise()
-        } else {
-            Log.i(TAG, "Not all required permissions granted")
-        }
-    }
-
     private lateinit var ambientController: AmbientModeSupport.AmbientController
     private lateinit var ambientModeHandler: AmbientModeHandler
 
@@ -84,8 +71,8 @@ class ExerciseFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        binding = FragmentExerciseBinding.inflate(inflater, container, false)
+    ): View {
+        _binding = FragmentExerciseBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -106,8 +93,8 @@ class ExerciseFragment : Fragment() {
 
             // Set enabled state for relevant text elements.
             binding.heartRateText.isEnabled = DataType.HEART_RATE_BPM in supportedTypes
-            binding.caloriesText.isEnabled = DataType.AGGREGATE_CALORIES_EXPENDED in supportedTypes
-            binding.distanceText.isEnabled = DataType.AGGREGATE_DISTANCE in supportedTypes
+            binding.caloriesText.isEnabled = DataType.TOTAL_CALORIES in supportedTypes
+            binding.distanceText.isEnabled = DataType.DISTANCE in supportedTypes
             binding.lapsText.isEnabled = true
         }
 
@@ -137,12 +124,12 @@ class ExerciseFragment : Fragment() {
         super.onDestroyView()
         // Unbind from the service.
         requireActivity().unbindService(serviceConnection)
+        _binding = null
     }
 
     private fun startEndExercise() {
         if (cachedExerciseState.isEnded) {
-            // Check permissions first.
-            permissionLauncher.launch(PERMISSIONS)
+            tryStartExercise()
         } else {
             lifecycleScope.launch {
                 healthServicesManager.endExercise()
@@ -238,10 +225,10 @@ class ExerciseFragment : Fragment() {
         data[DataType.HEART_RATE_BPM]?.let {
             binding.heartRateText.text = it.last().value.asDouble().roundToInt().toString()
         }
-        data[DataType.AGGREGATE_CALORIES_EXPENDED]?.let {
+        data[DataType.TOTAL_CALORIES]?.let {
             binding.caloriesText.text = formatCalories(it.last().value.asDouble())
         }
-        data[DataType.AGGREGATE_DISTANCE]?.let {
+        data[DataType.DISTANCE]?.let {
             binding.distanceText.text = formatDistanceKm(it.last().value.asDouble())
         }
     }
@@ -355,10 +342,6 @@ class ExerciseFragment : Fragment() {
     }
 
     private companion object {
-        val PERMISSIONS = arrayOf(
-            Manifest.permission.BODY_SENSORS,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        )
         const val CHRONO_TICK_MS = 200L
     }
 }

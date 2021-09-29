@@ -31,6 +31,9 @@ import androidx.health.services.client.data.ExerciseType
 import androidx.health.services.client.data.ExerciseTypeCapabilities
 import androidx.health.services.client.data.ExerciseUpdate
 import androidx.health.services.client.data.Value
+import androidx.health.services.client.data.WarmUpConfig
+import androidx.health.services.client.data.LocationAvailability
+import androidx.health.services.client.data.Availability
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.sendBlocking
@@ -82,8 +85,11 @@ class HealthServicesManager @Inject constructor(
         val capabilities = getExerciseCapabilities() ?: return
         val dataTypes = setOf(
             DataType.HEART_RATE_BPM,
-            DataType.AGGREGATE_CALORIES_EXPENDED,
-            DataType.AGGREGATE_DISTANCE
+        ).intersect(capabilities.supportedDataTypes)
+
+        val aggDataTypes = setOf(
+            DataType.TOTAL_CALORIES,
+            DataType.DISTANCE
         ).intersect(capabilities.supportedDataTypes)
 
         val exerciseGoals = mutableListOf<ExerciseGoal>()
@@ -92,7 +98,7 @@ class HealthServicesManager @Inject constructor(
             exerciseGoals.add(
                 ExerciseGoal.createOneTimeGoal(
                     DataTypeCondition(
-                        dataType = DataType.AGGREGATE_CALORIES_EXPENDED,
+                        dataType = DataType.TOTAL_CALORIES,
                         threshold = Value.ofDouble(CALORIES_THRESHOLD),
                         comparisonType = ComparisonType.GREATER_THAN_OR_EQUAL
                     )
@@ -106,7 +112,7 @@ class HealthServicesManager @Inject constructor(
             exerciseGoals.add(
                 ExerciseGoal.createMilestone(
                     condition = DataTypeCondition(
-                        dataType = DataType.AGGREGATE_DISTANCE,
+                        dataType = DataType.DISTANCE,
                         threshold = Value.ofDouble(DISTANCE_THRESHOLD),
                         comparisonType = ComparisonType.GREATER_THAN_OR_EQUAL
                     ),
@@ -117,7 +123,9 @@ class HealthServicesManager @Inject constructor(
 
         val config = ExerciseConfig.builder()
             .setExerciseType(ExerciseType.RUNNING)
-            .setAutoPauseAndResume(false)
+            .setShouldEnableAutoPauseAndResume(false)
+            .setAggregateDataTypes(aggDataTypes)
+            .setShouldEnableGps(true)
             .setDataTypes(dataTypes)
             .setExerciseGoals(exerciseGoals)
             .build()
@@ -125,13 +133,31 @@ class HealthServicesManager @Inject constructor(
     }
 
     private fun supportsCalorieGoal(capabilities: ExerciseTypeCapabilities) : Boolean {
-        val supported = capabilities.supportedGoals[DataType.AGGREGATE_CALORIES_EXPENDED]
+        val supported = capabilities.supportedGoals[DataType.TOTAL_CALORIES]
         return supported != null && ComparisonType.GREATER_THAN_OR_EQUAL in supported
     }
 
     private fun supportsDistanceMilestone(capabilities: ExerciseTypeCapabilities) : Boolean {
-        val supported = capabilities.supportedMilestones[DataType.AGGREGATE_DISTANCE]
+        val supported = capabilities.supportedMilestones[DataType.DISTANCE]
         return supported != null && ComparisonType.GREATER_THAN_OR_EQUAL in supported
+    }
+
+    suspend fun prepareExercise() {
+        Log.d(TAG, "Preparing an exercise")
+
+        var warmUpConfig = WarmUpConfig.builder()
+            .setExerciseType(ExerciseType.RUNNING)
+            .setDataTypes(setOf(
+                DataType.HEART_RATE_BPM,
+                DataType.LOCATION))
+            .build()
+
+        try {
+            exerciseClient.prepareExercise(warmUpConfig).await()
+        }
+        catch (e: Exception){
+            Log.d(TAG, "Prepare exercise failed")
+        }
     }
 
     suspend fun endExercise() {
@@ -176,6 +202,11 @@ class HealthServicesManager @Inject constructor(
             override fun onLapSummary(lapSummary: ExerciseLapSummary) {
                 sendBlocking(ExerciseMessage.LapSummaryMessage(lapSummary))
             }
+            override fun onAvailabilityChanged(dataType: DataType, availability: Availability) {
+                if (availability is LocationAvailability) {
+                        sendBlocking(ExerciseMessage.LocationAvailabilityMessage(availability))
+                }
+            }
         }
         exerciseClient.setUpdateListener(listener)
         awaitClose {
@@ -192,4 +223,5 @@ class HealthServicesManager @Inject constructor(
 sealed class ExerciseMessage {
     class ExerciseUpdateMessage(val exerciseUpdate: ExerciseUpdate) : ExerciseMessage()
     class LapSummaryMessage(val lapSummary: ExerciseLapSummary) : ExerciseMessage()
+    class LocationAvailabilityMessage(val locationAvailability: LocationAvailability) : ExerciseMessage()
 }
