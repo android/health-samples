@@ -15,9 +15,9 @@ Samples
 Demonstrates receiving background data updates from Health Services using
 `PassiveMonitoringClient`.
 
-**PassiveEvents**
+**PassiveGoals**
 
-Demonstrates receiving event notifications in the background from Health
+Demonstrates receiving goal notifications in the background from Health
 Services using `PassiveMonitoringClient`.
 
 **MeasureData**
