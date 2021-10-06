@@ -30,7 +30,7 @@
     <string name="empty_metric">—</string>
     <string name="preparing">Preparing exercise</string>
     <string name="gps_acquiring">GPS Acquiring</string>
-    <string name="gps_acquired">GPS Acquired</string>
+    <string name="gps_acquired">GPS Acquired!</string>
     <string name="gps_disabled">GPS Disabled on Device</string>
     <string name="gps_unavailable">GPS Unavailable</string>
 </resources>

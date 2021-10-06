@@ -20,8 +20,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    tools:context=".MainActivity"
+    android:padding="@dimen/default_padding"
     tools:deviceIds="wear">
 
     <ImageView
@@ -142,7 +141,7 @@
         app:layout_constraintRight_toLeftOf="@id/guide_v50pct"
         app:layout_constraintTop_toBottomOf="@id/heart_rate_text"
         tools:enabled="true"
-        tools:text="1.1km" />
+        tools:text="1.1" />
 
     <ImageView
         android:id="@+id/laps_icon"
