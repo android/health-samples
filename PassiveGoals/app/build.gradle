@@ -23,9 +23,10 @@ plugins {
 
 android {
     compileSdk 31
+    buildToolsVersion "30.0.3"
 
     defaultConfig {
-        applicationId "com.example.exercise"
+        applicationId "com.example.passivegoals"
         minSdk 30
         targetSdk 30
         versionCode 1
@@ -44,11 +45,7 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    kotlinOptions {
-        jvmTarget = '1.8'
-        // Allows to use experimental coroutines APIs like callbackFlow()
-        freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
-    }
+    kotlinOptions { jvmTarget = '1.8' }
 }
 
 dependencies {
@@ -65,22 +62,22 @@ dependencies {
     // Wear
     implementation 'androidx.wear:wear:1.2.0'
     // Health Services
-    implementation "androidx.health:health-services-client:1.0.0-alpha02"
+    implementation 'androidx.health:health-services-client:1.0.0-alpha02'
     // Used to bridge between Futures and coroutines
     implementation 'com.google.guava:guava:30.1.1-android'
     implementation "androidx.concurrent:concurrent-futures-ktx:1.1.0"
+
+    // Datastore
+    implementation "androidx.datastore:datastore-preferences:1.0.0"
 
     // Lifecycle
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-service:$lifecycle_version"
 
+    // WorkManager
+    implementation "androidx.work:work-runtime:2.6.0"
+    implementation "androidx.work:work-runtime-ktx:2.6.0"
+
     // Material
     implementation 'com.google.android.material:material:1.4.0'
-
-    // Navigation
-    implementation "androidx.navigation:navigation-fragment-ktx:2.3.5"
-    implementation "androidx.navigation:navigation-ui-ktx:2.3.5"
-
-    // Ongoing Activity.
-    implementation "androidx.wear:wear-ongoing:1.0.0"
 }
