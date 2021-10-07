@@ -16,13 +16,13 @@
 
 package com.example.passivedata
 
-import android.app.PendingIntent
+import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
 import android.util.Log
 import androidx.concurrent.futures.await
 import androidx.health.services.client.HealthServicesClient
 import androidx.health.services.client.data.DataType
+import androidx.health.services.client.data.PassiveMonitoringConfig
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
@@ -35,13 +35,7 @@ class HealthServicesManager @Inject constructor(
     healthServicesClient: HealthServicesClient
 ) {
     private val passiveMonitoringClient = healthServicesClient.passiveMonitoringClient
-
     private val dataTypes = setOf(DataType.HEART_RATE_BPM)
-
-    private val pendingIntent by lazy {
-        val intent = Intent(context, PassiveDataReceiver::class.java)
-        PendingIntent.getBroadcast(context, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-    }
 
     suspend fun hasHeartRateCapability(): Boolean {
         val capabilities = passiveMonitoringClient.capabilities.await()
@@ -50,7 +44,12 @@ class HealthServicesManager @Inject constructor(
 
     suspend fun registerForHeartRateData() {
         Log.i(TAG, "Registering for background data.")
-        passiveMonitoringClient.registerDataCallback(dataTypes, pendingIntent).await()
+        val componentName = ComponentName(context, PassiveDataReceiver::class.java)
+        val config = PassiveMonitoringConfig.builder()
+            .setDataTypes(dataTypes)
+            .setComponentName(componentName)
+            .build()
+        passiveMonitoringClient.registerDataCallback(config).await()
     }
 
     suspend fun unregisterForHeartRateData() {

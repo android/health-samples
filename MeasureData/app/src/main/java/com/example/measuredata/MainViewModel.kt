@@ -17,7 +17,7 @@
 package com.example.measuredata
 
 import android.util.Log
-import androidx.health.services.client.data.Availability
+import androidx.health.services.client.data.DataTypeAvailability
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -33,14 +33,13 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val healthServicesManager: HealthServicesManager
-): ViewModel() {
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Startup)
-    // Presents a non-mutable view of _uiState for observers.
     val uiState: StateFlow<UiState> = _uiState
 
-    private val _heartRateAvailable = MutableStateFlow(Availability.UNKNOWN)
-    val heartRateAvailable: StateFlow<Availability> = _heartRateAvailable
+    private val _heartRateAvailable = MutableStateFlow(DataTypeAvailability.UNKNOWN)
+    val heartRateAvailable: StateFlow<DataTypeAvailability> = _heartRateAvailable
 
     private val _heartRateBpm = MutableStateFlow(0.0)
     val heartRateBpm: StateFlow<Double> = _heartRateBpm
@@ -75,7 +74,7 @@ class MainViewModel @Inject constructor(
 }
 
 sealed class UiState {
-    object Startup: UiState()
-    object HeartRateAvailable: UiState()
-    object HeartRateNotAvailable: UiState()
+    object Startup : UiState()
+    object HeartRateAvailable : UiState()
+    object HeartRateNotAvailable : UiState()
 }

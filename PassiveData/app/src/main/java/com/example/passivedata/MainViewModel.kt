@@ -19,9 +19,11 @@ package com.example.passivedata
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -35,9 +37,9 @@ class MainViewModel @Inject constructor(
 ): ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Startup)
-    // Presents a non-mutable view of _uiState for observers.
     val uiState: StateFlow<UiState> = _uiState
-    val passiveDataEnabled = repository.passiveDataEnabled
+
+    val passiveDataEnabled: Flow<Boolean>
     val latestHeartRate = repository.lastestHeartRate
 
     init {
@@ -50,17 +52,22 @@ class MainViewModel @Inject constructor(
                 UiState.HeartRateNotAvailable
             }
         }
+
+        passiveDataEnabled = repository.passiveDataEnabled
+            .distinctUntilChanged()
+            .onEach { enabled ->
+                viewModelScope.launch {
+                    if (enabled)
+                        healthServicesManager.registerForHeartRateData()
+                    else
+                        healthServicesManager.unregisterForHeartRateData()
+                }
+            }
     }
 
     fun togglePassiveData(enabled: Boolean) {
         viewModelScope.launch {
-            if (passiveDataEnabled.first() != enabled) {
-                when (enabled) {
-                    true -> healthServicesManager.registerForHeartRateData()
-                    false -> healthServicesManager.unregisterForHeartRateData()
-                }
-                repository.setPassiveDataEnabled(enabled)
-            }
+            repository.setPassiveDataEnabled(enabled)
         }
     }
 }
