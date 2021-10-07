@@ -16,11 +16,11 @@
   -->
 
 <resources>
-    <dimen name="icon_size">24dp</dimen>
-    <dimen name="space_2dp">2dp</dimen>
-    <dimen name="space_4dp">4dp</dimen>
-    <dimen name="default_padding">16dp</dimen>
-    <dimen name="header_top_margin">16dp</dimen>
-    <dimen name="header_start_margin">16dp</dimen>
-    <dimen name="header_end_margin">16dp</dimen>
+    <string name="app_name">Passive Goals Sample</string>
+    <string name="enable">Enable</string>
+    <string name="not_available">Not available on this device</string>
+    <string name="floor_goal">Last floor goal\nat %1$s</string>
+    <string name="daily_steps_goal_achieved">Steps complete!</string>
+    <string name="daily_steps_goal_not_achieved">Keep going!</string>
+    <string name="waiting_for_goal">Waiting for a <goal></goal>…</string>
 </resources>

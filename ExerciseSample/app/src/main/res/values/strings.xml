@@ -19,7 +19,7 @@
     <string name="app_name">Exercise Sample</string>
     <string name="measure_status">Status: %1$s</string>
     <string name="last_measured">Last measured:</string>
-    <string name="starting_up">Preparing for exercise</string>
+    <string name="starting_up">Starting up</string>
     <string name="exercise_not_available">Exercise not available on this device</string>
     <string name="start">START</string>
     <string name="end">END</string>
@@ -28,4 +28,9 @@
     <string name="new_exercise_confirmation">An exercise is running in another app. End it and start this one?</string>
     <string name="empty_time">00:00</string>
     <string name="empty_metric">—</string>
+    <string name="preparing">Preparing exercise</string>
+    <string name="gps_acquiring">GPS Acquiring</string>
+    <string name="gps_acquired">GPS Acquired!</string>
+    <string name="gps_disabled">GPS Disabled on Device</string>
+    <string name="gps_unavailable">GPS Unavailable</string>
 </resources>

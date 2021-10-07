@@ -16,11 +16,10 @@
   -->
 
 <resources>
-    <dimen name="icon_size">24dp</dimen>
-    <dimen name="space_2dp">2dp</dimen>
-    <dimen name="space_4dp">4dp</dimen>
-    <dimen name="default_padding">16dp</dimen>
-    <dimen name="header_top_margin">16dp</dimen>
-    <dimen name="header_start_margin">16dp</dimen>
-    <dimen name="header_end_margin">16dp</dimen>
+    <color name="primary_green">#00cc66</color>
+
+    <style name="AppTheme" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="colorPrimary">@color/primary_green</item>
+        <item name="colorControlActivated">?colorPrimary</item>
+    </style>
 </resources>

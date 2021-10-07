@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.passivedata
+package com.example.passivegoals
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -27,53 +27,52 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/**
- * Holds most of the interaction logic and UI state for the app.
- */
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val repository: PassiveDataRepository,
+    private val repository: PassiveGoalsRepository,
     private val healthServicesManager: HealthServicesManager
-): ViewModel() {
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Startup)
-    val uiState: StateFlow<UiState> = _uiState
 
-    val passiveDataEnabled: Flow<Boolean>
-    val latestHeartRate = repository.lastestHeartRate
+    // Presents a non-mutable view of _uiState for observers.
+    val uiState: StateFlow<UiState> = _uiState
+    val passiveGoalsEnabled: Flow<Boolean>
+    val dailyStepsGoalAchieved = repository.dailyStepsGoalAchieved
+    val latestFloorsGoalTime = repository.latestFloorsGoalTime
 
     init {
-        // Check that the device has the heart rate capability and progress to the next state
+        // Check that the device has the steps per minute capability and progress to the next state
         // accordingly.
         viewModelScope.launch {
-            _uiState.value = if (healthServicesManager.hasHeartRateCapability()) {
-                UiState.HeartRateAvailable
+            _uiState.value = if (healthServicesManager.hasFloorsAndDailyStepsCapability()) {
+                UiState.CapabilitiesAvailable
             } else {
-                UiState.HeartRateNotAvailable
+                UiState.CapabilitiesNotAvailable
             }
         }
 
-        passiveDataEnabled = repository.passiveDataEnabled
+        passiveGoalsEnabled = repository.passiveGoalsEnabled
             .distinctUntilChanged()
             .onEach { enabled ->
                 viewModelScope.launch {
                     if (enabled)
-                        healthServicesManager.registerForHeartRateData()
+                        healthServicesManager.subscribeForGoals()
                     else
-                        healthServicesManager.unregisterForHeartRateData()
+                        healthServicesManager.unsubscribeFromGoals()
                 }
             }
     }
 
-    fun togglePassiveData(enabled: Boolean) {
+    fun togglePassiveGoals(enabled: Boolean) {
         viewModelScope.launch {
-            repository.setPassiveDataEnabled(enabled)
+            repository.setPassiveGoalsEnabled(enabled)
         }
     }
 }
 
 sealed class UiState {
-    object Startup: UiState()
-    object HeartRateAvailable: UiState()
-    object HeartRateNotAvailable: UiState()
+    object Startup : UiState()
+    object CapabilitiesAvailable : UiState()
+    object CapabilitiesNotAvailable : UiState()
 }

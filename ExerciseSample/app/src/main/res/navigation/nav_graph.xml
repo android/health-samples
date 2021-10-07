@@ -25,7 +25,15 @@
         android:id="@+id/startupFragment"
         android:name="com.example.exercise.StartupFragment"
         android:label="StartupFragment"
-        tools:layout="@layout/fragment_startup" />
+        tools:layout="@layout/fragment_startup" >
+    </fragment>
+
+    <fragment
+        android:id="@+id/prepareFragment"
+        android:name="com.example.exercise.PrepareFragment"
+        android:label="PrepareFragment"
+        tools:layout="@layout/fragment_prepare" >
+    </fragment>
 
     <fragment
         android:id="@+id/notAvailableFragment"

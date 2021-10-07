@@ -18,13 +18,13 @@
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.passivedata">
+    package="com.example.passivegoals">
 
     <uses-feature android:name="android.hardware.type.watch" />
 
-    <!-- For receiving heart rate data. -->
-    <uses-permission android:name="android.permission.BODY_SENSORS" />
-    <!-- Needed in order to re-register for data on device startup. -->
+    <!-- For receiving steps and floors data. -->
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <!-- Needed in order to re-register for goals on device startup. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <!-- When an app targets Android 11 (API level 30) or higher and queries for information about
@@ -37,7 +37,7 @@
     </queries>
 
     <application
-        android:name="com.example.passivedata.MainApplication"
+        android:name=".MainApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -53,26 +53,29 @@
             android:value="true" />
 
         <activity
-            android:name="com.example.passivedata.MainActivity"
+            android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <!-- Receiver that gets notified of new data in the background. -->
+        <!-- Receiver that gets notified of goals in the background. We use the same receiver for
+             multiple goals.
+        -->
         <receiver
-            android:name="com.example.passivedata.PassiveDataReceiver"
+            android:name=".PassiveGoalsReceiver"
             android:exported="true"
             tools:ignore="ExportedReceiver">
             <intent-filter>
-              <action android:name="hs.passivemonitoring.DATA" />
+                <action android:name="hs.passivemonitoring.GOAL" />
             </intent-filter>
         </receiver>
 
-        <!-- Receiver that re-registers for background data after a device restart. -->
+        <!-- Receiver that re-registers for goals after a device restart. -->
         <receiver
             android:name=".StartupReceiver"
             android:exported="true">
@@ -81,7 +84,7 @@
             </intent-filter>
         </receiver>
 
-        <!-- Our application implements Configuratoin.Provider, so we don't need this to initialize
+        <!-- Our application implements Configuration.Provider, so we don't need this to initialize
              WorkManager.
         -->
         <provider
@@ -89,4 +92,5 @@
             android:authorities="${applicationId}.workmanager-init"
             tools:node="remove" />
     </application>
+
 </manifest>
