@@ -1,8 +1,6 @@
 package com.example.exercise
 
 import android.Manifest
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -17,17 +15,14 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.exercise.databinding.FragmentPrepareBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class PrepareFragment : Fragment(R.layout.fragment_prepare) {
     private var serviceConnection = ExerciseServiceConnection()
     private var _binding: FragmentPrepareBinding? = null
     private val binding get() = _binding!!
-    private var uiBindingJob: Job? = null
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -62,8 +57,7 @@ class PrepareFragment : Fragment(R.layout.fragment_prepare) {
         super.onViewCreated(view, savedInstanceState)
 
         // Bind to our service. Views will only update once we are connected to it.
-        val serviceIntent = Intent(requireActivity(), ExerciseService::class.java)
-        requireActivity().bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
+        ExerciseService.bindService(requireContext().applicationContext, serviceConnection)
         bindViewsToService()
 
         binding.startButton.setOnClickListener {
@@ -80,19 +74,15 @@ class PrepareFragment : Fragment(R.layout.fragment_prepare) {
     override fun onDestroyView() {
         super.onDestroyView()
         // Unbind from the service.
-        requireActivity().unbindService(serviceConnection)
+        ExerciseService.unbindService(requireContext().applicationContext, serviceConnection)
         _binding = null
     }
 
     private fun bindViewsToService() {
-        if (uiBindingJob != null) return
-
-        uiBindingJob = viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                serviceConnection.repeatWhenConnected { service ->
-                    service.locationAvailabilityState.collect {
-                        updatePrepareLocationStatus(it)
-                    }
+        viewLifecycleOwner.lifecycleScope.launch {
+            serviceConnection.repeatWhenConnected { service ->
+                service.locationAvailabilityState.collect {
+                    updatePrepareLocationStatus(it)
                 }
             }
         }

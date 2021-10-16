@@ -20,7 +20,9 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
+import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Binder
 import android.os.IBinder
 import android.os.SystemClock
@@ -90,7 +92,7 @@ class ExerciseService : LifecycleService() {
     val locationAvailabilityState: StateFlow<LocationAvailability> = _locationAvailabilityState
 
     /**
-     * Prespare exercise in this service's coroutine context.
+     * Prepare exercise in this service's coroutine context.
      */
     fun prepareExercise() {
         lifecycleScope.launch {
@@ -105,6 +107,7 @@ class ExerciseService : LifecycleService() {
         lifecycleScope.launch {
             healthServicesManager.startExercise()
         }
+        postOngoingActivityNotification()
     }
 
     /**
@@ -132,6 +135,7 @@ class ExerciseService : LifecycleService() {
         lifecycleScope.launch {
             healthServicesManager.endExercise()
         }
+        removeOngoingActivityNotification()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -143,8 +147,9 @@ class ExerciseService : LifecycleService() {
 
             if (!isBound) {
                 // We may have been restarted by the system. Manage our lifetime accordingly.
-                goForegroundOrStopSelf()
+                stopSelfIfNotRunning()
             }
+
             // Start collecting exercise information. We might stop shortly (see above), in which
             // case launchWhenStarted takes care of canceling this coroutine.
             lifecycleScope.launch {
@@ -170,15 +175,17 @@ class ExerciseService : LifecycleService() {
         return Service.START_STICKY
     }
 
-    private fun goForegroundOrStopSelf() {
+    private fun stopSelfIfNotRunning() {
         lifecycleScope.launch {
             // We may have been restarted by the system. Check for an ongoing exercise.
-            if (healthServicesManager.isExerciseInProgress() ||
-                _exerciseState.value == ExerciseState.PREPARING
-            ) {
-                // Our exercise is running. Give the user a way into the app.
-                postOngoingActivityNotification()
-            } else {
+            if (!healthServicesManager.isExerciseInProgress()) {
+                // Need to cancel [prepareExercise()] to prevent battery drain.
+                if (_exerciseState.value == ExerciseState.PREPARING) {
+                    lifecycleScope.launch {
+                        healthServicesManager.endExercise()
+                    }
+                }
+
                 // We have nothing to do, so we can stop.
                 stopSelf()
             }
@@ -212,7 +219,7 @@ class ExerciseService : LifecycleService() {
                 }
                 ExerciseState.AUTO_ENDED_PERMISSION_LOST -> {
                     // TODO Send the user a notification
-                    Log.i(
+                    Log.w(
                         TAG,
                         "Your exercise was auto ended because it lost the required permissions"
                     )
@@ -232,7 +239,7 @@ class ExerciseService : LifecycleService() {
             ActiveDurationUpdate(exerciseUpdate.activeDuration, Instant.now())
     }
 
-    override fun onBind(intent: Intent): IBinder? {
+    override fun onBind(intent: Intent): IBinder {
         super.onBind(intent)
         handleBind()
         return localBinder
@@ -248,8 +255,6 @@ class ExerciseService : LifecycleService() {
             isBound = true
             // Start ourself. This will begin collecting exercise state if we aren't already.
             startService(Intent(this, this::class.java))
-            // As long as a UI client is bound to us, we can hide the ongoing activity notification.
-            removeOngoingActivityNotification()
         }
     }
 
@@ -261,7 +266,7 @@ class ExerciseService : LifecycleService() {
             // manage our lifetime accordingly.
             delay(UNBIND_DELAY_MILLIS)
             if (!isBound) {
-                goForegroundOrStopSelf()
+                stopSelfIfNotRunning()
             }
         }
         // Allow clients to re-bind. We will be informed of this in onRebind().
@@ -338,14 +343,23 @@ class ExerciseService : LifecycleService() {
         fun getService() = this@ExerciseService
     }
 
-    private companion object {
-        const val NOTIFICATION_ID = 1
-        const val NOTIFICATION_CHANNEL = "com.example.exercise.ONGOING_EXERCISE"
-        const val NOTIFICATION_CHANNEL_DISPLAY = "Ongoing Exercise"
-        const val NOTIFICATION_TITLE = "Exercise Sample"
-        const val NOTIFICATION_TEXT = "Ongoing Exercise"
-        const val ONGOING_STATUS_TEMPLATE = "Ongoing Exercise #duration#"
-        const val UNBIND_DELAY_MILLIS = 3_000L
+    companion object {
+        private const val NOTIFICATION_ID = 1
+        private const val NOTIFICATION_CHANNEL = "com.example.exercise.ONGOING_EXERCISE"
+        private const val NOTIFICATION_CHANNEL_DISPLAY = "Ongoing Exercise"
+        private const val NOTIFICATION_TITLE = "Exercise Sample"
+        private const val NOTIFICATION_TEXT = "Ongoing Exercise"
+        private const val ONGOING_STATUS_TEMPLATE = "Ongoing Exercise #duration#"
+        private const val UNBIND_DELAY_MILLIS = 3_000L
+
+        fun bindService(context: Context, serviceConnection: ServiceConnection) {
+            val serviceIntent = Intent(context, ExerciseService::class.java)
+            context.bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
+        }
+
+        fun unbindService(context: Context, serviceConnection: ServiceConnection) {
+            context.unbindService(serviceConnection)
+        }
     }
 }
 
