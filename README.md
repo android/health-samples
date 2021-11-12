@@ -1,31 +1,11 @@
-Health Services Samples Repository
+Health Samples Repository
 ======================
 
-This repository contains a set of individual Android Studio projects to help you
-get started writing Health Services apps on Wear OS.
+This repository contains a set of individual Android Studio projects to help you get started writing Health-related apps on Android and Wear OS.
 
-Read below for a description of each sample.
+The repository is structured by API. Read below for a description of each
 
-> Note: The Health Services API is in alpha release, meaning that [APIs may be added, removed, or changed](https://developer.android.com/jetpack/androidx/versions). We do not recommend developing a production app against the API at the current time, or making plans that depend on the API becoming stable or widely available at a specific time.
+-   **[Health Services][health-services-samples]**: Samples to help you get started with writing health-related apps on Wear OS that take advantage of the on-board sensors and algorithms to collect health and fitness data. *[Learn more about Health Services][health-services-dac]*
 
-Samples
--------
-
-**PassiveData**
-
-Demonstrates receiving background data updates from Health Services using
-`PassiveMonitoringClient`.
-
-**PassiveGoals**
-
-Demonstrates receiving goal notifications in the background from Health
-Services using `PassiveMonitoringClient`.
-
-**MeasureData**
-
-Demonstrates receiving receiving rapid data updates in the foreground using
-`MeasureClient`.
-
-**ExerciseSample**
-
-Demonstrates managing an exercise experience using the `ExerciseClient` API.
+[health-services-dac]: https://developer.android.com/training/wearables/health-services
+[health-services-samples]: health-services/
