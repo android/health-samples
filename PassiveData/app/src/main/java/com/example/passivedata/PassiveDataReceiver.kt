@@ -21,6 +21,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.health.services.client.data.DataType
+import androidx.health.services.client.data.HrAccuracy
 import androidx.health.services.client.data.PassiveMonitoringUpdate
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.runBlocking
@@ -32,7 +33,8 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class PassiveDataReceiver : BroadcastReceiver() {
 
-    @Inject lateinit var repository: PassiveDataRepository
+    @Inject
+    lateinit var repository: PassiveDataRepository
 
     override fun onReceive(context: Context, intent: Intent) {
         val state = PassiveMonitoringUpdate.fromIntent(intent) ?: return
@@ -40,9 +42,16 @@ class PassiveDataReceiver : BroadcastReceiver() {
         val latestDataPoint = state.dataPoints
             // dataPoints can have multiple types (e.g. if the app registered for multiple types).
             .filter { it.dataType == DataType.HEART_RATE_BPM }
+            // only display values if accuracy is medium or high
+            .filter {
+                setOf(
+                    HrAccuracy.SensorStatus.ACCURACY_MEDIUM,
+                    HrAccuracy.SensorStatus.ACCURACY_HIGH
+                ).contains((it.accuracy as HrAccuracy).sensorStatus)
+            }
             // HEART_RATE_BPM is a SAMPLE type, so start and end times are the same.
             .maxByOrNull { it.endDurationFromBoot }
-            // If there were no data points, the previous function returns null.
+        // If there were no data points, the previous function returns null.
             ?: return
 
         val latestHeartRate = latestDataPoint.value.asDouble() // HEART_RATE_BPM is a Float type.
