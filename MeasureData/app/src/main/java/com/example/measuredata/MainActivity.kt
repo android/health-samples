@@ -76,7 +76,7 @@ class MainActivity : AppCompatActivity() {
         }
         lifecycleScope.launchWhenStarted {
             viewModel.heartRateBpm.collect {
-                binding.lastMeasuredValue.text = it.toString()
+		binding.lastMeasuredValue.text = String.format("%.1f", it)
             }
         }
     }
