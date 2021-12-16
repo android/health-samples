@@ -42,12 +42,18 @@ class PassiveDataReceiver : BroadcastReceiver() {
         val latestDataPoint = state.dataPoints
             // dataPoints can have multiple types (e.g. if the app registered for multiple types).
             .filter { it.dataType == DataType.HEART_RATE_BPM }
-            // only display values if accuracy is medium or high
+            // where accuracy information is available, only show readings that are of medium or
+            // high accuracy. (Where accuracy information isn't available, show the reading if it is
+            // a positive value).
             .filter {
+                it.accuracy == null ||
                 setOf(
                     HrAccuracy.SensorStatus.ACCURACY_MEDIUM,
                     HrAccuracy.SensorStatus.ACCURACY_HIGH
                 ).contains((it.accuracy as HrAccuracy).sensorStatus)
+            }
+            .filter {
+                it.value.asDouble() > 0
             }
             // HEART_RATE_BPM is a SAMPLE type, so start and end times are the same.
             .maxByOrNull { it.endDurationFromBoot }
