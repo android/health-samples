@@ -71,12 +71,12 @@ class HealthServicesManager @Inject constructor(
     }
 
     suspend fun isExerciseInProgress(): Boolean {
-        val exerciseInfo = exerciseClient.currentExerciseInfo.await()
+        val exerciseInfo = exerciseClient.getCurrentExerciseInfo().await()
         return exerciseInfo.exerciseTrackedStatus == ExerciseTrackedStatus.OWNED_EXERCISE_IN_PROGRESS
     }
 
     suspend fun isTrackingExerciseInAnotherApp(): Boolean {
-        val exerciseInfo = exerciseClient.currentExerciseInfo.await()
+        val exerciseInfo = exerciseClient.getCurrentExerciseInfo().await()
         return exerciseInfo.exerciseTrackedStatus == ExerciseTrackedStatus.OTHER_APP_IN_PROGRESS
     }
 
