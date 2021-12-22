@@ -21,6 +21,7 @@ import androidx.health.services.client.data.DataTypeAvailability
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
@@ -56,6 +57,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    @ExperimentalCoroutinesApi
     suspend fun measureHeartRate() {
         healthServicesManager.heartRateMeasureFlow().collect {
             when (it) {

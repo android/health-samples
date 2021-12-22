@@ -35,6 +35,14 @@ buildscript {
     }
 }
 
+allprojects {
+    repositories {
+        maven { url("/tmp/whs_m2/") }
+        google()
+        mavenCentral()
+    }
+}
+
 task clean(type: Delete) {
     delete rootProject.buildDir
 }

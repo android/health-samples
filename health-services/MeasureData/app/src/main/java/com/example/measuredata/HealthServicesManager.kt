@@ -24,6 +24,7 @@ import androidx.health.services.client.data.Availability
 import androidx.health.services.client.data.DataPoint
 import androidx.health.services.client.data.DataType
 import androidx.health.services.client.data.DataTypeAvailability
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.callbackFlow
@@ -49,6 +50,7 @@ class HealthServicesManager @Inject constructor(
      *
      * [callbackFlow] is used to bridge between a callback-based API and Kotlin flows.
      */
+    @ExperimentalCoroutinesApi
     fun heartRateMeasureFlow() = callbackFlow<MeasureMessage> {
         val callback = object : MeasureCallback {
             override fun onAvailabilityChanged(dataType: DataType, availability: Availability) {
