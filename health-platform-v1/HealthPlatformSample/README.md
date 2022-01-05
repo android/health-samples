@@ -9,7 +9,7 @@ You will need a Samsung device operating on Oreo or above with Samsung Health
 Platform installed: At this time the Health Platform is only available on
 Samsung devices.
 
-![health_platform_screenshot](images/health_platform_screenshot.png)
+<img src="images/health_platform_screenshot.png" height="400" alt="Screenshot"/>
 
 ### Running the sample
 
