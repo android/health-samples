@@ -82,9 +82,15 @@ class ExerciseFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.startEndButton.setOnClickListener {
+            // App could take a perceptible amount of time to transition between states; put button into
+            // an intermediary "disabled" state to provide UI feedback.
+            it.isEnabled = false
             startEndExercise()
         }
         binding.pauseResumeButton.setOnClickListener {
+            // App could take a perceptible amount of time to transition between states; put button into
+            // an intermediary "disabled" state to provide UI feedback.
+            it.isEnabled = false
             pauseResumeExercise()
         }
 
@@ -226,6 +232,7 @@ class ExerciseFragment : Fragment() {
 
     private fun updateButtons(state: ExerciseState) {
         binding.startEndButton.setText(if (state.isEnded) R.string.start else R.string.end)
+        binding.startEndButton.isEnabled = true
         binding.pauseResumeButton.setText(if (state.isPaused) R.string.resume else R.string.pause)
         binding.pauseResumeButton.isEnabled = !state.isEnded
     }
