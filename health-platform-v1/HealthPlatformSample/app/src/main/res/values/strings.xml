@@ -40,4 +40,6 @@
 
     <string name="time_and_value">Time: %1$s value: %2$s</string>
     <string name="label_and_value">%1$s: %2$s</string>
+
+    <string name="default_activity_session_title">[Activity Session]</string>
 </resources>

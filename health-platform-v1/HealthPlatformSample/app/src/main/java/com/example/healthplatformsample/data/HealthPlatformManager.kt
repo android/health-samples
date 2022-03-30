@@ -17,6 +17,7 @@ package com.example.healthplatformsample.data
 
 import android.content.Context
 import androidx.concurrent.futures.await
+import com.example.healthplatformsample.R
 import com.google.android.libraries.healthdata.HealthDataService
 import com.google.android.libraries.healthdata.data.ActivityType
 import com.google.android.libraries.healthdata.data.CumulativeAggregationSpec
@@ -115,7 +116,10 @@ class HealthPlatformManager(private val context: Context) {
                 data.startTime,
                 data.endTime,
                 data.uid,
-                data.getStringValue(IntervalDataTypes.ACTIVITY_SESSION.title)
+                data.stringValues.getOrDefault(
+                    IntervalDataTypes.ACTIVITY_SESSION.title,
+                    context.getString(R.string.default_activity_session_title)
+                )
             )
         }
         return sessionsList
