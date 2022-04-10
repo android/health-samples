@@ -24,6 +24,9 @@ import androidx.health.services.client.data.Availability
 import androidx.health.services.client.data.DataPoint
 import androidx.health.services.client.data.DataType
 import androidx.health.services.client.data.DataTypeAvailability
+import com.google.common.util.concurrent.FutureCallback
+import com.google.common.util.concurrent.Futures
+import com.google.common.util.concurrent.MoreExecutors.directExecutor
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.sendBlocking
@@ -51,7 +54,7 @@ class HealthServicesManager @Inject constructor(
      * [callbackFlow] is used to bridge between a callback-based API and Kotlin flows.
      */
     @ExperimentalCoroutinesApi
-    fun heartRateMeasureFlow() = callbackFlow<MeasureMessage> {
+    fun heartRateMeasureFlow() = callbackFlow {
         val callback = object : MeasureCallback {
             override fun onAvailabilityChanged(dataType: DataType, availability: Availability) {
                 // Only send back DataTypeAvailability (not LocationAvailability)
@@ -66,11 +69,11 @@ class HealthServicesManager @Inject constructor(
         }
 
         Log.d(TAG, "Registering for data")
-        measureClient.registerCallback(DataType.HEART_RATE_BPM, callback)
+        measureClient.registerCallbackAsync(DataType.HEART_RATE_BPM, callback)
 
         awaitClose {
             Log.d(TAG, "Unregistering for data")
-            measureClient.unregisterCallback(DataType.HEART_RATE_BPM, callback)
+            measureClient.unregisterCallbackAsync(DataType.HEART_RATE_BPM, callback)
         }
     }
 }
