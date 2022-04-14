@@ -1,0 +1,30 @@
+<!--
+     Copyright (C) 2022 The Android Open Source Project
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+          http://www.apache.org/licenses/LICENSE-2.0
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+  <path
+      android:pathData="M258.3,431.3c-35.1,0 -68.1,-13.3 -92.9,-37.6l44.2,-45.4c26.9,26.2 70.6,26.2 97.6,0l94.4,-92c12.7,-12.4 19.8,-28.9 19.8,-46.3s-7,-33.9 -19.8,-46.3c-26.9,-26.2 -70.6,-26.2 -97.6,0l-17.1,16.7L242.6,135l17.1,-16.7c25,-24.3 58,-37.6 93,-37.6c35.1,0 68.1,13.3 92.9,37.6c25.1,24.4 38.9,57 38.9,91.7s-13.8,67.2 -38.9,91.7l-94.4,92.1C326.4,417.9 293.4,431.3 258.3,431.3z"
+      android:fillColor="#4285F4"/>
+  <path
+      android:pathData="M165.6,393.7L66.5,302l-0.3,-0.3c-25.1,-24.4 -38.9,-57 -38.9,-91.7s13.8,-67.2 38.9,-91.7c24.9,-24.2 57.9,-37.6 92.9,-37.6c35.1,0 68.1,13.3 93,37.5l25.2,24.6l-44.2,45.4L208,163.7c-26.9,-26.2 -70.7,-26.2 -97.6,0c-12.7,12.4 -19.8,28.9 -19.8,46.3c0,17.3 6.9,33.7 19.5,46.1l98.5,91.2L165.6,393.7z"
+      android:fillColor="#3DDB85"/>
+  <path
+      android:pathData="M165.3,393.7c-24.9,-24.2 -38.6,-56.5 -38.8,-90.9c-0.1,-35.1 13.9,-68.4 39.5,-93.7l0.2,-0.2l91.4,-88.5l44.1,45.5l-91.2,88.4c-13.4,13.3 -20.7,30.4 -20.6,48.3c0.1,17.3 7,33.5 19.6,45.8L165.3,393.7z"
+      android:fillColor="#4285F4"/>
+  <path
+      android:pathData="M302.5,211.3a50.7,50.7 0,1 0,101.4 0a50.7,50.7 0,1 0,-101.4 0z"
+      android:fillColor="#3DDB85"/>
+</vector>
