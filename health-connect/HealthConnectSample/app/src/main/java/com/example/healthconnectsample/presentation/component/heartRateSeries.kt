@@ -67,7 +67,7 @@ fun LazyListScope.heartRateSeries(
                 text = formatter.format(time)
             )
             Text(
-                text = it.bpm.toString()
+                text = it.beatsPerMinute.toString()
             )
         }
     }
@@ -84,13 +84,13 @@ fun HeartRateSeriesPreview() {
                 labelId = R.string.hr_series,
                 series = listOf(
                     HeartRate(
-                        bpm = 103,
+                        beatsPerMinute = 103,
                         time = time1,
                         zoneOffset = ZoneId.systemDefault().rules.getOffset(time1),
                         metadata = Metadata()
                     ),
                     HeartRate(
-                        bpm = 85,
+                        beatsPerMinute = 85,
                         time = time2,
                         zoneOffset = ZoneId.systemDefault().rules.getOffset(time2),
                         metadata = Metadata()

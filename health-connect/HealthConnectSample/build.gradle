@@ -20,10 +20,10 @@ buildscript {
         compose_version = '1.1.1'
         activity_compose_version = '1.4.0'
         hilt_navigation_compose_version = '1.0.0'
-        navigation_compose_version = '2.4.1'
+        navigation_compose_version = '2.4.2'
 
         concurrent_futures_version = '1.1.0'
-        health_connect_version = '0.0.4'
+        health_connect_version = '0.0.5'
         lifecycle_version = '2.4.1'
     }
     repositories {
@@ -31,7 +31,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.1.2'
+        classpath 'com.android.tools.build:gradle:7.1.3'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         // NOTE: Do not place your application dependencies here; they belong

@@ -155,7 +155,7 @@ private fun generateSpeedData(): List<Speed> {
             Speed(
                 time = time.toInstant(),
                 zoneOffset = time.offset,
-                speed = Random.nextDouble(1.0, 5.0)
+                speedMetersPerSecond = Random.nextDouble(1.0, 5.0)
             )
         )
     }
@@ -171,7 +171,7 @@ private fun generateHeartRateSeries(): List<HeartRate> {
             HeartRate(
                 time = time.toInstant(),
                 zoneOffset = time.offset,
-                bpm = Random.nextLong(55, 180)
+                beatsPerMinute = Random.nextLong(55, 180)
             )
         )
     }

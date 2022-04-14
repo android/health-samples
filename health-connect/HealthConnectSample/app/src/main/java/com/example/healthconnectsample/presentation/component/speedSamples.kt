@@ -67,7 +67,7 @@ fun LazyListScope.speedSamples(
                 text = formatter.format(time)
             )
             Text(
-                text = it.speed.toString()
+                text = it.speedMetersPerSecond.toString()
             )
         }
     }
@@ -84,13 +84,13 @@ fun SpeedSamplesPreview() {
                 labelId = R.string.speed_samples,
                 series = listOf(
                     Speed(
-                        speed = 2.7,
+                        speedMetersPerSecond = 2.7,
                         time = time1,
                         zoneOffset = ZoneId.systemDefault().rules.getOffset(time1),
                         metadata = Metadata()
                     ),
                     Speed(
-                        speed = 2.8,
+                        speedMetersPerSecond = 2.8,
                         time = time2,
                         zoneOffset = ZoneId.systemDefault().rules.getOffset(time2),
                         metadata = Metadata()

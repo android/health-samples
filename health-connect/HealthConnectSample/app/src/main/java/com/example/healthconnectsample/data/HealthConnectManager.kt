@@ -19,7 +19,6 @@ import android.content.Context
 import android.os.Build
 import androidx.compose.runtime.mutableStateOf
 import androidx.health.connect.client.HealthConnectClient
-import androidx.health.connect.client.HealthConnectService
 import androidx.health.connect.client.metadata.DataOrigin
 import androidx.health.connect.client.permission.HealthDataRequestPermissions
 import androidx.health.connect.client.permission.Permission
@@ -33,6 +32,7 @@ import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.Speed
 import androidx.health.connect.client.records.Steps
 import androidx.health.connect.client.records.TotalEnergyBurned
+import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import java.time.Instant
@@ -48,14 +48,14 @@ const val MIN_SUPPORTED_SDK = Build.VERSION_CODES.O_MR1
  * Demonstrates reading and writing from Health Connect.
  */
 class HealthConnectManager(private val context: Context) {
-    private val healthConnectClient by lazy { HealthConnectService.getClient(context) }
+    private val healthConnectClient by lazy { HealthConnectClient.getOrCreate(context) }
 
     var availability = mutableStateOf(HealthConnectAvailability.NOT_SUPPORTED)
         private set
 
     init {
         availability.value = when {
-            isAvailable() -> HealthConnectAvailability.INSTALLED
+            HealthConnectClient.isAvailable(context) -> HealthConnectAvailability.INSTALLED
             isSupported() -> HealthConnectAvailability.NOT_INSTALLED
             else -> HealthConnectAvailability.NOT_SUPPORTED
         }
@@ -126,24 +126,24 @@ class HealthConnectManager(private val context: Context) {
                 Speed(
                     time = start.toInstant(),
                     zoneOffset = start.offset,
-                    speed = 2.5
+                    speedMetersPerSecond = 2.5
                 ),
                 Speed(
                     time = start.toInstant().plus(5, ChronoUnit.MINUTES),
                     zoneOffset = start.offset,
-                    speed = 2.7
+                    speedMetersPerSecond = 2.7
                 ),
                 Speed(
                     time = start.toInstant().plus(10, ChronoUnit.MINUTES),
                     zoneOffset = start.offset,
-                    speed = 2.9
+                    speedMetersPerSecond = 2.9
                 ),
                 TotalEnergyBurned(
                     startTime = start.toInstant(),
                     startZoneOffset = start.offset,
                     endTime = end.toInstant(),
                     endZoneOffset = end.offset,
-                    energy = (140 + Random.nextInt(20)) * 0.01
+                    energyKcal = (140 + Random.nextInt(20)) * 0.01
                 )
             ) + buildHeartRateSeries(start, end)
         )
@@ -200,11 +200,12 @@ class HealthConnectManager(private val context: Context) {
         // be desirable depending on the use case: In some cases, it may be useful to combine with
         // data written by other apps.
         val dataOriginFilter = listOf(activitySession.record.metadata.dataOrigin)
-        val aggregateData = healthConnectClient.aggregate(
-            aggregateMetrics = aggregateDataTypes,
+        val aggregateRequest = AggregateRequest(
+            metrics = aggregateDataTypes,
             timeRangeFilter = timeRangeFilter,
             dataOriginFilter = dataOriginFilter
         )
+        val aggregateData = healthConnectClient.aggregate(aggregateRequest)
         val speedData = readData<Speed>(timeRangeFilter, dataOriginFilter)
         val heartRateData = readData<HeartRate>(timeRangeFilter, dataOriginFilter)
         return ActivitySessionData(
@@ -248,7 +249,7 @@ class HealthConnectManager(private val context: Context) {
                 HeartRate(
                     time = time.toInstant(),
                     zoneOffset = time.offset,
-                    bpm = (80 + Random.nextInt(80)).toLong()
+                    beatsPerMinute = (80 + Random.nextInt(80)).toLong()
                 )
             )
             time = time.plusSeconds(30)
@@ -256,7 +257,6 @@ class HealthConnectManager(private val context: Context) {
         return heartRateSeries
     }
 
-    private fun isAvailable() = HealthConnectService.isAvailable(context)
     private fun isSupported() = Build.VERSION.SDK_INT >= MIN_SUPPORTED_SDK
 }
 

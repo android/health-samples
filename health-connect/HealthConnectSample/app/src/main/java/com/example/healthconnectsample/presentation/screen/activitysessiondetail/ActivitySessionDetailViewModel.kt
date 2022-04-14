@@ -20,7 +20,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.health.connect.client.permission.AccessType
+import androidx.health.connect.client.permission.AccessTypes
 import androidx.health.connect.client.permission.Permission
 import androidx.health.connect.client.records.Distance
 import androidx.health.connect.client.records.HeartRate
@@ -41,11 +41,11 @@ class ActivitySessionDetailViewModel(
     private val healthConnectManager: HealthConnectManager
 ) : ViewModel() {
     val permissions = setOf(
-        Permission(Steps::class, AccessType.READ),
-        Permission(Distance::class, AccessType.READ),
-        Permission(Speed::class, AccessType.READ),
-        Permission(TotalEnergyBurned::class, AccessType.READ),
-        Permission(HeartRate::class, AccessType.READ)
+        Permission(Steps::class, AccessTypes.READ),
+        Permission(Distance::class, AccessTypes.READ),
+        Permission(Speed::class, AccessTypes.READ),
+        Permission(TotalEnergyBurned::class, AccessTypes.READ),
+        Permission(HeartRate::class, AccessTypes.READ)
     )
 
     var permissionsGranted = mutableStateOf(false)
