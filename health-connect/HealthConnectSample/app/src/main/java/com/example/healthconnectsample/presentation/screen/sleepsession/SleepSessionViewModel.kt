@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.healthconnectsample.presentation.screen.activitysession
+package com.example.healthconnectsample.presentation.screen.sleepsession
 
 import android.os.RemoteException
 import androidx.compose.runtime.MutableState
@@ -21,43 +21,31 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.health.connect.client.permission.Permission
-import androidx.health.connect.client.records.ActivityEvent
-import androidx.health.connect.client.records.ActivitySession
-import androidx.health.connect.client.records.Distance
-import androidx.health.connect.client.records.HeartRateSeries
-import androidx.health.connect.client.records.SpeedSeries
-import androidx.health.connect.client.records.Steps
-import androidx.health.connect.client.records.TotalCaloriesBurned
+import androidx.health.connect.client.records.SleepSession
+import androidx.health.connect.client.records.SleepStage
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.healthconnectsample.data.HealthConnectManager
+import com.example.healthconnectsample.data.SleepSessionData
 import kotlinx.coroutines.launch
 import java.io.IOException
-import java.time.Duration
-import java.time.Instant
-import java.time.ZonedDateTime
-import java.time.temporal.ChronoUnit
 import java.util.UUID
-import kotlin.random.Random
 
-class ActivitySessionViewModel(private val healthConnectManager: HealthConnectManager) :
+class SleepSessionViewModel(private val healthConnectManager: HealthConnectManager) :
     ViewModel() {
+
     val permissions = setOf(
-        Permission.createWritePermission(ActivitySession::class),
-        Permission.createReadPermission(ActivitySession::class),
-        Permission.createWritePermission(ActivityEvent::class),
-        Permission.createWritePermission(Steps::class),
-        Permission.createWritePermission(SpeedSeries::class),
-        Permission.createWritePermission(Distance::class),
-        Permission.createWritePermission(TotalCaloriesBurned::class),
-        Permission.createWritePermission(HeartRateSeries::class)
+        Permission.createReadPermission(SleepSession::class),
+        Permission.createWritePermission(SleepSession::class),
+        Permission.createReadPermission(SleepStage::class),
+        Permission.createWritePermission(SleepStage::class)
     )
 
     var permissionsGranted = mutableStateOf(false)
         private set
 
-    var sessionsList: MutableState<List<ActivitySession>> = mutableStateOf(listOf())
+    var sessionsList: MutableState<List<SleepSessionData>> = mutableStateOf(listOf())
         private set
 
     var uiState: UiState by mutableStateOf(UiState.Loading)
@@ -70,44 +58,20 @@ class ActivitySessionViewModel(private val healthConnectManager: HealthConnectMa
     fun initialLoad() {
         viewModelScope.launch {
             tryWithPermissionsCheck {
-                readActivitySessions()
+                sessionsList.value = healthConnectManager.readSleepSessions()
             }
         }
     }
 
-    fun insertActivitySession() {
+    fun generateSleepData() {
         viewModelScope.launch {
             tryWithPermissionsCheck {
-                val startOfDay = ZonedDateTime.now().truncatedTo(ChronoUnit.DAYS)
-                val latestStartOfSession = ZonedDateTime.now().minusMinutes(30)
-                val offset = Random.nextDouble()
-
-                // Generate random start time between the start of the day and (now - 30mins).
-                val startOfSession = startOfDay.plusSeconds(
-                    (Duration.between(startOfDay, latestStartOfSession).seconds * offset).toLong()
-                )
-                val endOfSession = startOfSession.plusMinutes(30)
-
-                healthConnectManager.writeActivitySession(startOfSession, endOfSession)
-                readActivitySessions()
+                // Delete all existing sleep data before generating new random sleep data.
+                healthConnectManager.deleteAllSleepData()
+                healthConnectManager.generateSleepData()
+                sessionsList.value = healthConnectManager.readSleepSessions()
             }
         }
-    }
-
-    fun deleteActivitySession(uid: String) {
-        viewModelScope.launch {
-            tryWithPermissionsCheck {
-                healthConnectManager.deleteActivitySession(uid)
-                readActivitySessions()
-            }
-        }
-    }
-
-    private suspend fun readActivitySessions() {
-        val startOfDay = ZonedDateTime.now().truncatedTo(ChronoUnit.DAYS)
-        val now = Instant.now()
-
-        sessionsList.value = healthConnectManager.readActivitySessions(startOfDay.toInstant(), now)
     }
 
     /**
@@ -148,13 +112,13 @@ class ActivitySessionViewModel(private val healthConnectManager: HealthConnectMa
     }
 }
 
-class ActivitySessionViewModelFactory(
+class SleepSessionViewModelFactory(
     private val healthConnectManager: HealthConnectManager
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(ActivitySessionViewModel::class.java)) {
+        if (modelClass.isAssignableFrom(SleepSessionViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return ActivitySessionViewModel(
+            return SleepSessionViewModel(
                 healthConnectManager = healthConnectManager
             ) as T
         }

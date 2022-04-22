@@ -25,10 +25,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.healthconnectsample"
-        // The Health Connect APK can only be found on devices running Pie and above. The SDK will
-        // support lower - down to 14 - but HealthConnectService.isAvailable() will always return
-        // false
-        minSdk 23
+        minSdk 27
         targetSdk 31
         versionCode 1
         versionName "1.0"
@@ -70,7 +67,8 @@ android {
 
 dependencies {
     // For Health Connect
-    implementation "androidx.health:health-platform-client:$health_connect_version"
+    //implementation "androidx.health:health-platform-client:$health_connect_version"
+    implementation 'androidx.health:health-connect-client:+'
 
     // For viewmodel support
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version"

@@ -23,18 +23,22 @@ import androidx.health.connect.client.metadata.DataOrigin
 import androidx.health.connect.client.permission.HealthDataRequestPermissions
 import androidx.health.connect.client.permission.Permission
 import androidx.health.connect.client.records.ActivityEvent
-import androidx.health.connect.client.records.ActivityEventTypes
 import androidx.health.connect.client.records.ActivitySession
-import androidx.health.connect.client.records.ActivityTypes
 import androidx.health.connect.client.records.Distance
 import androidx.health.connect.client.records.HeartRate
+import androidx.health.connect.client.records.HeartRateSeries
 import androidx.health.connect.client.records.Record
+import androidx.health.connect.client.records.SleepSession
+import androidx.health.connect.client.records.SleepStage
 import androidx.health.connect.client.records.Speed
+import androidx.health.connect.client.records.SpeedSeries
 import androidx.health.connect.client.records.Steps
+import androidx.health.connect.client.records.TotalCaloriesBurned
 import androidx.health.connect.client.records.TotalEnergyBurned
 import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
+import com.example.healthconnectsample.R
 import java.time.Instant
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
@@ -63,12 +67,14 @@ class HealthConnectManager(private val context: Context) {
 
     /**
      * Determines whether all the specified permissions are already granted. It is recommended to
-     * call [HealthConnectClient.getGrantedPermissions] first in the permissions flow, as if the
+     * call [PermissionController.getGrantedPermissions] first in the permissions flow, as if the
      * permissions are already granted then there is no need to request permissions via
      * [HealthDataRequestPermissions].
      */
     suspend fun hasAllPermissions(permissions: Set<Permission>): Boolean {
-        return permissions == healthConnectClient.getGrantedPermissions(permissions)
+        return permissions == healthConnectClient.permissionController.getGrantedPermissions(
+            permissions
+        )
     }
 
     /**
@@ -80,7 +86,7 @@ class HealthConnectManager(private val context: Context) {
     suspend fun readActivitySessions(start: Instant, end: Instant): List<ActivitySession> {
         val request = ReadRecordsRequest(
             recordType = ActivitySession::class,
-            timeRangeFilter = TimeRangeFilter.exact(start, end)
+            timeRangeFilter = TimeRangeFilter.between(start, end)
         )
         val response = healthConnectClient.readRecords(request)
         return response.records
@@ -98,7 +104,7 @@ class HealthConnectManager(private val context: Context) {
                     startZoneOffset = start.offset,
                     endTime = end.toInstant(),
                     endZoneOffset = end.offset,
-                    activityType = ActivityTypes.RUNNING,
+                    activityType = ActivitySession.ActivityType.RUNNING,
                     title = "My Run #${Random.nextInt(0, 60)}"
                 ),
                 Steps(
@@ -114,7 +120,7 @@ class HealthConnectManager(private val context: Context) {
                     startZoneOffset = start.offset,
                     endTime = start.toInstant().plus(15, ChronoUnit.MINUTES),
                     endZoneOffset = end.offset,
-                    eventType = ActivityEventTypes.PAUSE
+                    eventType = ActivityEvent.EventType.PAUSE
                 ),
                 Distance(
                     startTime = start.toInstant(),
@@ -123,29 +129,14 @@ class HealthConnectManager(private val context: Context) {
                     endZoneOffset = end.offset,
                     distanceMeters = (1000 + 100 * Random.nextInt(20)).toDouble()
                 ),
-                Speed(
-                    time = start.toInstant(),
-                    zoneOffset = start.offset,
-                    speedMetersPerSecond = 2.5
-                ),
-                Speed(
-                    time = start.toInstant().plus(5, ChronoUnit.MINUTES),
-                    zoneOffset = start.offset,
-                    speedMetersPerSecond = 2.7
-                ),
-                Speed(
-                    time = start.toInstant().plus(10, ChronoUnit.MINUTES),
-                    zoneOffset = start.offset,
-                    speedMetersPerSecond = 2.9
-                ),
-                TotalEnergyBurned(
+                TotalCaloriesBurned(
                     startTime = start.toInstant(),
                     startZoneOffset = start.offset,
                     endTime = end.toInstant(),
                     endZoneOffset = end.offset,
                     energyKcal = (140 + Random.nextInt(20)) * 0.01
                 )
-            ) + buildHeartRateSeries(start, end)
+            ) + buildHeartRateSeries(start, end) + buildSpeedSeries(start, end)
         )
     }
 
@@ -159,16 +150,16 @@ class HealthConnectManager(private val context: Context) {
             uidsList = listOf(uid),
             clientIdsList = emptyList()
         )
-        val timeRangeFilter = TimeRangeFilter.exact(
+        val timeRangeFilter = TimeRangeFilter.between(
             activitySession.record.startTime,
             activitySession.record.endTime
         )
         val rawDataTypes: Set<KClass<out Record>> = setOf(
-            HeartRate::class,
-            Speed::class,
+            HeartRateSeries::class,
+            SpeedSeries::class,
             Distance::class,
             Steps::class,
-            TotalEnergyBurned::class
+            TotalCaloriesBurned::class
         )
         rawDataTypes.forEach { rawType ->
             healthConnectClient.deleteRecords(rawType, timeRangeFilter)
@@ -183,18 +174,21 @@ class HealthConnectManager(private val context: Context) {
     ): ActivitySessionData {
         val activitySession = healthConnectClient.readRecord(ActivitySession::class, uid)
         // Use the start time and end time from the session, for reading raw and aggregate data.
-        val timeRangeFilter = TimeRangeFilter.exact(
+        val timeRangeFilter = TimeRangeFilter.between(
             startTime = activitySession.record.startTime,
             endTime = activitySession.record.endTime
         )
         val aggregateDataTypes = setOf(
-            Steps.STEPS_COUNT_TOTAL,
+            ActivitySession.ACTIVE_TIME_TOTAL,
+            Steps.COUNT_TOTAL,
             Distance.DISTANCE_TOTAL,
-            TotalEnergyBurned.ENERGY_BURNED_TOTAL,
-            HeartRate.HEART_RATE_BPM_AVG,
-            HeartRate.HEART_RATE_BPM_MAX,
-            HeartRate.HEART_RATE_BPM_MIN
-            // TODO: Speed aggregates missing
+            TotalCaloriesBurned.CALORIES_TOTAL,
+            HeartRateSeries.BPM_AVG,
+            HeartRateSeries.BPM_MAX,
+            HeartRateSeries.BPM_MIN,
+            SpeedSeries.SPEED_AVG,
+            SpeedSeries.SPEED_MAX,
+            SpeedSeries.SPEED_MIN
         )
         // Limit the data read to just the application that wrote the session. This may or may not
         // be desirable depending on the use case: In some cases, it may be useful to combine with
@@ -206,19 +200,138 @@ class HealthConnectManager(private val context: Context) {
             dataOriginFilter = dataOriginFilter
         )
         val aggregateData = healthConnectClient.aggregate(aggregateRequest)
-        val speedData = readData<Speed>(timeRangeFilter, dataOriginFilter)
-        val heartRateData = readData<HeartRate>(timeRangeFilter, dataOriginFilter)
+        val speedData = readData<SpeedSeries>(timeRangeFilter, dataOriginFilter)
+        val heartRateData = readData<HeartRateSeries>(timeRangeFilter, dataOriginFilter)
+
         return ActivitySessionData(
             uid = uid,
-            totalSteps = aggregateData.getMetricOrNull(Steps.STEPS_COUNT_TOTAL),
-            totalDistance = aggregateData.getMetricOrNull(Distance.DISTANCE_TOTAL),
-            totalEnergyBurned = aggregateData.getMetricOrNull(TotalEnergyBurned.ENERGY_BURNED_TOTAL),
-            minHeartRate = aggregateData.getMetricOrNull(HeartRate.HEART_RATE_BPM_MIN),
-            maxHeartRate = aggregateData.getMetricOrNull(HeartRate.HEART_RATE_BPM_MAX),
-            avgHeartRate = aggregateData.getMetricOrNull(HeartRate.HEART_RATE_BPM_AVG),
-            speedData = speedData,
-            heartRateSeries = heartRateData
+            totalActiveTime = aggregateData.getMetric(ActivitySession.ACTIVE_TIME_TOTAL),
+            totalSteps = aggregateData.getMetric(Steps.COUNT_TOTAL),
+            totalDistance = aggregateData.getMetric(Distance.DISTANCE_TOTAL),
+            totalEnergyBurned = aggregateData.getMetric(TotalEnergyBurned.TOTAL),
+            minHeartRate = aggregateData.getMetric(HeartRateSeries.BPM_MIN),
+            maxHeartRate = aggregateData.getMetric(HeartRateSeries.BPM_MAX),
+            avgHeartRate = aggregateData.getMetric(HeartRateSeries.BPM_AVG),
+            heartRateSeries = heartRateData,
+            speedSeries = speedData,
+            minSpeed = aggregateData.getMetric(SpeedSeries.SPEED_MIN),
+            maxSpeed = aggregateData.getMetric(SpeedSeries.SPEED_MAX),
+            avgSpeed = aggregateData.getMetric(SpeedSeries.SPEED_AVG),
         )
+    }
+
+    /**
+     * Deletes all existing sleep data.
+     */
+    suspend fun deleteAllSleepData() {
+        val now = Instant.now()
+        healthConnectClient.deleteRecords(SleepStage::class, TimeRangeFilter.before(now))
+        healthConnectClient.deleteRecords(SleepSession::class, TimeRangeFilter.before(now))
+    }
+
+    /**
+     * Generates a week's worth of sleep data using both a [SleepSession] to describe the overall
+     * period of sleep, and additionally multiple [SleepStage] periods which cover the entire
+     * [SleepSession]. For the purposes of this sample, the sleep stage data is generated randomly.
+     */
+    suspend fun generateSleepData() {
+        val records = mutableListOf<Record>()
+        // Make yesterday the last day of the sleep data
+        val lastDay = ZonedDateTime.now().minusDays(1).truncatedTo(ChronoUnit.DAYS)
+        val notes = context.resources.getStringArray(R.array.sleep_notes_array)
+        // Create 7 days-worth of sleep data
+        for (i in 0..7) {
+            val wakeUp = lastDay.minusDays(i.toLong())
+                .withHour(Random.nextInt(7, 10))
+                .withMinute(Random.nextInt(0, 60))
+            val bedtime = wakeUp.minusDays(1)
+                .withHour(Random.nextInt(19, 22))
+                .withMinute(Random.nextInt(0, 60))
+            val sleepSession = SleepSession(
+                notes = notes[Random.nextInt(0, notes.size)],
+                startTime = bedtime.toInstant(),
+                startZoneOffset = bedtime.offset,
+                endTime = wakeUp.toInstant(),
+                endZoneOffset = wakeUp.offset
+            )
+            val sleepStages = generateSleepStages(bedtime, wakeUp)
+            records.add(sleepSession)
+            records.addAll(sleepStages)
+        }
+        healthConnectClient.insertRecords(records)
+    }
+
+    /**
+     * Reads sleep sessions for the previous seven days (from yesterday) to show a week's worth of
+     * sleep data.
+     *
+     * In addition to reading [SleepSession]s, for each session, the duration is calculated to
+     * demonstrate aggregation, and the underlying [SleepStage] data is also read.
+     */
+    suspend fun readSleepSessions() : List<SleepSessionData> {
+        val lastDay = ZonedDateTime.now().truncatedTo(ChronoUnit.DAYS)
+            .minusDays(1)
+            .withHour(12)
+        val firstDay = lastDay
+            .minusDays(7)
+
+        val sessions = mutableListOf<SleepSessionData>()
+        val sleepSessionRequest = ReadRecordsRequest(
+            recordType = SleepSession::class,
+            timeRangeFilter = TimeRangeFilter.between(firstDay.toInstant(), lastDay.toInstant()),
+            ascendingOrder = false
+        )
+        val sleepSessions = healthConnectClient.readRecords(sleepSessionRequest)
+        sleepSessions.records.forEach { session ->
+            val sessionTimeFilter = TimeRangeFilter.between(session.startTime, session.endTime)
+            val durationAggregateRequest = AggregateRequest(
+                metrics = setOf(SleepSession.SLEEP_DURATION_TOTAL),
+                timeRangeFilter = sessionTimeFilter
+            )
+            val aggregateResponse = healthConnectClient.aggregate(durationAggregateRequest)
+            val stagesRequest = ReadRecordsRequest(
+                recordType = SleepStage::class,
+                timeRangeFilter = sessionTimeFilter
+            )
+            val stagesResponse = healthConnectClient.readRecords(stagesRequest)
+            sessions.add(
+                SleepSessionData(
+                    uid = session.metadata.uid!!,
+                    title = session.title,
+                    notes = session.notes,
+                    startTime = session.startTime,
+                    startZoneOffset = session.startZoneOffset,
+                    endTime = session.endTime,
+                    endZoneOffset = session.endZoneOffset,
+                    duration = aggregateResponse.getMetric(SleepSession.SLEEP_DURATION_TOTAL),
+                    stages = stagesResponse.records
+                )
+            )
+        }
+        return sessions
+    }
+
+    /**
+     * Creates a random list of sleep stages that spans the specified [start] to [end] time.
+     */
+    private fun generateSleepStages(start: ZonedDateTime, end: ZonedDateTime) : List<SleepStage> {
+        val sleepStages = mutableListOf<SleepStage>()
+        var stageStart = start
+        while (stageStart < end) {
+            val stageEnd = stageStart.plusMinutes(Random.nextLong(30, 120))
+            val checkedEnd = if (stageEnd > end) end else stageEnd
+            sleepStages.add(
+                SleepStage(
+                    stage = randomSleepStage(),
+                    startTime = stageStart.toInstant(),
+                    startZoneOffset = stageStart.offset,
+                    endTime = checkedEnd.toInstant(),
+                    endZoneOffset = checkedEnd.offset
+                )
+            )
+            stageStart = checkedEnd
+        }
+        return sleepStages
     }
 
     /**
@@ -236,26 +349,53 @@ class HealthConnectManager(private val context: Context) {
         return healthConnectClient.readRecords(request).records
     }
 
-    // TODO - Currently Kotlin SDK does NOT support the creation of series data so this list of
-    // HR values are just a list of sample points at the moment.
     private fun buildHeartRateSeries(
         sessionStartTime: ZonedDateTime,
         sessionEndTime: ZonedDateTime
-    ): List<HeartRate> {
-        val heartRateSeries = mutableListOf<HeartRate>()
+    ): HeartRateSeries {
+        val samples = mutableListOf<HeartRate>()
         var time = sessionStartTime
         while (time.isBefore(sessionEndTime)) {
-            heartRateSeries.add(
+            samples.add(
                 HeartRate(
                     time = time.toInstant(),
-                    zoneOffset = time.offset,
                     beatsPerMinute = (80 + Random.nextInt(80)).toLong()
                 )
             )
             time = time.plusSeconds(30)
         }
-        return heartRateSeries
+        return HeartRateSeries(
+            startTime = sessionStartTime.toInstant(),
+            startZoneOffset = sessionStartTime.offset,
+            endTime = sessionEndTime.toInstant(),
+            endZoneOffset = sessionEndTime.offset,
+            samples = samples
+        )
     }
+
+    private fun buildSpeedSeries(
+        sessionStartTime: ZonedDateTime,
+        sessionEndTime: ZonedDateTime
+    ) = SpeedSeries(
+        startTime = sessionStartTime.toInstant(),
+        startZoneOffset = sessionStartTime.offset,
+        endTime = sessionEndTime.toInstant(),
+        endZoneOffset = sessionEndTime.offset,
+        samples = listOf(
+            Speed(
+                time = sessionStartTime.toInstant(),
+                metersPerSecond = 2.5
+            ),
+            Speed(
+                time = sessionStartTime.toInstant().plus(5, ChronoUnit.MINUTES),
+                metersPerSecond = 2.7
+            ),
+            Speed(
+                time = sessionStartTime.toInstant().plus(10, ChronoUnit.MINUTES),
+                metersPerSecond = 2.9
+            )
+        )
+    )
 
     private fun isSupported() = Build.VERSION.SDK_INT >= MIN_SUPPORTED_SDK
 }

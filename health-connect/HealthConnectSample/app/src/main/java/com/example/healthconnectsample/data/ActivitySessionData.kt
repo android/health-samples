@@ -15,8 +15,9 @@
  */
 package com.example.healthconnectsample.data
 
-import androidx.health.connect.client.records.HeartRate
-import androidx.health.connect.client.records.Speed
+import androidx.health.connect.client.records.HeartRateSeries
+import androidx.health.connect.client.records.SpeedSeries
+import java.time.Duration
 
 /**
  * Represents data, both aggregated and raw, associated with a single activity session. Used to
@@ -24,12 +25,16 @@ import androidx.health.connect.client.records.Speed
  */
 data class ActivitySessionData(
     val uid: String,
+    val totalActiveTime: Duration? = null,
     val totalSteps: Long? = null,
     val totalDistance: Double? = null,
     val totalEnergyBurned: Double? = null,
     val minHeartRate: Long? = null,
     val maxHeartRate: Long? = null,
     val avgHeartRate: Long? = null,
-    val speedData: List<Speed> = listOf(),
-    val heartRateSeries: List<HeartRate> = listOf()
+    val heartRateSeries: List<HeartRateSeries> = listOf(),
+    val minSpeed: Double? = null,
+    val maxSpeed: Double? = null,
+    val avgSpeed: Double? = null,
+    val speedSeries: List<SpeedSeries> = listOf()
 )

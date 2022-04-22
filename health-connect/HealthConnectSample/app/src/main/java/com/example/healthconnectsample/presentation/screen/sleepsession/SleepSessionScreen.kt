@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.healthconnectsample.presentation.screen.activitysession
+package com.example.healthconnectsample.presentation.screen.sleepsession
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Arrangement
@@ -34,28 +34,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.health.connect.client.metadata.Metadata
 import androidx.health.connect.client.permission.HealthDataRequestPermissions
 import androidx.health.connect.client.permission.Permission
-import androidx.health.connect.client.records.ActivitySession
+import androidx.health.connect.client.records.SleepStage
 import com.example.healthconnectsample.R
-import com.example.healthconnectsample.presentation.component.ActivitySessionRow
+import com.example.healthconnectsample.data.SleepSessionData
+import com.example.healthconnectsample.presentation.component.SleepSessionRow
 import com.example.healthconnectsample.presentation.theme.HealthConnectTheme
+import java.time.Duration
 import java.time.ZonedDateTime
 import java.util.UUID
 
 /**
- * Shows a list of [ActivitySession]s from today.
+ * Shows a week's worth of sleep data.
  */
 @Composable
-fun ActivitySessionScreen(
+fun SleepSessionScreen(
     permissions: Set<Permission>,
     permissionsGranted: Boolean,
-    sessionsList: List<ActivitySession>,
-    uiState: ActivitySessionViewModel.UiState,
+    sessionsList: List<SleepSessionData>,
+    uiState: SleepSessionViewModel.UiState,
     onInsertClick: () -> Unit = {},
-    onDetailsClick: (String) -> Unit = {},
-    onDeleteClick: (String) -> Unit = {},
     onError: (Throwable?) -> Unit = {},
     onPermissionsResult: () -> Unit = {},
 ) {
@@ -67,18 +66,18 @@ fun ActivitySessionScreen(
     // notification for the same error when the screen is recomposed, or configuration changes etc.
     val errorId = rememberSaveable { mutableStateOf(UUID.randomUUID()) }
 
-    // The [ActivitySessionViewModel.UiState] provides details of whether the last action was a
+    // The [SleepSessionViewModel.UiState] provides details of whether the last action was a
     // success or resulted in an error. Where an error occurred, for example in reading and writing
     // to Health Connect, the user is notified, and where the error is one that can be recovered
     // from, an attempt to do so is made.
     LaunchedEffect(uiState) {
-        if (uiState is ActivitySessionViewModel.UiState.Error && errorId.value != uiState.uuid) {
+        if (uiState is SleepSessionViewModel.UiState.Error && errorId.value != uiState.uuid) {
             onError(uiState.exception)
             errorId.value = uiState.uuid
         }
     }
 
-    if (uiState != ActivitySessionViewModel.UiState.Loading) {
+    if (uiState != SleepSessionViewModel.UiState.Loading) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Top,
@@ -103,23 +102,12 @@ fun ActivitySessionScreen(
                             onInsertClick()
                         }
                     ) {
-                        Text(stringResource(id = R.string.insert_activity_session))
+                        Text(stringResource(id = R.string.generate_sleep_data))
                     }
                 }
 
                 items(sessionsList) { session ->
-                    ActivitySessionRow(
-                        ZonedDateTime.ofInstant(session.startTime, session.startZoneOffset),
-                        ZonedDateTime.ofInstant(session.endTime, session.endZoneOffset),
-                        session.metadata.uid ?: stringResource(R.string.not_available_abbrev),
-                        session.title ?: stringResource(R.string.no_title),
-                        onDeleteClick = { uid ->
-                            onDeleteClick(uid)
-                        },
-                        onDetailsClick = { uid ->
-                            onDetailsClick(uid)
-                        }
-                    )
+                    SleepSessionRow(session)
                 }
             }
         }
@@ -128,36 +116,56 @@ fun ActivitySessionScreen(
 
 @Preview
 @Composable
-fun ActivitySessionScreenPreview() {
+fun SleepSessionScreenPreview() {
     HealthConnectTheme {
-        val runningStartTime = ZonedDateTime.now()
-        val runningEndTime = runningStartTime.plusMinutes(30)
-        val walkingStartTime = ZonedDateTime.now().minusMinutes(120)
-        val walkingEndTime = walkingStartTime.plusMinutes(30)
-        ActivitySessionScreen(
+        val end2 = ZonedDateTime.now()
+        val start2 = end2.minusHours(5)
+        val end1 = end2.minusDays(1)
+        val start1 = end1.minusHours(5)
+        SleepSessionScreen(
             permissions = setOf(),
             permissionsGranted = true,
             sessionsList = listOf(
-                ActivitySession(
-                    activityType = ActivitySession.ActivityType.RUNNING,
-                    title = "Running",
-                    startTime = runningStartTime.toInstant(),
-                    startZoneOffset = runningStartTime.offset,
-                    endTime = runningEndTime.toInstant(),
-                    endZoneOffset = runningEndTime.offset,
-                    metadata = Metadata(UUID.randomUUID().toString())
+                SleepSessionData(
+                    uid = "123",
+                    title = "My sleep",
+                    notes = "Slept well",
+                    startTime = start1.toInstant(),
+                    startZoneOffset = start1.offset,
+                    endTime = end1.toInstant(),
+                    endZoneOffset = end1.offset,
+                    duration = Duration.between(start1, end1),
+                    stages = listOf(
+                        SleepStage(
+                            stage = SleepStage.StageType.DEEP,
+                            startTime = start1.toInstant(),
+                            startZoneOffset = start1.offset,
+                            endTime = end1.toInstant(),
+                            endZoneOffset = end1.offset
+                        )
+                    )
                 ),
-                ActivitySession(
-                    activityType = ActivitySession.ActivityType.WALKING,
-                    title = "Walking",
-                    startTime = walkingStartTime.toInstant(),
-                    startZoneOffset = walkingStartTime.offset,
-                    endTime = walkingEndTime.toInstant(),
-                    endZoneOffset = walkingEndTime.offset,
-                    metadata = Metadata(UUID.randomUUID().toString())
+                SleepSessionData(
+                    uid = "123",
+                    title = "My sleep",
+                    notes = "Slept well",
+                    startTime = start2.toInstant(),
+                    startZoneOffset = start2.offset,
+                    endTime = end2.toInstant(),
+                    endZoneOffset = end2.offset,
+                    duration = Duration.between(start2, end2),
+                    stages = listOf(
+                        SleepStage(
+                            stage = SleepStage.StageType.DEEP,
+                            startTime = start2.toInstant(),
+                            startZoneOffset = start2.offset,
+                            endTime = end2.toInstant(),
+                            endZoneOffset = end2.offset
+                        )
+                    )
                 )
             ),
-            uiState = ActivitySessionViewModel.UiState.Done
+            uiState = SleepSessionViewModel.UiState.Done
         )
     }
 }

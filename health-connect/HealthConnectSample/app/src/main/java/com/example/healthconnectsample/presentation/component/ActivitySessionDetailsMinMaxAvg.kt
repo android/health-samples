@@ -30,7 +30,7 @@ import com.example.healthconnectsample.presentation.theme.HealthConnectTheme
  * Shows the statistical min, max and average values, as can be returned from Health Platform.
  */
 @Composable
-fun SessionDetailsMinMaxAvg(
+fun ActivitySessionDetailsMinMaxAvg(
     minimum: String?,
     maximum: String?,
     average: String?
@@ -73,8 +73,8 @@ fun SessionDetailsMinMaxAvg(
 
 @Preview
 @Composable
-fun SessionDetailsMinMaxAvgPreview() {
+fun ActivitySessionDetailsMinMaxAvgPreview() {
     HealthConnectTheme {
-        SessionDetailsMinMaxAvg(minimum = "10", maximum = "100", average = "55")
+        ActivitySessionDetailsMinMaxAvg(minimum = "10", maximum = "100", average = "55")
     }
 }

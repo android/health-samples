@@ -58,6 +58,7 @@ fun HealthConnectApp(healthConnectManager: HealthConnectManager) {
                     title = {
                         val titleId = when (currentRoute) {
                             Screen.ActivitySessions.route -> Screen.ActivitySessions.titleId
+                            Screen.SleepSessions.route -> Screen.SleepSessions.titleId
                             else -> R.string.app_name
                         }
                         Text(stringResource(titleId))

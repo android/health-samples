@@ -15,35 +15,13 @@
  */
 package com.example.healthconnectsample.data
 
-import androidx.health.connect.client.aggregate.AggregateDataRow
-import androidx.health.connect.client.aggregate.DoubleAggregateMetric
-import androidx.health.connect.client.aggregate.LongAggregateMetric
+import androidx.health.connect.client.records.SleepStage
+import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
-
-/**
- * Convenience function to retrieve metric only when available, and otherwise return null, in
- * contrast to throwing an exception, as with [AggregateDataRow.getMetric].
- */
-fun AggregateDataRow.getMetricOrNull(metric: LongAggregateMetric) =
-    if (this.hasMetric(metric)) {
-        this.getMetric(metric)
-    } else {
-        null
-    }
-
-/**
- * Convenience function to retrieve metric only when available, and otherwise return null, in
- * contrast to throwing an exception, as with [AggregateDataRow.getMetric].
- */
-fun AggregateDataRow.getMetricOrNull(metric: DoubleAggregateMetric) =
-    if (this.hasMetric(metric)) {
-        this.getMetric(metric)
-    } else {
-        null
-    }
+import kotlin.random.Random
 
 /**
  * Creates a [ZonedDateTime] either using the offset stored in Health Connect, or falling back on
@@ -57,3 +35,30 @@ fun dateTimeWithOffsetOrDefault(time: Instant, offset: ZoneOffset?): ZonedDateTi
     } else {
         ZonedDateTime.ofInstant(time, ZoneId.systemDefault())
     }
+
+fun Duration.formatTime() = String.format(
+    "%02d:%02d:%02d",
+    this.toHoursPart(),
+    this.toMinutesPart(),
+    this.toSecondsPart()
+)
+
+fun Duration.formatHoursMinutes() = String.format(
+    "%01dh%02dm",
+    this.toHoursPart(),
+    this.toMinutesPart()
+)
+
+/**
+ * Generates a random sleep stage for the purpose of populating data. Excludes UNKNOWN sleep stage.
+ */
+fun randomSleepStage() = listOf(
+    SleepStage.StageType.AWAKE,
+    SleepStage.StageType.DEEP,
+    SleepStage.StageType.LIGHT,
+    SleepStage.StageType.OUT_OF_BED,
+    SleepStage.StageType.REM,
+    SleepStage.StageType.SLEEPING
+).let { stages ->
+    stages[Random.nextInt(stages.size)]
+}

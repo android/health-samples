@@ -19,6 +19,8 @@
     <string name="welcome_screen">Welcome screen</string>
     <string name="activity_sessions">Activity sessions</string>
     <string name="activity_session_detail">Activity session detail</string>
+    <string name="sleep_sessions">Sleep sessions</string>
+    <string name="sleep_session_detail">Sleep session detail</string>
 
     <!-- Welcome screen -->
     <string name="welcome_message">Welcome to Health Connect!</string>
@@ -41,8 +43,7 @@
 
     <!-- Not supported on device -->
     <string name="not_supported_tag">not_supported_tag</string>
-    <!-- TODO: Guide URL needs populating -->
-    <string name="not_supported_url">http://developer.android.com</string>
+    <string name="not_supported_url">http://developer.android.com/guide/health-and-fitness/health-connect/</string>
     <string name="not_supported_description">
         Health Connect is only supported on Android devices running API level %1$d or above.
     </string>
@@ -60,14 +61,30 @@
     <string name="delete_button">Delete</string>
 
     <!-- Activity Session detail screen -->
+    <string name="total_active_duration">Total active duration</string>
     <string name="total_steps">Total steps</string>
     <string name="total_distance">Total distance</string>
     <string name="total_energy">Total energy</string>
     <string name="hr_stats">HR stats (bpm)</string>
     <string name="hr_series">HR series (bpm)</string>
-    <string name="speed_samples">Speed samples (m/s)</string>
+    <string name="speed_stats">Speed stats (m/s)</string>
+    <string name="speed_series">Speed series (m/s)</string>
     <string name="min_label">Min</string>
     <string name="max_label">Max</string>
     <string name="avg_label">Avg</string>
     <string name="label_and_value">%1$s: %2$s</string>
+
+    <!-- Sleep Session screen -->
+    <string name="generate_sleep_data">Generate sleep data</string>
+    <string-array name="sleep_notes_array">
+        <item>I slept great!</item>
+        <item>I got woken up</item>
+        <item>Struggled to sleep</item>
+        <item>Much needed sleep</item>
+        <item>Restful sleep</item>
+    </string-array>
+    <string name="sleep_notes">Notes:</string>
+    <string name="sleep_duration">Duration:</string>
+    <string name="sleep_time">Time:</string>
+    <string name="sleep_stages">Sleep stages:</string>
 </resources>

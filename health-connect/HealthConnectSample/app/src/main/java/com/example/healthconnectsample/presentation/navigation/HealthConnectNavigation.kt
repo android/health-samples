@@ -31,6 +31,9 @@ import com.example.healthconnectsample.presentation.screen.activitysession.Activ
 import com.example.healthconnectsample.presentation.screen.activitysessiondetail.ActivitySessionDetailScreen
 import com.example.healthconnectsample.presentation.screen.activitysessiondetail.ActivitySessionDetailViewModel
 import com.example.healthconnectsample.presentation.screen.activitysessiondetail.ActivitySessionDetailViewModelFactory
+import com.example.healthconnectsample.presentation.screen.sleepsession.SleepSessionScreen
+import com.example.healthconnectsample.presentation.screen.sleepsession.SleepSessionViewModel
+import com.example.healthconnectsample.presentation.screen.sleepsession.SleepSessionViewModelFactory
 import com.example.healthconnectsample.showExceptionSnackbar
 
 /**
@@ -97,6 +100,31 @@ fun HealthConnectNavigation(
                 permissionsGranted = permissionsGranted,
                 sessionMetrics = sessionMetrics,
                 uiState = viewModel.uiState,
+                onError = { exception ->
+                    showExceptionSnackbar(scaffoldState, scope, exception)
+                },
+                onPermissionsResult = {
+                    viewModel.initialLoad()
+                }
+            )
+        }
+        composable(Screen.SleepSessions.route) {
+            val viewModel: SleepSessionViewModel = viewModel(
+                factory = SleepSessionViewModelFactory(
+                    healthConnectManager = healthConnectManager
+                )
+            )
+            val permissionsGranted by viewModel.permissionsGranted
+            val sessionsList by viewModel.sessionsList
+            val permissions = viewModel.permissions
+            SleepSessionScreen(
+                permissionsGranted = permissionsGranted,
+                permissions = permissions,
+                sessionsList = sessionsList,
+                uiState = viewModel.uiState,
+                onInsertClick = {
+                    viewModel.generateSleepData()
+                },
                 onError = { exception ->
                     showExceptionSnackbar(scaffoldState, scope, exception)
                 },

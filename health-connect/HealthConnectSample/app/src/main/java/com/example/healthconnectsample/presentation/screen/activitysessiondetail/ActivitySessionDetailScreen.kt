@@ -33,14 +33,18 @@ import androidx.health.connect.client.permission.HealthDataRequestPermissions
 import androidx.health.connect.client.permission.Permission
 import androidx.health.connect.client.records.ActivitySession
 import androidx.health.connect.client.records.HeartRate
+import androidx.health.connect.client.records.HeartRateSeries
 import androidx.health.connect.client.records.Speed
+import androidx.health.connect.client.records.SpeedSeries
 import com.example.healthconnectsample.R
 import com.example.healthconnectsample.data.ActivitySessionData
-import com.example.healthconnectsample.presentation.component.SessionDetailsMinMaxAvg
+import com.example.healthconnectsample.data.formatTime
+import com.example.healthconnectsample.presentation.component.ActivitySessionDetailsMinMaxAvg
 import com.example.healthconnectsample.presentation.component.heartRateSeries
 import com.example.healthconnectsample.presentation.component.sessionDetailsItem
-import com.example.healthconnectsample.presentation.component.speedSamples
+import com.example.healthconnectsample.presentation.component.speedSeries
 import com.example.healthconnectsample.presentation.theme.HealthConnectTheme
+import java.time.Duration
 import java.time.ZonedDateTime
 import java.util.UUID
 import kotlin.random.Random
@@ -91,6 +95,10 @@ fun ActivitySessionDetailScreen(
                     }
                 }
             } else {
+                sessionDetailsItem(labelId = R.string.total_active_duration) {
+                    val activeDuration = sessionMetrics.totalActiveTime ?: Duration.ZERO
+                    Text(activeDuration.formatTime())
+                }
                 sessionDetailsItem(labelId = R.string.total_steps) {
                     Text(sessionMetrics.totalSteps?.toString() ?: "0")
                 }
@@ -100,9 +108,19 @@ fun ActivitySessionDetailScreen(
                 sessionDetailsItem(labelId = R.string.total_energy) {
                     Text(String.format("%.1f", sessionMetrics.totalEnergyBurned ?: 0.0))
                 }
-                speedSamples(labelId = R.string.speed_samples, series = sessionMetrics.speedData)
+                sessionDetailsItem(labelId = R.string.speed_stats) {
+                    ActivitySessionDetailsMinMaxAvg(
+                        sessionMetrics.minSpeed?.let { String.format("%.1f", it) },
+                        sessionMetrics.maxSpeed?.let { String.format("%.1f", it) },
+                        sessionMetrics.avgSpeed?.let { String.format("%.1f", it) }
+                    )
+                }
+                speedSeries(
+                    labelId = R.string.speed_series,
+                    series = sessionMetrics.speedSeries
+                )
                 sessionDetailsItem(labelId = R.string.hr_stats) {
-                    SessionDetailsMinMaxAvg(
+                    ActivitySessionDetailsMinMaxAvg(
                         sessionMetrics.minHeartRate?.toString()
                             ?: stringResource(id = R.string.not_available_abbrev),
                         sessionMetrics.maxHeartRate?.toString()
@@ -133,8 +151,11 @@ fun ActivitySessionScreenPreview() {
             minHeartRate = 55,
             maxHeartRate = 103,
             avgHeartRate = 77,
-            speedData = generateSpeedData(),
-            heartRateSeries = generateHeartRateSeries()
+            heartRateSeries = generateHeartRateSeries(),
+            minSpeed = 2.5,
+            maxSpeed = 3.1,
+            avgSpeed = 2.8,
+            speedSeries = generateSpeedData(),
         )
 
         ActivitySessionDetailScreen(
@@ -146,34 +167,50 @@ fun ActivitySessionScreenPreview() {
     }
 }
 
-private fun generateSpeedData(): List<Speed> {
+private fun generateSpeedData(): List<SpeedSeries> {
     val data = mutableListOf<Speed>()
     val end = ZonedDateTime.now()
+    var time = ZonedDateTime.now()
     for (index in 1..10) {
-        val time = end.minusMinutes(index.toLong())
+        time = end.minusMinutes(index.toLong())
         data.add(
             Speed(
                 time = time.toInstant(),
-                zoneOffset = time.offset,
-                speedMetersPerSecond = Random.nextDouble(1.0, 5.0)
+                metersPerSecond = Random.nextDouble(1.0, 5.0)
             )
         )
     }
-    return data
+    return listOf(
+        SpeedSeries(
+            startTime = time.toInstant(),
+            startZoneOffset = time.offset,
+            endTime = end.toInstant(),
+            endZoneOffset = end.offset,
+            samples = data
+        )
+    )
 }
 
-private fun generateHeartRateSeries(): List<HeartRate> {
+private fun generateHeartRateSeries(): List<HeartRateSeries> {
     val data = mutableListOf<HeartRate>()
     val end = ZonedDateTime.now()
+    var time = ZonedDateTime.now()
     for (index in 1..10) {
-        val time = end.minusMinutes(index.toLong())
+        time = end.minusMinutes(index.toLong())
         data.add(
             HeartRate(
                 time = time.toInstant(),
-                zoneOffset = time.offset,
                 beatsPerMinute = Random.nextLong(55, 180)
             )
         )
     }
-    return data
+    return listOf(
+        HeartRateSeries(
+            startTime = time.toInstant(),
+            startZoneOffset = time.offset,
+            endTime = end.toInstant(),
+            endZoneOffset = end.offset,
+            samples = data
+        )
+    )
 }
