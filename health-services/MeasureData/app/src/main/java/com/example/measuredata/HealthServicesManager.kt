@@ -31,6 +31,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 /**
@@ -69,11 +70,31 @@ class HealthServicesManager @Inject constructor(
         }
 
         Log.d(TAG, "Registering for data")
-        measureClient.registerCallbackAsync(DataType.HEART_RATE_BPM, callback)
+        try {
+            measureClient.registerCallbackAsync(DataType.HEART_RATE_BPM, callback)
+        } catch (e) {
+
+        }
 
         awaitClose {
             Log.d(TAG, "Unregistering for data")
-            measureClient.unregisterCallbackAsync(DataType.HEART_RATE_BPM, callback)
+            runBlocking {
+                measureClient.unregisterCallbackAsync(DataType.HEART_RATE_BPM, callback),
+
+            }
+            Futures.addCallback(
+                measureClient.unregisterCallbackAsync(DataType.HEART_RATE_BPM, callback),
+                object : FutureCallback<Void> {
+                    override fun onSuccess(result: Void?) {
+                        TODO("Not yet implemented")
+                    }
+
+                    override fun onFailure(t: Throwable) {
+                        TODO("Not yet implemented")
+                    }
+                },
+                context // what should this be?
+            )
         }
     }
 }
