@@ -31,6 +31,9 @@ import com.example.healthconnectsample.presentation.screen.activitysession.Activ
 import com.example.healthconnectsample.presentation.screen.activitysessiondetail.ActivitySessionDetailScreen
 import com.example.healthconnectsample.presentation.screen.activitysessiondetail.ActivitySessionDetailViewModel
 import com.example.healthconnectsample.presentation.screen.activitysessiondetail.ActivitySessionDetailViewModelFactory
+import com.example.healthconnectsample.presentation.screen.inputreadings.InputReadingsScreen
+import com.example.healthconnectsample.presentation.screen.inputreadings.InputReadingsViewModel
+import com.example.healthconnectsample.presentation.screen.inputreadings.InputReadingsViewModelFactory
 import com.example.healthconnectsample.showExceptionSnackbar
 
 /**
@@ -105,5 +108,38 @@ fun HealthConnectNavigation(
                 }
             )
         }
-    }
+        composable(Screen.InputReadings.route) {
+            val viewModel: InputReadingsViewModel = viewModel(
+                factory = InputReadingsViewModelFactory(
+                    healthConnectManager = healthConnectManager
+                )
+            )
+            val permissionsGranted by viewModel.permissionsGranted
+            val readingsList by viewModel.readingsList
+            val permissions = viewModel.permissions
+            val weeklyAvg = viewModel.weeklyAvg
+            InputReadingsScreen(
+                permissionsGranted = permissionsGranted,
+                permissions = permissions,
+                uiState = viewModel.uiState,
+                onInsertClick = { weightInput ->
+                    viewModel.inputReadings(weightInput)
+                },
+                weeklyAvg = weeklyAvg.value,
+                onDeleteClick = { uid ->
+                    viewModel.deleteWeightInput(uid)
+                },
+                readingsList = readingsList,
+                onError = { exception ->
+                    showExceptionSnackbar(scaffoldState, scope, exception)
+                },
+            onPermissionsResult = {
+                viewModel.initialLoad()
+            })
+        }
+
+
+        }
+
+
 }

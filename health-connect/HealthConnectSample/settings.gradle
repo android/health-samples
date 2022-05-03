@@ -19,7 +19,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url("/Users/garan/hp/m2repo") }
+        maven { url("/Users/breanatate/health/health-connect/HealthConnectSample/HC/") }
     }
 }
 rootProject.name = "Health Connect Sample"

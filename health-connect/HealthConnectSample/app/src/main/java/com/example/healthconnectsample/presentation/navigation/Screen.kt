@@ -31,4 +31,5 @@ enum class Screen(val route: String, val titleId: Int, val hasMenuItem: Boolean 
     WelcomeScreen("welcome_screen", R.string.welcome_screen, false),
     ActivitySessions("activity_sessions", R.string.activity_sessions),
     ActivitySessionDetail("activity_session_detail", R.string.activity_session_detail, false),
+    InputReadings("input_readings", R.string.input_readings)
 }

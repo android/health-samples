@@ -70,4 +70,10 @@
     <string name="max_label">Max</string>
     <string name="avg_label">Avg</string>
     <string name="label_and_value">%1$s: %2$s</string>
+
+    <!-- Input Readings detail screen -->
+    <string name="input_readings">Input readings</string>
+    <string name="delete_button_readings">Delete</string>
+
+
 </resources>

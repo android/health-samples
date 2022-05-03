@@ -27,5 +27,7 @@
         <item>androidx.health.permission.HeartRate.WRITE</item>
         <item>androidx.health.permission.TotalEnergyBurned.READ</item>
         <item>androidx.health.permission.TotalEnergyBurned.WRITE</item>
+        <item>androidx.health.permission.Weight.READ</item>
+        <item>androidx.health.permission.Weight.WRITE</item>
     </array>
 </resources>

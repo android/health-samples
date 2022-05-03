@@ -17,21 +17,14 @@ package com.example.healthconnectsample.data
 
 import android.content.Context
 import android.os.Build
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.metadata.DataOrigin
 import androidx.health.connect.client.permission.HealthDataRequestPermissions
 import androidx.health.connect.client.permission.Permission
-import androidx.health.connect.client.records.ActivityEvent
-import androidx.health.connect.client.records.ActivityEventTypes
-import androidx.health.connect.client.records.ActivitySession
-import androidx.health.connect.client.records.ActivityTypes
-import androidx.health.connect.client.records.Distance
-import androidx.health.connect.client.records.HeartRate
-import androidx.health.connect.client.records.Record
-import androidx.health.connect.client.records.Speed
-import androidx.health.connect.client.records.Steps
-import androidx.health.connect.client.records.TotalEnergyBurned
+import androidx.health.connect.client.records.*
 import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
@@ -175,6 +168,8 @@ class HealthConnectManager(private val context: Context) {
         }
     }
 
+
+
     /**
      * Reads aggregated data and raw data for selected data types, for a given [ActivitySession].
      */
@@ -255,6 +250,41 @@ class HealthConnectManager(private val context: Context) {
             time = time.plusSeconds(30)
         }
         return heartRateSeries
+    }
+
+    suspend fun writeWeightInput(weight: Weight){
+        val records = mutableListOf<Weight>()
+        records.add(weight)
+        healthConnectClient.insertRecords(records)
+
+    }
+
+    suspend fun readWeightInputs(start: Instant, end: Instant): List<Weight>{
+        val request = ReadRecordsRequest(
+            recordType = Weight::class,
+            timeRangeFilter = TimeRangeFilter.exact(start, end)
+        )
+        val response = healthConnectClient.readRecords(request)
+        return response.records
+    }
+
+    suspend fun computeWeeklyAverage(start: Instant, end:Instant): Double{
+        var avg = 0.0
+       for(item in readWeightInputs(start, end)){
+            avg += item.weightKg
+       }
+        return avg/readWeightInputs(start, end).count()
+    }
+
+
+    suspend fun deleteWeightInput(uid: String) {
+        val weightInput = healthConnectClient.readRecord(Weight::class, uid)
+       healthConnectClient.deleteRecords(
+            Weight::class,
+            uidsList = listOf(uid),
+            clientIdsList = emptyList()
+        )
+
     }
 
     private fun isSupported() = Build.VERSION.SDK_INT >= MIN_SUPPORTED_SDK
