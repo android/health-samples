@@ -25,3 +25,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "Health Connect Sample"
 include ':app'
+

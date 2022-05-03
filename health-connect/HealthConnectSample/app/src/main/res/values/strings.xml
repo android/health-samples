@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
      Copyright (C) 2022 The Android Open Source Project
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -87,4 +86,16 @@
     <string name="sleep_duration">Duration:</string>
     <string name="sleep_time">Time:</string>
     <string name="sleep_stages">Sleep stages:</string>
+
+    <!-- Input Readings detail screen -->
+    <string name="input_readings">Record weight</string>
+    <string name="delete_button_readings">Delete</string>
+    <string name="weight_input">New Record (Kg)</string>
+    <string name="add_readings_button">Add</string>
+    <string name="previous_readings"> Previous Measurements </string>
+    <string name="weekly_avg"> Weekly Average </string>
+    <string name="kilograms">Kg\u0020</string>
+    <string name="valid_weight_error_message"> Weight must be between 0 and 1000</string>
+
+
 </resources>

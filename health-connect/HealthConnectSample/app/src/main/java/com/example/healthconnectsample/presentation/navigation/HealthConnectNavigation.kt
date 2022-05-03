@@ -31,6 +31,9 @@ import com.example.healthconnectsample.presentation.screen.activitysession.Activ
 import com.example.healthconnectsample.presentation.screen.activitysessiondetail.ActivitySessionDetailScreen
 import com.example.healthconnectsample.presentation.screen.activitysessiondetail.ActivitySessionDetailViewModel
 import com.example.healthconnectsample.presentation.screen.activitysessiondetail.ActivitySessionDetailViewModelFactory
+import com.example.healthconnectsample.presentation.screen.inputreadings.InputReadingsScreen
+import com.example.healthconnectsample.presentation.screen.inputreadings.InputReadingsViewModel
+import com.example.healthconnectsample.presentation.screen.inputreadings.InputReadingsViewModelFactory
 import com.example.healthconnectsample.presentation.screen.sleepsession.SleepSessionScreen
 import com.example.healthconnectsample.presentation.screen.sleepsession.SleepSessionViewModel
 import com.example.healthconnectsample.presentation.screen.sleepsession.SleepSessionViewModelFactory
@@ -132,6 +135,35 @@ fun HealthConnectNavigation(
                     viewModel.initialLoad()
                 }
             )
+        }
+        composable(Screen.InputReadings.route) {
+            val viewModel: InputReadingsViewModel = viewModel(
+                factory = InputReadingsViewModelFactory(
+                    healthConnectManager = healthConnectManager
+                )
+            )
+            val permissionsGranted by viewModel.permissionsGranted
+            val readingsList by viewModel.readingsList
+            val permissions = viewModel.permissions
+            val weeklyAvg by viewModel.weeklyAvg
+            InputReadingsScreen(
+                permissionsGranted = permissionsGranted,
+                permissions = permissions,
+                uiState = viewModel.uiState,
+                onInsertClick = { weightInput ->
+                    viewModel.inputReadings(weightInput)
+                },
+                weeklyAvg = weeklyAvg,
+                onDeleteClick = { uid ->
+                    viewModel.deleteWeightInput(uid)
+                },
+                readingsList = readingsList,
+                onError = { exception ->
+                    showExceptionSnackbar(scaffoldState, scope, exception)
+                },
+                onPermissionsResult = {
+                    viewModel.initialLoad()
+                })
         }
     }
 }

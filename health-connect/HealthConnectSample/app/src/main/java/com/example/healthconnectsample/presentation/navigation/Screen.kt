@@ -32,5 +32,6 @@ enum class Screen(val route: String, val titleId: Int, val hasMenuItem: Boolean 
     ActivitySessions("activity_sessions", R.string.activity_sessions),
     ActivitySessionDetail("activity_session_detail", R.string.activity_session_detail, false),
     SleepSessions("sleep_sessions", R.string.sleep_sessions),
-    SleepSessionDetail("sleep_session_detail", R.string.sleep_session_detail, false)
+    SleepSessionDetail("sleep_session_detail", R.string.sleep_session_detail, false),
+    InputReadings("input_readings", R.string.input_readings)
 }

@@ -17,8 +17,10 @@ package com.example.healthconnectsample.data
 
 import android.content.Context
 import android.os.Build
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.metadata.DataOrigin
 import androidx.health.connect.client.permission.HealthDataRequestPermissions
 import androidx.health.connect.client.permission.Permission
@@ -35,6 +37,7 @@ import androidx.health.connect.client.records.SpeedSeries
 import androidx.health.connect.client.records.Steps
 import androidx.health.connect.client.records.TotalCaloriesBurned
 import androidx.health.connect.client.records.TotalEnergyBurned
+import androidx.health.connect.client.records.Weight
 import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
@@ -269,7 +272,7 @@ class HealthConnectManager(private val context: Context) {
      * In addition to reading [SleepSession]s, for each session, the duration is calculated to
      * demonstrate aggregation, and the underlying [SleepStage] data is also read.
      */
-    suspend fun readSleepSessions() : List<SleepSessionData> {
+    suspend fun readSleepSessions(): List<SleepSessionData> {
         val lastDay = ZonedDateTime.now().truncatedTo(ChronoUnit.DAYS)
             .minusDays(1)
             .withHour(12)
@@ -315,7 +318,7 @@ class HealthConnectManager(private val context: Context) {
     /**
      * Creates a random list of sleep stages that spans the specified [start] to [end] time.
      */
-    private fun generateSleepStages(start: ZonedDateTime, end: ZonedDateTime) : List<SleepStage> {
+    private fun generateSleepStages(start: ZonedDateTime, end: ZonedDateTime): List<SleepStage> {
         val sleepStages = mutableListOf<SleepStage>()
         var stageStart = start
         while (stageStart < end) {
@@ -397,6 +400,38 @@ class HealthConnectManager(private val context: Context) {
             )
         )
     )
+
+    suspend fun writeWeightInput(weight: Weight) {
+        val records = listOf(weight)
+        healthConnectClient.insertRecords(records)
+    }
+
+    suspend fun readWeightInputs(start: Instant, end: Instant): List<Weight> {
+        val request = ReadRecordsRequest(
+            recordType = Weight::class,
+            timeRangeFilter = TimeRangeFilter.between(start, end)
+        )
+        val response = healthConnectClient.readRecords(request)
+        return response.records
+    }
+
+    suspend fun computeWeeklyAverage(start: Instant, end: Instant): Double {
+        var avg = 0.0
+        for (item in readWeightInputs(start, end)) {
+            avg += item.weightKg
+        }
+        return avg / readWeightInputs(start, end).count()
+    }
+
+    suspend fun deleteWeightInput(uid: String) {
+        val weightInput = healthConnectClient.readRecord(Weight::class, uid)
+        healthConnectClient.deleteRecords(
+            Weight::class,
+            uidsList = listOf(uid),
+            clientIdsList = emptyList()
+        )
+
+    }
 
     private fun isSupported() = Build.VERSION.SDK_INT >= MIN_SUPPORTED_SDK
 }
