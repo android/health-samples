@@ -44,7 +44,10 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    kotlinOptions { jvmTarget = '1.8' }
+    kotlinOptions {
+        jvmTarget = '1.8'
+        freeCompilerArgs += '-Xjvm-default=all'
+    }
 }
 
 dependencies {
@@ -61,7 +64,7 @@ dependencies {
     // Wear
     implementation 'androidx.wear:wear:1.2.0'
     // Health Services
-    implementation 'androidx.health.services.client:whs:0.1.27'
+    implementation 'androidx.health.services.client:whs:0.1.30'
     // Used to bridge between Futures and coroutines
     implementation 'com.google.guava:guava:30.1.1-android'
     implementation "androidx.concurrent:concurrent-futures-ktx:1.1.0"

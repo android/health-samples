@@ -76,13 +76,14 @@ class StartupReceiver : BroadcastReceiver() {
 class RegisterForBackgroundDataWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
-    private val healthServicesManager: HealthServicesManager
+    private val healthServicesManager: HealthServicesManager,
+    private val repository: PassiveDataRepository
 ) : Worker(appContext, workerParams) {
 
     override fun doWork(): Result {
         Log.i(TAG, "Worker running")
         runBlocking {
-            healthServicesManager.registerForHeartRateData()
+            healthServicesManager.registerForHeartRateData(repository)
         }
         return Result.success()
     }

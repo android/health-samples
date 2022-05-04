@@ -58,7 +58,7 @@ class MainViewModel @Inject constructor(
             .onEach { enabled ->
                 viewModelScope.launch {
                     if (enabled)
-                        healthServicesManager.registerForHeartRateData()
+                        healthServicesManager.registerForHeartRateData(repository)
                     else
                         healthServicesManager.unregisterForHeartRateData()
                 }

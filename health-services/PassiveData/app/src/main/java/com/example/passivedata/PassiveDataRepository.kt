@@ -16,11 +16,15 @@
 
 package com.example.passivedata
 
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.health.services.client.data.DataPoint
+import androidx.health.services.client.data.DataType
+import androidx.health.services.client.data.HrAccuracy
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -57,4 +61,25 @@ class PassiveDataRepository @Inject constructor(
         private val PASSIVE_DATA_ENABLED = booleanPreferencesKey("passive_data_enabled")
         private val LATEST_HEART_RATE = doublePreferencesKey("latest_heart_rate")
     }
+}
+
+fun List<DataPoint>.latestHeartRate(): Double? {
+    return this
+        // dataPoints can have multiple types (e.g. if the app is registered for multiple types).
+        .filter { it.dataType == DataType.HEART_RATE_BPM }
+        // where accuracy information is available, only show readings that are of medium or
+        // high accuracy. (Where accuracy information isn't available, show the reading if it is
+        // a positive value).
+        .filter {
+            it.accuracy == null ||
+                    setOf(
+                        HrAccuracy.SensorStatus.ACCURACY_MEDIUM,
+                        HrAccuracy.SensorStatus.ACCURACY_HIGH
+                    ).contains((it.accuracy as HrAccuracy).sensorStatus)
+        }
+        .filter {
+            it.value.asDouble() > 0
+        }
+        // HEART_RATE_BPM is a SAMPLE type, so start and end times are the same.
+        .maxByOrNull { it.endDurationFromBoot }?.value?.asDouble()
 }
