@@ -67,6 +67,7 @@ android {
 
 dependencies {
     // For Health Connect
+    // TODO remove this when public
     //implementation "androidx.health:health-platform-client:$health_connect_version"
     implementation 'androidx.health:health-connect-client:+'
 

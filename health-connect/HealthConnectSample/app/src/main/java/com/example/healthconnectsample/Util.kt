@@ -42,13 +42,13 @@ fun showExceptionSnackbar(
 }
 
 fun formatDisplayTimeStartEnd(
-    start: Instant,
+    startTime: Instant,
     startZoneOffset: ZoneOffset?,
-    end: Instant,
+    endTime: Instant,
     endZoneOffset: ZoneOffset?
 ) : String {
     val timeFormatter = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)
-    val start = timeFormatter.format(dateTimeWithOffsetOrDefault(start, startZoneOffset))
-    val end = timeFormatter.format(dateTimeWithOffsetOrDefault(end, endZoneOffset))
+    val start = timeFormatter.format(dateTimeWithOffsetOrDefault(startTime, startZoneOffset))
+    val end = timeFormatter.format(dateTimeWithOffsetOrDefault(endTime, endZoneOffset))
     return "$start - $end"
 }

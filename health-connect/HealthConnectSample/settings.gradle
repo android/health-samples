@@ -19,8 +19,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // TODO Remove this section when publicly available
         maven { url 'https://androidx.dev/snapshots/builds/8516309/artifacts/repository' }
-        //maven { url("/Users/garan/hp/m2repo") }
     }
 }
 rootProject.name = "Health Connect Sample"
