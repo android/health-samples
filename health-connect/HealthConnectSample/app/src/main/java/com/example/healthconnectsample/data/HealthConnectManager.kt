@@ -159,7 +159,8 @@ class HealthConnectManager(private val context: Context) {
             SpeedSeries::class,
             Distance::class,
             Steps::class,
-            TotalCaloriesBurned::class
+            TotalCaloriesBurned::class,
+            ActivityEvent::class
         )
         rawDataTypes.forEach { rawType ->
             healthConnectClient.deleteRecords(rawType, timeRangeFilter)
