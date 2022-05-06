@@ -19,6 +19,7 @@ import android.content.Context
 import android.os.Build
 import androidx.compose.runtime.mutableStateOf
 import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.metadata.DataOrigin
 import androidx.health.connect.client.permission.HealthDataRequestPermissions
 import androidx.health.connect.client.permission.Permission
@@ -314,29 +315,6 @@ class HealthConnectManager(private val context: Context) {
     }
 
     /**
-     * Creates a random list of sleep stages that spans the specified [start] to [end] time.
-     */
-    private fun generateSleepStages(start: ZonedDateTime, end: ZonedDateTime): List<SleepStage> {
-        val sleepStages = mutableListOf<SleepStage>()
-        var stageStart = start
-        while (stageStart < end) {
-            val stageEnd = stageStart.plusMinutes(Random.nextLong(30, 120))
-            val checkedEnd = if (stageEnd > end) end else stageEnd
-            sleepStages.add(
-                SleepStage(
-                    stage = randomSleepStage(),
-                    startTime = stageStart.toInstant(),
-                    startZoneOffset = stageStart.offset,
-                    endTime = checkedEnd.toInstant(),
-                    endZoneOffset = checkedEnd.offset
-                )
-            )
-            stageStart = checkedEnd
-        }
-        return sleepStages
-    }
-
-    /**
      * Writes [Weight] record to Health Connect.
      */
     suspend fun writeWeightInput(weight: Weight) {
@@ -370,12 +348,34 @@ class HealthConnectManager(private val context: Context) {
      * Deletes a [Weight] record.
      */
     suspend fun deleteWeightInput(uid: String) {
-        val weightInput = healthConnectClient.readRecord(Weight::class, uid)
         healthConnectClient.deleteRecords(
             Weight::class,
             uidsList = listOf(uid),
             clientIdsList = emptyList()
         )
+    }
+
+    /**
+     * Creates a random list of sleep stages that spans the specified [start] to [end] time.
+     */
+    private fun generateSleepStages(start: ZonedDateTime, end: ZonedDateTime): List<SleepStage> {
+        val sleepStages = mutableListOf<SleepStage>()
+        var stageStart = start
+        while (stageStart < end) {
+            val stageEnd = stageStart.plusMinutes(Random.nextLong(30, 120))
+            val checkedEnd = if (stageEnd > end) end else stageEnd
+            sleepStages.add(
+                SleepStage(
+                    stage = randomSleepStage(),
+                    startTime = stageStart.toInstant(),
+                    startZoneOffset = stageStart.offset,
+                    endTime = checkedEnd.toInstant(),
+                    endZoneOffset = checkedEnd.offset
+                )
+            )
+            stageStart = checkedEnd
+        }
+        return sleepStages
     }
 
     /**

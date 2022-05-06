@@ -15,6 +15,7 @@
  */
 package com.example.healthconnectsample.data
 
+import androidx.health.connect.client.records.SleepSession
 import androidx.health.connect.client.records.SleepStage
 import java.time.Duration
 import java.time.Instant

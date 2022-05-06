@@ -23,7 +23,7 @@ categories:   [Health]
 languages:    [Kotlin]
 solutions:    [Mobile]
 github:       android/health
-level:        BEGINNER
+level:        INTERMEDIATE
 apiRefs:
-    - androidx.health.connect.client.HealthConnectService 
+    - androidx.health.connect.client.HealthConnectClient 
 license: apache2
