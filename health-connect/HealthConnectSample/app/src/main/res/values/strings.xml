@@ -29,6 +29,14 @@
         screen demonstrating a different aspect of Health Connect functionality.
     </string>
 
+    <!-- Privacy policy screen -->
+    <string name="privacy_policy">Privacy policy</string>
+    <string name="privacy_policy_description">
+        This is a placeholder example. Your app should display an appropriate privacy policy for how
+        you will handle and use Health Connect data. This sample app does not store or transmit any
+        data outside of Health Connect.
+    </string>
+
     <!-- Not installed on device -->
     <string name="not_installed_tag">not_installed_tag</string>
     <string name="not_installed_url">market://details?id=com.google.android.apps.healthdata</string>

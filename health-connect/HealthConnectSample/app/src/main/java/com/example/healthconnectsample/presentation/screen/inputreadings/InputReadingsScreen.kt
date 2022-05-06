@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.example.healthconnectsample.presentation.screen.inputreadings
 
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -54,7 +69,6 @@ fun InputReadingsScreen(
     onPermissionsResult: () -> Unit = {},
     weeklyAvg: Double
 ) {
-
     val launcher = rememberLauncherForActivityResult(HealthDataRequestPermissions()) {
         onPermissionsResult()
     }
@@ -77,15 +91,13 @@ fun InputReadingsScreen(
 
     var weightInput by remember { mutableStateOf("") }
 
-    //Check if the input value is a valid weight
+    // Check if the input value is a valid weight
     fun hasValidDoubleInRange(weight: String): Boolean {
-    val tempVal = weight.toDoubleOrNull()
-        return if(tempVal==null){
+        val tempVal = weight.toDoubleOrNull()
+        return if (tempVal == null) {
             false
         } else tempVal <= 1000
-
     }
-
 
     if (uiState != InputReadingsViewModel.UiState.Loading) {
         LazyColumn(
@@ -108,7 +120,6 @@ fun InputReadingsScreen(
                         value = weightInput,
                         onValueChange = {
                             weightInput = it
-
                         },
 
                         label = {
@@ -138,14 +149,13 @@ fun InputReadingsScreen(
                                 )
 
                             )
-                            //clear TextField when new weight is entered
+                            // clear TextField when new weight is entered
                             weightInput = ""
                         },
 
                         modifier = Modifier.fillMaxHeight()
 
-                    )
-                    {
+                    ) {
                         Text(text = stringResource(id = R.string.add_readings_button))
                     }
 
@@ -154,14 +164,13 @@ fun InputReadingsScreen(
                         fontSize = 24.sp,
                         color = MaterialTheme.colors.primary
                     )
-
                 }
                 items(readingsList) { reading ->
                     Row(
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        //show local date and time
+                        // show local date and time
                         val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
                         val zonedDateTime =
                             dateTimeWithOffsetOrDefault(reading.time, reading.zoneOffset)
@@ -192,13 +201,9 @@ fun InputReadingsScreen(
                         modifier = Modifier.padding(vertical = 20.dp)
                     )
                     Text(text = "$weeklyAvg".take(5) + stringResource(id = R.string.kilograms))
-
                 }
-
             }
-
         }
-
     }
 }
 

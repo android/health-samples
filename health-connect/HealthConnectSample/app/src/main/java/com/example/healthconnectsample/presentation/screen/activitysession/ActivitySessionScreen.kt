@@ -87,7 +87,9 @@ fun ActivitySessionScreen(
             if (!permissionsGranted) {
                 item {
                     Button(
-                        onClick = { launcher.launch(permissions) }
+                        onClick = {
+                            launcher.launch(permissions)
+                        }
                     ) {
                         Text(text = stringResource(R.string.permissions_button_label))
                     }

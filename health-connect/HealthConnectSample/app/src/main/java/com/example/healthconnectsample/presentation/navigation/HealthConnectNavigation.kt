@@ -23,6 +23,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navDeepLink
 import com.example.healthconnectsample.data.HealthConnectManager
 import com.example.healthconnectsample.presentation.screen.WelcomeScreen
 import com.example.healthconnectsample.presentation.screen.activitysession.ActivitySessionScreen
@@ -34,6 +35,7 @@ import com.example.healthconnectsample.presentation.screen.activitysessiondetail
 import com.example.healthconnectsample.presentation.screen.inputreadings.InputReadingsScreen
 import com.example.healthconnectsample.presentation.screen.inputreadings.InputReadingsViewModel
 import com.example.healthconnectsample.presentation.screen.inputreadings.InputReadingsViewModelFactory
+import com.example.healthconnectsample.presentation.screen.privacypolicy.PrivacyPolicyScreen
 import com.example.healthconnectsample.presentation.screen.sleepsession.SleepSessionScreen
 import com.example.healthconnectsample.presentation.screen.sleepsession.SleepSessionViewModel
 import com.example.healthconnectsample.presentation.screen.sleepsession.SleepSessionViewModelFactory
@@ -55,6 +57,16 @@ fun HealthConnectNavigation(
             WelcomeScreen(
                 healthConnectAvailability = availability
             )
+        }
+        composable(
+            route = Screen.PrivacyPolicy.route,
+            deepLinks = listOf(
+                navDeepLink {
+                    action = "androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE"
+                }
+            )
+        ) {
+            PrivacyPolicyScreen()
         }
         composable(Screen.ActivitySessions.route) {
             val viewModel: ActivitySessionViewModel = viewModel(
@@ -163,7 +175,8 @@ fun HealthConnectNavigation(
                 },
                 onPermissionsResult = {
                     viewModel.initialLoad()
-                })
+                }
+            )
         }
     }
 }

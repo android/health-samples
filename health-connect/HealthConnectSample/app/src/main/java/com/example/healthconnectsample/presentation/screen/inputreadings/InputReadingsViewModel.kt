@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.example.healthconnectsample.presentation.screen.inputreadings
 
 import android.os.RemoteException
@@ -5,9 +20,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.health.connect.client.permission.AccessTypes
 import androidx.health.connect.client.permission.Permission
-import androidx.health.connect.client.records.SleepSession
 import androidx.health.connect.client.records.Weight
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -40,7 +53,6 @@ class InputReadingsViewModel(private val healthConnectManager: HealthConnectMana
 
     init {
         initialLoad()
-
     }
 
     fun initialLoad() {
@@ -54,10 +66,8 @@ class InputReadingsViewModel(private val healthConnectManager: HealthConnectMana
     fun inputReadings(inputValue: Weight) {
         viewModelScope.launch {
             tryWithPermissionsCheck {
-
                 healthConnectManager.writeWeightInput(inputValue)
                 readWeightInputs()
-
             }
         }
     }
@@ -67,7 +77,6 @@ class InputReadingsViewModel(private val healthConnectManager: HealthConnectMana
             tryWithPermissionsCheck {
                 healthConnectManager.deleteWeightInput(uid)
                 readWeightInputs()
-
             }
         }
     }

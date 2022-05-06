@@ -46,7 +46,7 @@ fun formatDisplayTimeStartEnd(
     startZoneOffset: ZoneOffset?,
     endTime: Instant,
     endZoneOffset: ZoneOffset?
-) : String {
+): String {
     val timeFormatter = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)
     val start = timeFormatter.format(dateTimeWithOffsetOrDefault(startTime, startZoneOffset))
     val end = timeFormatter.format(dateTimeWithOffsetOrDefault(endTime, endZoneOffset))

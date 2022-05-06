@@ -40,7 +40,10 @@ fun NotSupportedMessage() {
     val url = stringResource(R.string.not_supported_url)
     val handler = LocalUriHandler.current
 
-    val notSupportedText = stringResource(id = R.string.not_supported_description, MIN_SUPPORTED_SDK)
+    val notSupportedText = stringResource(
+        id = R.string.not_supported_description,
+        MIN_SUPPORTED_SDK
+    )
     val notSupportedLinkText = stringResource(R.string.not_supported_link_text)
 
     val unavailableText = buildAnnotatedString {

@@ -74,7 +74,9 @@ fun ActivitySessionDetailScreen(
     // writing to Health Connect, the user is notified, and where the error is one that can be
     // recovered from, an attempt to do so is made.
     LaunchedEffect(uiState) {
-        if (uiState is ActivitySessionDetailViewModel.UiState.Error && errorId.value != uiState.uuid) {
+        if (uiState is ActivitySessionDetailViewModel.UiState.Error &&
+            errorId.value != uiState.uuid
+        ) {
             onError(uiState.exception)
             errorId.value = uiState.uuid
         }
