@@ -50,7 +50,7 @@
 
     <!-- Not supported on device -->
     <string name="not_supported_tag">not_supported_tag</string>
-    <string name="not_supported_url">http://developer.android.com/guide/health-and-fitness/health-connect/</string>
+    <string name="not_supported_url">https://developer.android.com/health-connect</string>
     <string name="not_supported_description">
         Health Connect is only supported on Android devices running API level %1$d or above.
     </string>
