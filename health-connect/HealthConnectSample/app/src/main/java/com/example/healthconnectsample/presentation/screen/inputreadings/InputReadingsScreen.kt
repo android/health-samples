@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -42,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -67,7 +69,7 @@ fun InputReadingsScreen(
     onDeleteClick: (String) -> Unit = {},
     onError: (Throwable?) -> Unit = {},
     onPermissionsResult: () -> Unit = {},
-    weeklyAvg: Double
+    weeklyAvg: Double?
 ) {
     val launcher = rememberLauncherForActivityResult(HealthDataRequestPermissions()) {
         onPermissionsResult()
@@ -126,7 +128,8 @@ fun InputReadingsScreen(
                             Text(stringResource(id = R.string.weight_input))
                         },
                         isError = !hasValidDoubleInRange(weightInput),
-                        keyboardActions = KeyboardActions { !hasValidDoubleInRange(weightInput) }
+                        keyboardActions = KeyboardActions { !hasValidDoubleInRange(weightInput) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
                     if (!hasValidDoubleInRange(weightInput)) {
                         Text(
@@ -193,14 +196,16 @@ fun InputReadingsScreen(
                         }
                     }
                 }
-
                 item {
                     Text(
                         text = stringResource(id = R.string.weekly_avg), fontSize = 24.sp,
                         color = MaterialTheme.colors.primary,
                         modifier = Modifier.padding(vertical = 20.dp)
                     )
-                    Text(text = "$weeklyAvg".take(5) + stringResource(id = R.string.kilograms))
+                    if(weeklyAvg == null){
+                        Text(text = "0.0" + stringResource(id = R.string.kilograms))
+                    }else{
+                    Text(text = "$weeklyAvg".take(5) + stringResource(id = R.string.kilograms))}
                 }
             }
         }
