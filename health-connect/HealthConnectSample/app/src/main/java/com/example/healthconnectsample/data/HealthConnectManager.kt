@@ -338,8 +338,10 @@ class HealthConnectManager(private val context: Context) {
      * Returns the weekly average of [Weight] records.
      */
     suspend fun computeWeeklyAverage(start: Instant, end: Instant): Double? {
-        val request = AggregateRequest(metrics = setOf(Weight.WEIGHT_AVG),
-            timeRangeFilter = TimeRangeFilter.between(start, end))
+        val request = AggregateRequest(
+            metrics = setOf(Weight.WEIGHT_AVG),
+            timeRangeFilter = TimeRangeFilter.between(start, end)
+        )
         val response = healthConnectClient.aggregate(request)
         return response.getMetric(Weight.WEIGHT_AVG)
     }

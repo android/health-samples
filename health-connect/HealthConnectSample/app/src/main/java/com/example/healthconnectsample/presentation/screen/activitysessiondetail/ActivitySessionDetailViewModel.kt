@@ -53,12 +53,8 @@ class ActivitySessionDetailViewModel(
     var sessionMetrics: MutableState<ActivitySessionData> = mutableStateOf(ActivitySessionData(uid))
         private set
 
-    var uiState: UiState by mutableStateOf(UiState.Loading)
+    var uiState: UiState by mutableStateOf(UiState.Uninitialized)
         private set
-
-    init {
-        initialLoad()
-    }
 
     fun initialLoad() {
         readAssociatedSessionData()
@@ -101,7 +97,7 @@ class ActivitySessionDetailViewModel(
     }
 
     sealed class UiState {
-        object Loading : UiState()
+        object Uninitialized : UiState()
         object Done : UiState()
 
         // A random UUID is used in each Error object to allow errors to be uniquely identified,

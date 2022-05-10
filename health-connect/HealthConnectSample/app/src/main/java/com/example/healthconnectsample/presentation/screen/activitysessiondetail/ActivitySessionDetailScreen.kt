@@ -69,11 +69,16 @@ fun ActivitySessionDetailScreen(
     // notification for the same error when the screen is recomposed, or configuration changes etc.
     val errorId = rememberSaveable { mutableStateOf(UUID.randomUUID()) }
 
-    // The [ActivitySessionDetailViewModel.UiState] provides details of whether the last action was
-    // a success or resulted in an error. Where an error occurred, for example in reading and
-    // writing to Health Connect, the user is notified, and where the error is one that can be
-    // recovered from, an attempt to do so is made.
     LaunchedEffect(uiState) {
+        // If the initial data load has not taken place, attempt to load the data.
+        if (uiState is ActivitySessionDetailViewModel.UiState.Uninitialized) {
+            onPermissionsResult()
+        }
+
+        // The [ActivitySessionDetailViewModel.UiState] provides details of whether the last action
+        // was a success or resulted in an error. Where an error occurred, for example in reading
+        // and writing to Health Connect, the user is notified, and where the error is one that can
+        // be recovered from, an attempt to do so is made.
         if (uiState is ActivitySessionDetailViewModel.UiState.Error &&
             errorId.value != uiState.uuid
         ) {
@@ -82,7 +87,7 @@ fun ActivitySessionDetailScreen(
         }
     }
 
-    if (uiState != ActivitySessionDetailViewModel.UiState.Loading) {
+    if (uiState != ActivitySessionDetailViewModel.UiState.Uninitialized) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Top,

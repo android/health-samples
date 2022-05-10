@@ -66,18 +66,23 @@ fun SleepSessionScreen(
     // notification for the same error when the screen is recomposed, or configuration changes etc.
     val errorId = rememberSaveable { mutableStateOf(UUID.randomUUID()) }
 
-    // The [SleepSessionViewModel.UiState] provides details of whether the last action was a
-    // success or resulted in an error. Where an error occurred, for example in reading and writing
-    // to Health Connect, the user is notified, and where the error is one that can be recovered
-    // from, an attempt to do so is made.
     LaunchedEffect(uiState) {
+        // If the initial data load has not taken place, attempt to load the data.
+        if (uiState is SleepSessionViewModel.UiState.Uninitialized) {
+            onPermissionsResult()
+        }
+
+        // The [SleepSessionViewModel.UiState] provides details of whether the last action was a
+        // success or resulted in an error. Where an error occurred, for example in reading and
+        // writing to Health Connect, the user is notified, and where the error is one that can be
+        // recovered from, an attempt to do so is made.
         if (uiState is SleepSessionViewModel.UiState.Error && errorId.value != uiState.uuid) {
             onError(uiState.exception)
             errorId.value = uiState.uuid
         }
     }
 
-    if (uiState != SleepSessionViewModel.UiState.Loading) {
+    if (uiState != SleepSessionViewModel.UiState.Uninitialized) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Top,

@@ -60,12 +60,8 @@ class ActivitySessionViewModel(private val healthConnectManager: HealthConnectMa
     var sessionsList: MutableState<List<ActivitySession>> = mutableStateOf(listOf())
         private set
 
-    var uiState: UiState by mutableStateOf(UiState.Loading)
+    var uiState: UiState by mutableStateOf(UiState.Uninitialized)
         private set
-
-    init {
-        initialLoad()
-    }
 
     fun initialLoad() {
         viewModelScope.launch {
@@ -139,7 +135,7 @@ class ActivitySessionViewModel(private val healthConnectManager: HealthConnectMa
     }
 
     sealed class UiState {
-        object Loading : UiState()
+        object Uninitialized : UiState()
         object Done : UiState()
 
         // A random UUID is used in each Error object to allow errors to be uniquely identified,

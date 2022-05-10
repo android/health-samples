@@ -48,12 +48,8 @@ class InputReadingsViewModel(private val healthConnectManager: HealthConnectMana
     var readingsList: MutableState<List<Weight>> = mutableStateOf(listOf())
         private set
 
-    var uiState: UiState by mutableStateOf(UiState.Loading)
+    var uiState: UiState by mutableStateOf(UiState.Uninitialized)
         private set
-
-    init {
-        initialLoad()
-    }
 
     fun initialLoad() {
         viewModelScope.launch {
@@ -119,7 +115,7 @@ class InputReadingsViewModel(private val healthConnectManager: HealthConnectMana
     }
 
     sealed class UiState {
-        object Loading : UiState()
+        object Uninitialized : UiState()
         object Done : UiState()
 
         // A random UUID is used in each Error object to allow errors to be uniquely identified,

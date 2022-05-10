@@ -79,12 +79,16 @@ fun InputReadingsScreen(
     // notification for the same error when the screen is recomposed, or configuration changes etc.
     val errorId = rememberSaveable { mutableStateOf(UUID.randomUUID()) }
 
-    // The [InputReadingsScreenViewModel.UiState] provides details of whether the last action was a
-    // success or resulted in an error. Where an error occurred, for example in reading and writing
-    // to Health Connect, the user is notified, and where the error is one that can be recovered
-    // from, an attempt to do so is made.
-
     LaunchedEffect(uiState) {
+        // If the initial data load has not taken place, attempt to load the data.
+        if (uiState is InputReadingsViewModel.UiState.Uninitialized) {
+            onPermissionsResult()
+        }
+
+        // The [InputReadingsScreenViewModel.UiState] provides details of whether the last action
+        // was a success or resulted in an error. Where an error occurred, for example in reading
+        // and writing to Health Connect, the user is notified, and where the error is one that can
+        // be recovered from, an attempt to do so is made.
         if (uiState is InputReadingsViewModel.UiState.Error && errorId.value != uiState.uuid) {
             onError(uiState.exception)
             errorId.value = uiState.uuid
@@ -101,7 +105,7 @@ fun InputReadingsScreen(
         } else tempVal <= 1000
     }
 
-    if (uiState != InputReadingsViewModel.UiState.Loading) {
+    if (uiState != InputReadingsViewModel.UiState.Uninitialized) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -202,10 +206,11 @@ fun InputReadingsScreen(
                         color = MaterialTheme.colors.primary,
                         modifier = Modifier.padding(vertical = 20.dp)
                     )
-                    if(weeklyAvg == null){
+                    if (weeklyAvg == null) {
                         Text(text = "0.0" + stringResource(id = R.string.kilograms))
-                    }else{
-                    Text(text = "$weeklyAvg".take(5) + stringResource(id = R.string.kilograms))}
+                    } else {
+                        Text(text = "$weeklyAvg".take(5) + stringResource(id = R.string.kilograms))
+                    }
                 }
             }
         }
