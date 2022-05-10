@@ -11,9 +11,7 @@ You will need:
 
 ## Screenshots
 
-<img src="screenshots/hc1.png" height="300" alt="Screenshot"/>
-<img src="screenshots/hc2.png" height="300" alt="Screenshot"/>
-<img src="screenshots/hc3.png" height="300" alt="Screenshot"/>
+<img src="screenshots/hc1.png" height="300" alt="Screenshot"/> <img src="screenshots/hc2.png" height="300" alt="Screenshot"/> <img src="screenshots/hc3.png" height="300" alt="Screenshot"/>
 
 ## Getting started
 
