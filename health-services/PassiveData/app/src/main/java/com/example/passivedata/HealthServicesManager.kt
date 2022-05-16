@@ -20,10 +20,8 @@ import android.content.Context
 import android.util.Log
 import androidx.concurrent.futures.await
 import androidx.health.services.client.HealthServicesClient
-import androidx.health.services.client.PassiveListenerCallback
-import androidx.health.services.client.data.*
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.runBlocking
+import androidx.health.services.client.data.DataType
+import androidx.health.services.client.data.PassiveListenerConfig
 import javax.inject.Inject
 
 /**
@@ -31,7 +29,6 @@ import javax.inject.Inject
  * those APIs to enable use in coroutines.
  */
 class HealthServicesManager @Inject constructor(
-    @ApplicationContext private val context: Context,
     healthServicesClient: HealthServicesClient
 ) {
     private val passiveMonitoringClient = healthServicesClient.passiveMonitoringClient
@@ -42,28 +39,16 @@ class HealthServicesManager @Inject constructor(
         return (DataType.HEART_RATE_BPM in capabilities.supportedDataTypesPassiveMonitoring)
     }
 
-    suspend fun registerForHeartRateData(repository: PassiveDataRepository) {
-
-        val passiveListenerCallback: PassiveListenerCallback = object : PassiveListenerCallback {
-            override fun onNewDataPoints(dataPoints: List<DataPoint>) {
-                runBlocking {
-                    dataPoints.latestHeartRate()?.let {
-                        repository.storeLatestHeartRate(it)
-                    }
-                }
-            }
-        }
-
+    suspend fun registerForHeartRateData() {
         val passiveListenerConfig = PassiveListenerConfig.builder()
             .setDataTypes(dataTypes)
             .build()
 
-        Log.i(TAG, "Registering listeners")
-        passiveMonitoringClient.registerPassiveListenerCallbackAsync(
-            passiveListenerCallback, passiveListenerConfig
+        Log.i(TAG, "Registering listener")
+        passiveMonitoringClient.registerPassiveListenerServiceAsync(
+            PassiveDataService::class.java,
+            passiveListenerConfig
         ).await()
-
-        passiveMonitoringClient.registerPassiveListenerServiceAsync(PassiveDataService::class.java, passiveListenerConfig).await()
     }
 
     suspend fun unregisterForHeartRateData() {

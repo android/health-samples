@@ -77,13 +77,12 @@ class RegisterForBackgroundDataWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
     private val healthServicesManager: HealthServicesManager,
-    private val repository: PassiveDataRepository
 ) : Worker(appContext, workerParams) {
 
     override fun doWork(): Result {
         Log.i(TAG, "Worker running")
         runBlocking {
-            healthServicesManager.registerForHeartRateData(repository)
+            healthServicesManager.registerForHeartRateData()
         }
         return Result.success()
     }

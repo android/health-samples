@@ -40,7 +40,7 @@ class MainViewModel @Inject constructor(
     val uiState: StateFlow<UiState> = _uiState
 
     val passiveDataEnabled: Flow<Boolean>
-    val latestHeartRate = repository.lastestHeartRate
+    val latestHeartRate = repository.latestHeartRate
 
     init {
         // Check that the device has the heart rate capability and progress to the next state
@@ -58,7 +58,7 @@ class MainViewModel @Inject constructor(
             .onEach { enabled ->
                 viewModelScope.launch {
                     if (enabled)
-                        healthServicesManager.registerForHeartRateData(repository)
+                        healthServicesManager.registerForHeartRateData()
                     else
                         healthServicesManager.unregisterForHeartRateData()
                 }

@@ -46,11 +46,12 @@ class PassiveDataRepository @Inject constructor(
         }
     }
 
-    val lastestHeartRate: Flow<Double> = dataStore.data.map { prefs ->
+    val latestHeartRate: Flow<Double> = dataStore.data.map { prefs ->
         prefs[LATEST_HEART_RATE] ?: 0.0
     }
 
     suspend fun storeLatestHeartRate(heartRate: Double) {
+        Log.d("qqqqqq", "storing heartRate $heartRate")
         dataStore.edit { prefs ->
             prefs[LATEST_HEART_RATE] = heartRate
         }
