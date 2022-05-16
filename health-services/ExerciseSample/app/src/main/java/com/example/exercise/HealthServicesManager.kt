@@ -71,12 +71,12 @@ class HealthServicesManager @Inject constructor(
     }
 
     suspend fun isExerciseInProgress(): Boolean {
-        val exerciseInfo = exerciseClient.getCurrentExerciseInfo().await()
+        val exerciseInfo = exerciseClient.getCurrentExerciseInfoAsync().await()
         return exerciseInfo.exerciseTrackedStatus == ExerciseTrackedStatus.OWNED_EXERCISE_IN_PROGRESS
     }
 
     suspend fun isTrackingExerciseInAnotherApp(): Boolean {
-        val exerciseInfo = exerciseClient.getCurrentExerciseInfo().await()
+        val exerciseInfo = exerciseClient.getCurrentExerciseInfoAsync().await()
         return exerciseInfo.exerciseTrackedStatus == ExerciseTrackedStatus.OTHER_APP_IN_PROGRESS
     }
 
@@ -128,14 +128,14 @@ class HealthServicesManager @Inject constructor(
 
         val config = ExerciseConfig.builder()
             .setExerciseType(ExerciseType.RUNNING)
-            .setShouldEnableAutoPauseAndResume(false)
+            .setAutoPauseAndResumeEnabled(false)
             .setAggregateDataTypes(aggDataTypes)
             .setDataTypes(dataTypes)
             .setExerciseGoals(exerciseGoals)
             // Required for GPS for LOCATION data type, optional for some other types.
-            .setShouldEnableGps(true)
+            .setGpsEnabled(true)
             .build()
-        exerciseClient.startExercise(config).await()
+        exerciseClient.startExerciseAsync(config).await()
     }
 
     private fun supportsCalorieGoal(capabilities: ExerciseTypeCapabilities): Boolean {
@@ -155,6 +155,9 @@ class HealthServicesManager @Inject constructor(
     suspend fun prepareExercise() {
         Log.d(TAG, "Preparing an exercise")
 
+        // TODO Handle varies exerciseTrackedStatus states, especially OWNED_EXERCISE_IN_PROGRESS
+        // and OTHER_APP_IN_PROGRESS
+
         val warmUpConfig = WarmUpConfig.builder()
             .setExerciseType(ExerciseType.RUNNING)
             .setDataTypes(
@@ -166,7 +169,7 @@ class HealthServicesManager @Inject constructor(
             .build()
 
         try {
-            exerciseClient.prepareExercise(warmUpConfig).await()
+            exerciseClient.prepareExerciseAsync(warmUpConfig).await()
         } catch (e: Exception) {
             Log.e(TAG, "Prepare exercise failed - ${e.message}")
         }
@@ -174,22 +177,22 @@ class HealthServicesManager @Inject constructor(
 
     suspend fun endExercise() {
         Log.d(TAG, "Ending exercise")
-        exerciseClient.endExercise().await()
+        exerciseClient.endExerciseAsync().await()
     }
 
     suspend fun pauseExercise() {
         Log.d(TAG, "Pausing exercise")
-        exerciseClient.pauseExercise().await()
+        exerciseClient.pauseExerciseAsync().await()
     }
 
     suspend fun resumeExercise() {
         Log.d(TAG, "Resuming exercise")
-        exerciseClient.resumeExercise().await()
+        exerciseClient.resumeExerciseAsync().await()
     }
 
     suspend fun markLap() {
         if (isExerciseInProgress()) {
-            exerciseClient.markLap().await()
+            exerciseClient.markLapAsync().await()
         }
     }
 
@@ -200,13 +203,13 @@ class HealthServicesManager @Inject constructor(
      * messages. When there are no more subscribers, or when the coroutine scope of [shareIn] is
      * cancelled, this flow will unregister the listener.
      *
-     * A shared flow is used because only a single [ExerciseUpdateListener] can be reigstered at a
+     * A shared flow is used because only a single [ExerciseUpdateListener] can be registered at a
      * time, even if there are multiple consumers of the flow.
      *
      * [callbackFlow] is used to bridge between a callback-based API and Kotlin flows.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
-    val exerciseUpdateFlow = callbackFlow<ExerciseMessage> {
+    val exerciseUpdateFlow = callbackFlow {
         val listener = object : ExerciseUpdateListener {
             override fun onExerciseUpdate(update: ExerciseUpdate) {
                 coroutineScope.runCatching {
@@ -228,9 +231,9 @@ class HealthServicesManager @Inject constructor(
                 }
             }
         }
-        exerciseClient.setUpdateListener(listener)
+        exerciseClient.setUpdateListenerAsync(listener)
         awaitClose {
-            exerciseClient.clearUpdateListener(listener)
+            exerciseClient.clearUpdateListenerAsync(listener)
         }
     }
 

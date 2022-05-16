@@ -39,7 +39,7 @@ buildscript {
 
 allprojects {
     repositories {
-        maven { url("/tmp/whs_m2/") }
+        maven { url("/Users/stillers/workspace/wear-whs-eap/m2repo") }
         google()
         mavenCentral()
     }
