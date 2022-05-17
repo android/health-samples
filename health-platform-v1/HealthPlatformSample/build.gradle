@@ -22,7 +22,7 @@ buildscript {
         navigation_compose_version = '2.4.0-beta02'
 
         concurrent_futures_version = '1.1.0'
-        health_platform_version = '1.0.0-alpha01'
+        health_platform_version = '1.0.1-alpha01'
         lifecycle_version = '2.4.0'
     }
     repositories {

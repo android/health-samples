@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (C) 2022 The Android Open Source Project
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+          http://www.apache.org/licenses/LICENSE-2.0
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources>
+    <array name="health_permissions">
+        <item>androidx.health.permission.ActivitySession.READ</item>
+        <item>androidx.health.permission.ActivitySession.WRITE</item>
+        <item>androidx.health.permission.ActivityEvent.READ</item>
+        <item>androidx.health.permission.ActivityEvent.WRITE</item>
+        <item>androidx.health.permission.SleepSession.READ</item>
+        <item>androidx.health.permission.SleepSession.WRITE</item>
+        <item>androidx.health.permission.SleepStage.READ</item>
+        <item>androidx.health.permission.SleepStage.WRITE</item>
+        <item>androidx.health.permission.Steps.READ</item>
+        <item>androidx.health.permission.Steps.WRITE</item>
+        <item>androidx.health.permission.Speed.READ</item>
+        <item>androidx.health.permission.Speed.WRITE</item>
+        <item>androidx.health.permission.Distance.READ</item>
+        <item>androidx.health.permission.Distance.WRITE</item>
+        <item>androidx.health.permission.HeartRate.READ</item>
+        <item>androidx.health.permission.HeartRate.WRITE</item>
+        <item>androidx.health.permission.TotalEnergyBurned.READ</item>
+        <item>androidx.health.permission.TotalEnergyBurned.WRITE</item>
+        <item>androidx.health.permission.Weight.READ</item>
+        <item>androidx.health.permission.Weight.WRITE</item>
+        <item>androidx.health.permission.TotalCaloriesBurned.READ</item>
+        <item>androidx.health.permission.TotalCaloriesBurned.WRITE</item>
+    </array>
+</resources>

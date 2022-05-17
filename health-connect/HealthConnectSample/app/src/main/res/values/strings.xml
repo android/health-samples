@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+     Copyright (C) 2022 The Android Open Source Project
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+          http://www.apache.org/licenses/LICENSE-2.0
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources>
+    <string name="app_name">Health Connect Sample</string>
+    <string name="menu">menu</string>
+
+    <!-- Screen titles -->
+    <string name="welcome_screen">Welcome screen</string>
+    <string name="activity_sessions">Activity sessions</string>
+    <string name="activity_session_detail">Activity session detail</string>
+    <string name="sleep_sessions">Sleep sessions</string>
+    <string name="sleep_session_detail">Sleep session detail</string>
+
+    <!-- Welcome screen -->
+    <string name="welcome_message">Welcome to Health Connect!</string>
+    <string name="health_connect_logo">Health Connect logo</string>
+    <string name="installed_welcome_message">
+        Health Connect is installed on this device. Use the menu to explore the sample, with each
+        screen demonstrating a different aspect of Health Connect functionality.
+    </string>
+
+    <!-- Privacy policy screen -->
+    <string name="privacy_policy">Privacy policy</string>
+    <string name="privacy_policy_description">
+        This is a placeholder example. Your app should display an appropriate privacy policy for how
+        you will handle and use Health Connect data. This sample app does not store or transmit any
+        data outside of Health Connect.
+    </string>
+
+    <!-- Not installed on device -->
+    <string name="not_installed_tag">not_installed_tag</string>
+    <string name="not_installed_url">market://details?id=com.google.android.apps.healthdata</string>
+    <string name="not_installed_description">
+        Health Connect is supported on this device, but is not currently installed.
+    </string>
+    <string name="not_installed_link_text">
+        To use this sample, and other apps using Health Connect, please install the Health Connect
+        package from Google Play.
+    </string>
+
+    <!-- Not supported on device -->
+    <string name="not_supported_tag">not_supported_tag</string>
+    <string name="not_supported_url">https://developer.android.com/health-connect</string>
+    <string name="not_supported_description">
+        Health Connect is only supported on Android devices running API level %1$d or above.
+    </string>
+    <string name="not_supported_link_text">
+        Please visit the Health Connect guides to learn more about device compatibility and using
+        Health Connect.
+    </string>
+
+    <string name="permissions_button_label">Request permissions</string>
+    <string name="not_available_abbrev">N/A</string>
+
+    <!-- Activity Session screen -->
+    <string name="insert_activity_session">Insert session</string>
+    <string name="no_title">[No title]</string>
+    <string name="delete_button">Delete</string>
+
+    <!-- Activity Session detail screen -->
+    <string name="total_active_duration">Total active duration</string>
+    <string name="total_steps">Total steps</string>
+    <string name="total_distance">Total distance</string>
+    <string name="total_energy">Total energy</string>
+    <string name="hr_stats">HR stats (bpm)</string>
+    <string name="hr_series">HR series (bpm)</string>
+    <string name="speed_stats">Speed stats (m/s)</string>
+    <string name="speed_series">Speed series (m/s)</string>
+    <string name="min_label">Min</string>
+    <string name="max_label">Max</string>
+    <string name="avg_label">Avg</string>
+    <string name="label_and_value">%1$s: %2$s</string>
+
+    <!-- Sleep Session screen -->
+    <string name="generate_sleep_data">Generate sleep data</string>
+    <string-array name="sleep_notes_array">
+        <item>I slept great!</item>
+        <item>I got woken up</item>
+        <item>Struggled to sleep</item>
+        <item>Much needed sleep</item>
+        <item>Restful sleep</item>
+    </string-array>
+    <string name="sleep_notes">Notes:</string>
+    <string name="sleep_duration">Duration:</string>
+    <string name="sleep_time">Time:</string>
+    <string name="sleep_stages">Sleep stages:</string>
+
+    <!-- Input Readings detail screen -->
+    <string name="input_readings">Record weight</string>
+    <string name="delete_button_readings">Delete</string>
+    <string name="weight_input">New Record (Kg)</string>
+    <string name="add_readings_button">Add</string>
+    <string name="previous_readings"> Previous Measurements </string>
+    <string name="weekly_avg"> Weekly Average </string>
+    <string name="kilograms">Kg\u0020</string>
+    <string name="valid_weight_error_message"> Weight must be between 0 and 1000</string>
+
+
+</resources>
