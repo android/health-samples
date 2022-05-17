@@ -19,6 +19,7 @@ package com.example.passivegoals
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.health.services.client.data.PassiveGoal
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.runBlocking
@@ -32,18 +33,25 @@ class PassiveGoalsReceiver : BroadcastReceiver() {
     lateinit var repository: PassiveGoalsRepository
 
     override fun onReceive(context: Context, intent: Intent?) {
+        Log.d("qqqqqq", "in receiver")
         if (intent?.action != PassiveGoal.ACTION_GOAL) {
             return
         }
         val passiveGoal = PassiveGoal.fromIntent(intent)
         val time = Instant.now()
-        if (passiveGoal == floorsGoal) {
-            runBlocking {
-                repository.updateLatestFloorsGoalTime(time)
+        when (passiveGoal) {
+            floorsGoal -> {
+                runBlocking {
+                    repository.updateLatestFloorsGoalTime(time)
+                }
             }
-        } else if (passiveGoal == dailyStepsGoal) {
-            runBlocking {
-                repository.setLatestDailyGoalAchieved(time)
+            dailyStepsGoal -> {
+                runBlocking {
+                    repository.setLatestDailyGoalAchieved(time)
+                }
+            }
+            hrGoal -> {
+                Log.d("qqqqqq", "got hr goal!!!")
             }
         }
     }
