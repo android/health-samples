@@ -56,7 +56,7 @@ class HealthServicesManager @Inject constructor(
 
     suspend fun getExerciseCapabilities(): ExerciseTypeCapabilities? {
         if (!capabilitiesLoaded) {
-            val capabilities = exerciseClient.capabilities.await()
+            val capabilities = exerciseClient.getCapabilitiesAsync().await()
             if (ExerciseType.RUNNING in capabilities.supportedExerciseTypes) {
                 exerciseCapabilities =
                     capabilities.getExerciseTypeCapabilities(ExerciseType.RUNNING)
@@ -128,12 +128,12 @@ class HealthServicesManager @Inject constructor(
 
         val config = ExerciseConfig.builder()
             .setExerciseType(ExerciseType.RUNNING)
-            .setAutoPauseAndResumeEnabled(false)
+            .setIsAutoPauseAndResumeEnabled(false)
             .setAggregateDataTypes(aggDataTypes)
             .setDataTypes(dataTypes)
             .setExerciseGoals(exerciseGoals)
             // Required for GPS for LOCATION data type, optional for some other types.
-            .setGpsEnabled(true)
+            .setIsGpsEnabled(true)
             .build()
         exerciseClient.startExerciseAsync(config).await()
     }
