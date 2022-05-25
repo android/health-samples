@@ -88,7 +88,7 @@
              WorkManager.
         -->
         <provider
-            android:name="androidx.work.impl.WorkManagerInitializer"
+            android:name="androidx.work.WorkManagerInitializer"
             android:authorities="${applicationId}.workmanager-init"
             tools:node="remove" />
     </application>
