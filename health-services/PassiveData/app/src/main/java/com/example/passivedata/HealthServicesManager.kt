@@ -35,7 +35,7 @@ class HealthServicesManager @Inject constructor(
     private val dataTypes = setOf(DataType.HEART_RATE_BPM)
 
     suspend fun hasHeartRateCapability(): Boolean {
-        val capabilities = passiveMonitoringClient.capabilities.await()
+        val capabilities = passiveMonitoringClient.getCapabilitiesAsync().await()
         return (DataType.HEART_RATE_BPM in capabilities.supportedDataTypesPassiveMonitoring)
     }
 
@@ -45,7 +45,7 @@ class HealthServicesManager @Inject constructor(
             .build()
 
         Log.i(TAG, "Registering listener")
-        passiveMonitoringClient.registerPassiveListenerServiceAsync(
+        passiveMonitoringClient.setPassiveListenerServiceAsync(
             PassiveDataService::class.java,
             passiveListenerConfig
         ).await()
@@ -53,7 +53,7 @@ class HealthServicesManager @Inject constructor(
 
     suspend fun unregisterForHeartRateData() {
         Log.i(TAG, "Unregistering listeners")
-        passiveMonitoringClient.unregisterPassiveListenerCallbackAsync().await()
-        passiveMonitoringClient.unregisterPassiveListenerServiceAsync().await()
+        passiveMonitoringClient.clearPassiveListenerCallbackAsync().await()
+        passiveMonitoringClient.clearPassiveListenerServiceAsync().await()
     }
 }

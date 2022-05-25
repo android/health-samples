@@ -84,6 +84,13 @@
             </intent-filter>
         </receiver>
 
+        <!-- Our application implements Configuration.Provider, so we don't need this to initialize
+             WorkManager.
+        -->
+        <provider
+            android:name="androidx.work.WorkManagerInitializer"
+            android:authorities="${applicationId}.workmanager-init"
+            tools:node="remove" />
     </application>
 
 </manifest>

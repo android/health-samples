@@ -24,7 +24,9 @@ import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.health.services.client.data.DataPoint
 import androidx.health.services.client.data.DataType
-import androidx.health.services.client.data.HrAccuracy
+import androidx.health.services.client.data.HeartRateAccuracy
+import androidx.health.services.client.data.HeartRateAccuracy.SensorStatus.Companion.ACCURACY_HIGH
+import androidx.health.services.client.data.HeartRateAccuracy.SensorStatus.Companion.ACCURACY_MEDIUM
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -74,9 +76,9 @@ fun List<DataPoint>.latestHeartRate(): Double? {
         .filter {
             it.accuracy == null ||
                     setOf(
-                        HrAccuracy.SensorStatus.ACCURACY_MEDIUM,
-                        HrAccuracy.SensorStatus.ACCURACY_HIGH
-                    ).contains((it.accuracy as HrAccuracy).sensorStatus)
+                        ACCURACY_HIGH,
+                        ACCURACY_MEDIUM
+                    ).contains((it.accuracy as HeartRateAccuracy).sensorStatus)
         }
         .filter {
             it.value.asDouble() > 0
