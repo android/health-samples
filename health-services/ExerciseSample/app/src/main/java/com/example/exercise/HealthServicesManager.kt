@@ -18,22 +18,9 @@ package com.example.exercise
 
 import android.util.Log
 import androidx.concurrent.futures.await
-import androidx.health.services.client.ExerciseUpdateListener
+import androidx.health.services.client.ExerciseUpdateCallback
 import androidx.health.services.client.HealthServicesClient
-import androidx.health.services.client.data.Availability
-import androidx.health.services.client.data.ComparisonType
-import androidx.health.services.client.data.DataType
-import androidx.health.services.client.data.DataTypeCondition
-import androidx.health.services.client.data.ExerciseConfig
-import androidx.health.services.client.data.ExerciseGoal
-import androidx.health.services.client.data.ExerciseLapSummary
-import androidx.health.services.client.data.ExerciseTrackedStatus
-import androidx.health.services.client.data.ExerciseType
-import androidx.health.services.client.data.ExerciseTypeCapabilities
-import androidx.health.services.client.data.ExerciseUpdate
-import androidx.health.services.client.data.LocationAvailability
-import androidx.health.services.client.data.Value
-import androidx.health.services.client.data.WarmUpConfig
+import androidx.health.services.client.data.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
@@ -158,15 +145,13 @@ class HealthServicesManager @Inject constructor(
         // TODO Handle varies exerciseTrackedStatus states, especially OWNED_EXERCISE_IN_PROGRESS
         // and OTHER_APP_IN_PROGRESS
 
-        val warmUpConfig = WarmUpConfig.builder()
-            .setExerciseType(ExerciseType.RUNNING)
-            .setDataTypes(
-                setOf(
-                    DataType.HEART_RATE_BPM,
-                    DataType.LOCATION
-                )
+        val warmUpConfig = WarmUpConfig(
+            ExerciseType.RUNNING,
+            setOf(
+                DataType.HEART_RATE_BPM,
+                DataType.LOCATION
             )
-            .build()
+        )
 
         try {
             exerciseClient.prepareExerciseAsync(warmUpConfig).await()
@@ -210,17 +195,24 @@ class HealthServicesManager @Inject constructor(
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     val exerciseUpdateFlow = callbackFlow {
-        val listener = object : ExerciseUpdateListener {
-            override fun onExerciseUpdate(update: ExerciseUpdate) {
+        val callback = object : ExerciseUpdateCallback {
+            override fun onExerciseUpdateReceived(update: ExerciseUpdate) {
                 coroutineScope.runCatching {
                     trySendBlocking(ExerciseMessage.ExerciseUpdateMessage(update))
                 }
             }
 
-            override fun onLapSummary(lapSummary: ExerciseLapSummary) {
+            override fun onLapSummaryReceived(lapSummary: ExerciseLapSummary) {
                 coroutineScope.runCatching {
                     trySendBlocking(ExerciseMessage.LapSummaryMessage(lapSummary))
                 }
+            }
+
+            override fun onRegistered() {
+            }
+
+            override fun onRegistrationFailed(throwable: Throwable) {
+                TODO("Not yet implemented")
             }
 
             override fun onAvailabilityChanged(dataType: DataType, availability: Availability) {
@@ -231,9 +223,9 @@ class HealthServicesManager @Inject constructor(
                 }
             }
         }
-        exerciseClient.setUpdateListenerAsync(listener)
+        exerciseClient.setUpdateCallback(callback)
         awaitClose {
-            exerciseClient.clearUpdateListenerAsync(listener)
+            exerciseClient.clearUpdateCallbackAsync(callback)
         }
     }
 
