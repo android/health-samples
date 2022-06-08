@@ -208,18 +208,18 @@ class HealthConnectManager(private val context: Context) {
 
         return ActivitySessionData(
             uid = uid,
-            totalActiveTime = aggregateData.getMetric(ActivitySession.ACTIVE_TIME_TOTAL),
-            totalSteps = aggregateData.getMetric(Steps.COUNT_TOTAL),
-            totalDistance = aggregateData.getMetric(Distance.DISTANCE_TOTAL),
-            totalEnergyBurned = aggregateData.getMetric(TotalEnergyBurned.TOTAL),
-            minHeartRate = aggregateData.getMetric(HeartRateSeries.BPM_MIN),
-            maxHeartRate = aggregateData.getMetric(HeartRateSeries.BPM_MAX),
-            avgHeartRate = aggregateData.getMetric(HeartRateSeries.BPM_AVG),
+            totalActiveTime = aggregateData[ActivitySession.ACTIVE_TIME_TOTAL],
+            totalSteps = aggregateData[Steps.COUNT_TOTAL],
+            totalDistance = aggregateData[Distance.DISTANCE_TOTAL],
+            totalEnergyBurned = aggregateData[TotalEnergyBurned.TOTAL],
+            minHeartRate = aggregateData[HeartRateSeries.BPM_MIN],
+            maxHeartRate = aggregateData[HeartRateSeries.BPM_MAX],
+            avgHeartRate = aggregateData[HeartRateSeries.BPM_AVG],
             heartRateSeries = heartRateData,
             speedSeries = speedData,
-            minSpeed = aggregateData.getMetric(SpeedSeries.SPEED_MIN),
-            maxSpeed = aggregateData.getMetric(SpeedSeries.SPEED_MAX),
-            avgSpeed = aggregateData.getMetric(SpeedSeries.SPEED_AVG),
+            minSpeed = aggregateData[SpeedSeries.SPEED_MIN],
+            maxSpeed = aggregateData[SpeedSeries.SPEED_MAX],
+            avgSpeed = aggregateData[SpeedSeries.SPEED_AVG],
         )
     }
 
@@ -306,7 +306,7 @@ class HealthConnectManager(private val context: Context) {
                     startZoneOffset = session.startZoneOffset,
                     endTime = session.endTime,
                     endZoneOffset = session.endZoneOffset,
-                    duration = aggregateResponse.getMetric(SleepSession.SLEEP_DURATION_TOTAL),
+                    duration = aggregateResponse[SleepSession.SLEEP_DURATION_TOTAL],
                     stages = stagesResponse.records
                 )
             )
@@ -343,7 +343,7 @@ class HealthConnectManager(private val context: Context) {
             timeRangeFilter = TimeRangeFilter.between(start, end)
         )
         val response = healthConnectClient.aggregate(request)
-        return response.getMetric(Weight.WEIGHT_AVG)
+        return response[Weight.WEIGHT_AVG]
     }
 
     /**

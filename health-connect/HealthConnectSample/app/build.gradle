@@ -20,11 +20,11 @@ plugins {
 }
 
 android {
-    compileSdk 31
+    compileSdk 32
 
     defaultConfig {
         applicationId "com.example.healthconnectsample"
-        minSdk 27
+        minSdk 26
         targetSdk 31
         versionCode 1
         versionName "1.0"
