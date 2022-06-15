@@ -38,15 +38,15 @@ fun dateTimeWithOffsetOrDefault(time: Instant, offset: ZoneOffset?): ZonedDateTi
 
 fun Duration.formatTime() = String.format(
     "%02d:%02d:%02d",
-    this.toHoursPart(),
-    this.toMinutesPart(),
-    this.toSecondsPart()
+    this.toHours() % 24,
+    this.toMinutes() % 60,
+    this.seconds % 60
 )
 
 fun Duration.formatHoursMinutes() = String.format(
     "%01dh%02dm",
-    this.toHoursPart(),
-    this.toMinutesPart()
+    this.toHours() % 24,
+    this.toMinutes() % 60
 )
 
 /**
