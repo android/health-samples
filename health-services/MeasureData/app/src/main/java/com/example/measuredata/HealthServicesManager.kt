@@ -24,9 +24,6 @@ import androidx.health.services.client.data.Availability
 import androidx.health.services.client.data.DataPoint
 import androidx.health.services.client.data.DataType
 import androidx.health.services.client.data.DataTypeAvailability
-import com.google.common.util.concurrent.FutureCallback
-import com.google.common.util.concurrent.Futures
-import com.google.common.util.concurrent.MoreExecutors.directExecutor
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.sendBlocking
@@ -43,7 +40,7 @@ class HealthServicesManager @Inject constructor(
     private val measureClient = healthServicesClient.measureClient
 
     suspend fun hasHeartRateCapability(): Boolean {
-        val capabilities = measureClient.capabilities.await()
+        val capabilities = measureClient.getCapabilitiesAsync().await()
         return (DataType.HEART_RATE_BPM in capabilities.supportedDataTypesMeasure)
     }
 
@@ -60,46 +57,28 @@ class HealthServicesManager @Inject constructor(
             override fun onAvailabilityChanged(dataType: DataType, availability: Availability) {
                 // Only send back DataTypeAvailability (not LocationAvailability)
                 if (availability is DataTypeAvailability) {
-                    sendBlocking(MeasureMessage.MeasureAvailabilty(availability))
+                    sendBlocking(MeasureMessage.MeasureAvailability(availability))
                 }
             }
 
-            override fun onData(data: List<DataPoint>) {
+            override fun onDataReceived(data: List<DataPoint>) {
                 sendBlocking(MeasureMessage.MeasureData(data))
             }
         }
 
         Log.d(TAG, "Registering for data")
-        try {
-            measureClient.registerCallbackAsync(DataType.HEART_RATE_BPM, callback)
-        } catch (e) {
-
-        }
+        measureClient.registerMeasureCallback(DataType.HEART_RATE_BPM, callback)
 
         awaitClose {
             Log.d(TAG, "Unregistering for data")
             runBlocking {
-                measureClient.unregisterCallbackAsync(DataType.HEART_RATE_BPM, callback),
-
+                measureClient.unregisterMeasureCallbackAsync(DataType.HEART_RATE_BPM, callback)
             }
-            Futures.addCallback(
-                measureClient.unregisterCallbackAsync(DataType.HEART_RATE_BPM, callback),
-                object : FutureCallback<Void> {
-                    override fun onSuccess(result: Void?) {
-                        TODO("Not yet implemented")
-                    }
-
-                    override fun onFailure(t: Throwable) {
-                        TODO("Not yet implemented")
-                    }
-                },
-                context // what should this be?
-            )
         }
     }
 }
 
 sealed class MeasureMessage {
-    class MeasureAvailabilty(val availability: DataTypeAvailability) : MeasureMessage()
+    class MeasureAvailability(val availability: DataTypeAvailability) : MeasureMessage()
     class MeasureData(val data: List<DataPoint>): MeasureMessage()
 }

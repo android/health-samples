@@ -61,7 +61,7 @@ class MainViewModel @Inject constructor(
     suspend fun measureHeartRate() {
         healthServicesManager.heartRateMeasureFlow().collect {
             when (it) {
-                is MeasureMessage.MeasureAvailabilty -> {
+                is MeasureMessage.MeasureAvailability -> {
                     Log.d(TAG, "Availability changed: ${it.availability}")
                     _heartRateAvailable.value = it.availability
                 }
