@@ -19,11 +19,7 @@ package com.example.passivegoals
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -52,16 +48,17 @@ class MainViewModel @Inject constructor(
             }
         }
 
-        passiveGoalsEnabled = repository.passiveGoalsEnabled
-            .distinctUntilChanged()
-            .onEach { enabled ->
-                viewModelScope.launch {
-                    if (enabled)
-                        healthServicesManager.subscribeForGoals()
-                    else
-                        healthServicesManager.unsubscribeFromGoals()
+        passiveGoalsEnabled = repository.passiveGoalsEnabled.distinctUntilChanged()
+
+        viewModelScope.launch {
+            passiveGoalsEnabled.onEach { enabled ->
+                if (enabled) {
+                    healthServicesManager.subscribeForGoals()
+                } else {
+                    healthServicesManager.unsubscribeFromGoals()
                 }
             }
+        }
     }
 
     fun togglePassiveGoals(enabled: Boolean) {
