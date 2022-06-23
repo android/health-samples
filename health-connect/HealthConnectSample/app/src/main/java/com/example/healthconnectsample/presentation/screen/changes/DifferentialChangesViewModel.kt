@@ -13,14 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.healthconnectsample.presentation.screen.inputreadings
+package com.example.healthconnectsample.presentation.screen.changes
 
+import android.content.ContentValues.TAG
 import android.os.RemoteException
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.health.connect.client.changes.Change
 import androidx.health.connect.client.permission.Permission
+import androidx.health.connect.client.records.ActivityEvent
+import androidx.health.connect.client.records.ActivitySession
+import androidx.health.connect.client.records.Distance
+import androidx.health.connect.client.records.HeartRateSeries
+import androidx.health.connect.client.records.SleepSession
+import androidx.health.connect.client.records.SleepStage
+import androidx.health.connect.client.records.SpeedSeries
+import androidx.health.connect.client.records.Steps
+import androidx.health.connect.client.records.TotalCaloriesBurned
 import androidx.health.connect.client.records.Weight
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -28,24 +41,32 @@ import androidx.lifecycle.viewModelScope
 import com.example.healthconnectsample.data.HealthConnectManager
 import kotlinx.coroutines.launch
 import java.io.IOException
-import java.time.Instant
-import java.time.ZonedDateTime
-import java.time.temporal.ChronoUnit
 import java.util.UUID
 
-class InputReadingsViewModel(private val healthConnectManager: HealthConnectManager) :
+class DifferentialChangesViewModel(private val healthConnectManager: HealthConnectManager) :
     ViewModel() {
-    val permissions = setOf(
-        Permission.createReadPermission(Weight::class),
-        Permission.createWritePermission(Weight::class),
+
+    private val changesDataTypes = setOf(
+        ActivitySession::class,
+        ActivityEvent::class,
+        Steps::class,
+        SpeedSeries::class,
+        Distance::class,
+        TotalCaloriesBurned::class,
+        HeartRateSeries::class,
+        SleepSession::class,
+        SleepStage::class,
+        Weight::class
     )
-    var weeklyAvg: MutableState<Double?> = mutableStateOf(0.0)
-        private set
+    val permissions = changesDataTypes.map { Permission.createReadPermission(it) }.toSet()
 
     var permissionsGranted = mutableStateOf(false)
         private set
 
-    var readingsList: MutableState<List<Weight>> = mutableStateOf(listOf())
+    var changesToken: MutableState<String?> = mutableStateOf(null)
+        private set
+
+    var changes = mutableStateListOf<Change>()
         private set
 
     var uiState: UiState by mutableStateOf(UiState.Uninitialized)
@@ -53,43 +74,43 @@ class InputReadingsViewModel(private val healthConnectManager: HealthConnectMana
 
     fun initialLoad() {
         viewModelScope.launch {
-            tryWithPermissionsCheck {
-                readWeightInputs()
-            }
+            permissionsGranted.value = healthConnectManager.hasAllPermissions(permissions)
+            uiState = UiState.Done
         }
     }
 
-    fun inputReadings(inputValue: Double) {
+    fun enableOrDisableChanges(enable: Boolean) {
+        if (enable) {
+            viewModelScope.launch {
+                tryWithPermissionsCheck {
+                    changesToken.value = healthConnectManager.getChangesToken(changesDataTypes)
+                    Log.i(TAG, "Token: ${changesToken.value}")
+                }
+            }
+        } else {
+            changesToken.value = null
+        }
+    }
+
+    fun getChanges() {
         viewModelScope.launch {
             tryWithPermissionsCheck {
-                val time = ZonedDateTime.now().withNano(0)
-                val weight = Weight(
-                    weightKg = inputValue,
-                    time = time.toInstant(),
-                    zoneOffset = time.offset
-                )
-                healthConnectManager.writeWeightInput(weight)
-                readWeightInputs()
+                changesToken.value?.let { token ->
+                    changes.clear()
+                    healthConnectManager.getChanges(token).collect { message ->
+                        when (message) {
+                            is HealthConnectManager.ChangesMessage.ChangeList -> {
+                                changes.addAll(message.changes)
+                            }
+                            is HealthConnectManager.ChangesMessage.NoMoreChanges -> {
+                                changesToken.value = message.nextChangesToken
+                                Log.i(TAG, "Updating changes token: ${changesToken.value}")
+                            }
+                        }
+                    }
+                }
             }
         }
-    }
-
-    fun deleteWeightInput(uid: String) {
-        viewModelScope.launch {
-            tryWithPermissionsCheck {
-                healthConnectManager.deleteWeightInput(uid)
-                readWeightInputs()
-            }
-        }
-    }
-
-    private suspend fun readWeightInputs() {
-        val startOfDay = ZonedDateTime.now().truncatedTo(ChronoUnit.DAYS)
-        val now = Instant.now()
-        val endofWeek = startOfDay.toInstant().plus(7, ChronoUnit.DAYS)
-        readingsList.value = healthConnectManager.readWeightInputs(startOfDay.toInstant(), now)
-        weeklyAvg.value =
-            healthConnectManager.computeWeeklyAverage(startOfDay.toInstant(), endofWeek)
     }
 
     /**
@@ -130,13 +151,13 @@ class InputReadingsViewModel(private val healthConnectManager: HealthConnectMana
     }
 }
 
-class InputReadingsViewModelFactory(
+class DifferentialChangesViewModelFactory(
     private val healthConnectManager: HealthConnectManager
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(InputReadingsViewModel::class.java)) {
+        if (modelClass.isAssignableFrom(DifferentialChangesViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return InputReadingsViewModel(
+            return DifferentialChangesViewModel(
                 healthConnectManager = healthConnectManager
             ) as T
         }

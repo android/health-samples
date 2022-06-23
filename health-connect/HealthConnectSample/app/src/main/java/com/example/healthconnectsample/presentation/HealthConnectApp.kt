@@ -40,6 +40,8 @@ import com.example.healthconnectsample.presentation.navigation.Screen
 import com.example.healthconnectsample.presentation.theme.HealthConnectTheme
 import kotlinx.coroutines.launch
 
+const val TAG = "Health Connect sample"
+
 @Composable
 fun HealthConnectApp(healthConnectManager: HealthConnectManager) {
     HealthConnectTheme {
@@ -59,6 +61,8 @@ fun HealthConnectApp(healthConnectManager: HealthConnectManager) {
                         val titleId = when (currentRoute) {
                             Screen.ActivitySessions.route -> Screen.ActivitySessions.titleId
                             Screen.SleepSessions.route -> Screen.SleepSessions.titleId
+                            Screen.InputReadings.route -> Screen.InputReadings.titleId
+                            Screen.DifferentialChanges.route -> Screen.DifferentialChanges.titleId
                             else -> R.string.app_name
                         }
                         Text(stringResource(titleId))

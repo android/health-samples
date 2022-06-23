@@ -47,7 +47,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.health.connect.client.metadata.Metadata
 import androidx.health.connect.client.permission.HealthDataRequestPermissions
 import androidx.health.connect.client.permission.Permission
 import androidx.health.connect.client.records.Weight
@@ -65,7 +64,7 @@ fun InputReadingsScreen(
     permissionsGranted: Boolean,
     readingsList: List<Weight>,
     uiState: InputReadingsViewModel.UiState,
-    onInsertClick: (Weight) -> Unit = {},
+    onInsertClick: (Double) -> Unit = {},
     onDeleteClick: (String) -> Unit = {},
     onError: (Throwable?) -> Unit = {},
     onPermissionsResult: () -> Unit = {},
@@ -147,15 +146,7 @@ fun InputReadingsScreen(
                     Button(
                         enabled = hasValidDoubleInRange(weightInput),
                         onClick = {
-                            onInsertClick(
-                                Weight(
-                                    weightInput.toDouble(),
-                                    time = Instant.now(),
-                                    zoneOffset = null,
-                                    metadata = Metadata(UUID.randomUUID().toString())
-                                )
-
-                            )
+                            onInsertClick(weightInput.toDouble())
                             // clear TextField when new weight is entered
                             weightInput = ""
                         },

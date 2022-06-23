@@ -20,6 +20,7 @@ import android.os.Build
 import androidx.compose.runtime.mutableStateOf
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
+import androidx.health.connect.client.changes.Change
 import androidx.health.connect.client.metadata.DataOrigin
 import androidx.health.connect.client.permission.HealthDataRequestPermissions
 import androidx.health.connect.client.permission.Permission
@@ -38,9 +39,13 @@ import androidx.health.connect.client.records.TotalCaloriesBurned
 import androidx.health.connect.client.records.TotalEnergyBurned
 import androidx.health.connect.client.records.Weight
 import androidx.health.connect.client.request.AggregateRequest
+import androidx.health.connect.client.request.ChangesTokenRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import com.example.healthconnectsample.R
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import java.io.IOException
 import java.time.Instant
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
@@ -358,6 +363,37 @@ class HealthConnectManager(private val context: Context) {
     }
 
     /**
+     * Obtains a changes token for the specified record types.
+     */
+    suspend fun getChangesToken(dataTypes: Set<KClass<out Record>>): String {
+        val request = ChangesTokenRequest(dataTypes)
+        return healthConnectClient.getChangesToken(request)
+    }
+
+    /**
+     * Creates a [Flow] of change messages, using a changes token as a start point. The flow will
+     * terminate when no more changes are available, and the final message will contain the next
+     * changes token to use.
+     */
+    suspend fun getChanges(token: String): Flow<ChangesMessage> = flow {
+        var nextChangesToken = token
+        do {
+            val response = healthConnectClient.getChanges(nextChangesToken)
+            if (response.changesTokenExpired) {
+                // As described here: https://developer.android.com/guide/health-and-fitness/health-connect/data-and-data-types/differential-changes-api
+                // tokens are only valid for 30 days. It is important to check whether the token has
+                // expired. As well as ensuring there is a fallback to using the token (for example
+                // importing data since a certain date), more importantly, the app should ensure
+                // that the changes API is used sufficiently regularly that tokens do not expire.
+                throw IOException("Changes token has expired")
+            }
+            emit(ChangesMessage.ChangeList(response.changes))
+            nextChangesToken = response.nextChangesToken
+        } while (response.hasMore)
+        emit(ChangesMessage.NoMoreChanges(nextChangesToken))
+    }
+
+    /**
      * Creates a random list of sleep stages that spans the specified [start] to [end] time.
      */
     private fun generateSleepStages(start: ZonedDateTime, end: ZonedDateTime): List<SleepStage> {
@@ -444,6 +480,12 @@ class HealthConnectManager(private val context: Context) {
     )
 
     private fun isSupported() = Build.VERSION.SDK_INT >= MIN_SUPPORTED_SDK
+
+    // Represents the two types of messages that can be sent in a Changes flow.
+    sealed class ChangesMessage {
+        data class NoMoreChanges(val nextChangesToken: String) : ChangesMessage()
+        data class ChangeList(val changes: List<Change>) : ChangesMessage()
+    }
 }
 
 /**

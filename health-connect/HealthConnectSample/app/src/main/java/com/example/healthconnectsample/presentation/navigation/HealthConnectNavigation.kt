@@ -32,6 +32,9 @@ import com.example.healthconnectsample.presentation.screen.activitysession.Activ
 import com.example.healthconnectsample.presentation.screen.activitysessiondetail.ActivitySessionDetailScreen
 import com.example.healthconnectsample.presentation.screen.activitysessiondetail.ActivitySessionDetailViewModel
 import com.example.healthconnectsample.presentation.screen.activitysessiondetail.ActivitySessionDetailViewModelFactory
+import com.example.healthconnectsample.presentation.screen.changes.DifferentialChangesScreen
+import com.example.healthconnectsample.presentation.screen.changes.DifferentialChangesViewModel
+import com.example.healthconnectsample.presentation.screen.changes.DifferentialChangesViewModelFactory
 import com.example.healthconnectsample.presentation.screen.inputreadings.InputReadingsScreen
 import com.example.healthconnectsample.presentation.screen.inputreadings.InputReadingsViewModel
 import com.example.healthconnectsample.presentation.screen.inputreadings.InputReadingsViewModelFactory
@@ -170,6 +173,36 @@ fun HealthConnectNavigation(
                     viewModel.deleteWeightInput(uid)
                 },
                 readingsList = readingsList,
+                onError = { exception ->
+                    showExceptionSnackbar(scaffoldState, scope, exception)
+                },
+                onPermissionsResult = {
+                    viewModel.initialLoad()
+                }
+            )
+        }
+        composable(Screen.DifferentialChanges.route) {
+            val viewModel: DifferentialChangesViewModel = viewModel(
+                factory = DifferentialChangesViewModelFactory(
+                    healthConnectManager = healthConnectManager
+                )
+            )
+            val changesToken by viewModel.changesToken
+            val permissionsGranted by viewModel.permissionsGranted
+            val permissions = viewModel.permissions
+            DifferentialChangesScreen(
+                permissionsGranted = permissionsGranted,
+                permissions = permissions,
+                changesEnabled = changesToken != null,
+                onChangesEnable = { enabled ->
+                    viewModel.enableOrDisableChanges(enabled)
+                },
+                changes = viewModel.changes,
+                changesToken = changesToken,
+                onGetChanges = {
+                    viewModel.getChanges()
+                },
+                uiState = viewModel.uiState,
                 onError = { exception ->
                     showExceptionSnackbar(scaffoldState, scope, exception)
                 },

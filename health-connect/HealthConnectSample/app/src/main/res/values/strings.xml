@@ -20,6 +20,7 @@
     <string name="activity_session_detail">Activity session detail</string>
     <string name="sleep_sessions">Sleep sessions</string>
     <string name="sleep_session_detail">Sleep session detail</string>
+    <string name="differential_changes">Changes</string>
 
     <!-- Welcome screen -->
     <string name="welcome_message">Welcome to Health Connect!</string>
@@ -105,5 +106,24 @@
     <string name="kilograms">Kg\u0020</string>
     <string name="valid_weight_error_message"> Weight must be between 0 and 1000</string>
 
+    <!-- Differential changes screen -->
+    <string name="differential_changes_title_text">Enabling differential change tracking obtains a token that can be used later for obtaining any subsequent changes</string>
+    <string name="differential_changes_continuation_text">Click on the button below to get any new changes that have taken place in Health Connnect since the token was obtained.</string>
+    <string name="differential_changes_switch_text">Track changes</string>
+    <string name="differential_changes_button_text">"Get new changes"</string>
+    <string name="differential_changes_empty">No changes found</string>
+    <string name="differential_changes_current_token">Current token: %1$s</string>
+    <string name="differential_changes_upserted">Upserted:</string>
+    <string name="differential_changes_deleted">Deleted:</string>
 
+    <string name="differential_changes_type_activity_session">Activity session</string>
+    <string name="differential_changes_type_activity_event">Activity event</string>
+    <string name="differential_changes_type_speed_series">Speed series</string>
+    <string name="differential_changes_type_heart_rate_series">Heart rate series</string>
+    <string name="differential_changes_type_total_calories">Total calories</string>
+    <string name="differential_changes_type_steps">Steps</string>
+    <string name="differential_changes_type_sleep_session">Sleep session</string>
+    <string name="differential_changes_type_sleep_stage">Sleep stage</string>
+    <string name="differential_changes_type_distance">Distance</string>
+    <string name="differential_changes_type_weight">Weight</string>
 </resources>
