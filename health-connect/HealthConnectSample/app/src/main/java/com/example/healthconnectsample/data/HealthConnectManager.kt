@@ -65,6 +65,10 @@ class HealthConnectManager(private val context: Context) {
         private set
 
     init {
+        checkAvailability()
+    }
+
+    fun checkAvailability() {
         availability.value = when {
             HealthConnectClient.isAvailable(context) -> HealthConnectAvailability.INSTALLED
             isSupported() -> HealthConnectAvailability.NOT_INSTALLED

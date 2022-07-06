@@ -38,7 +38,13 @@ import com.example.healthconnectsample.presentation.theme.HealthConnectTheme
 @Composable
 fun NotInstalledMessage() {
     val tag = stringResource(R.string.not_installed_tag)
-    val url = stringResource(R.string.not_installed_url)
+    // Build the URL to allow the user to install the Health Connect package
+    val url = Uri.parse(stringResource(id = R.string.market_url))
+        .buildUpon()
+        .appendQueryParameter("id", stringResource(id = R.string.health_connect_package))
+        // Additional parameter to execute the onboarding flow.
+        .appendQueryParameter("url", stringResource(id = R.string.onboarding_url))
+        .build()
     val context = LocalContext.current
 
     val notInstalledText = stringResource(id = R.string.not_installed_description)
@@ -49,7 +55,7 @@ fun NotInstalledMessage() {
             append(notInstalledText)
             append("\n\n")
         }
-        pushStringAnnotation(tag = tag, annotation = url)
+        pushStringAnnotation(tag = tag, annotation = url.toString())
         withStyle(style = SpanStyle(color = MaterialTheme.colors.primary)) {
             append(notInstalledLinkText)
         }
