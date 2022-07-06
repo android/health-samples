@@ -35,6 +35,17 @@ buildscript {
     }
 }
 
+<<<<<<< Updated upstream
+=======
+allprojects {
+    repositories {
+        maven { url("/Users/stillers/workspace/wear-whs-eap/m2repo") }
+        google()
+        mavenCentral()
+    }
+}
+
+>>>>>>> Stashed changes
 task clean(type: Delete) {
     delete rootProject.buildDir
 }

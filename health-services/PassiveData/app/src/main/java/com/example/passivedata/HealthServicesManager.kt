@@ -49,11 +49,11 @@ class HealthServicesManager @Inject constructor(
             .setDataTypes(dataTypes)
             .setComponentName(componentName)
             .build()
-        passiveMonitoringClient.registerDataCallback(config).await()
+        passiveMonitoringClient.registerDataCallbackAsync(config).await()
     }
 
     suspend fun unregisterForHeartRateData() {
         Log.i(TAG, "Unregistering for background data.")
-        passiveMonitoringClient.unregisterDataCallback().await()
+        passiveMonitoringClient.unregisterDataCallbackAsync().await()
     }
 }
