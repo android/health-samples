@@ -106,10 +106,32 @@ fun WelcomeScreen(
 
 @Preview
 @Composable
-fun NotInstalledMessagePreview() {
+fun InstalledMessagePreview() {
     HealthConnectTheme {
         WelcomeScreen(
             healthConnectAvailability = HealthConnectAvailability.INSTALLED,
+            onResumeAvailabilityCheck = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+fun NotInstalledMessagePreview() {
+    HealthConnectTheme {
+        WelcomeScreen(
+            healthConnectAvailability = HealthConnectAvailability.NOT_INSTALLED,
+            onResumeAvailabilityCheck = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+fun NotSupportedMessagePreview() {
+    HealthConnectTheme {
+        WelcomeScreen(
+            healthConnectAvailability = HealthConnectAvailability.NOT_SUPPORTED,
             onResumeAvailabilityCheck = {}
         )
     }
