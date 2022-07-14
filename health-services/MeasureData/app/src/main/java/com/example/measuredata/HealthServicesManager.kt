@@ -24,9 +24,11 @@ import androidx.health.services.client.data.Availability
 import androidx.health.services.client.data.DataPoint
 import androidx.health.services.client.data.DataType
 import androidx.health.services.client.data.DataTypeAvailability
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 /**
@@ -38,7 +40,7 @@ class HealthServicesManager @Inject constructor(
     private val measureClient = healthServicesClient.measureClient
 
     suspend fun hasHeartRateCapability(): Boolean {
-        val capabilities = measureClient.capabilities.await()
+        val capabilities = measureClient.getCapabilitiesAsync().await()
         return (DataType.HEART_RATE_BPM in capabilities.supportedDataTypesMeasure)
     }
 
@@ -49,31 +51,34 @@ class HealthServicesManager @Inject constructor(
      *
      * [callbackFlow] is used to bridge between a callback-based API and Kotlin flows.
      */
-    fun heartRateMeasureFlow() = callbackFlow<MeasureMessage> {
+    @ExperimentalCoroutinesApi
+    fun heartRateMeasureFlow() = callbackFlow {
         val callback = object : MeasureCallback {
             override fun onAvailabilityChanged(dataType: DataType, availability: Availability) {
                 // Only send back DataTypeAvailability (not LocationAvailability)
                 if (availability is DataTypeAvailability) {
-                    sendBlocking(MeasureMessage.MeasureAvailabilty(availability))
+                    sendBlocking(MeasureMessage.MeasureAvailability(availability))
                 }
             }
 
-            override fun onData(data: List<DataPoint>) {
+            override fun onDataReceived(data: List<DataPoint>) {
                 sendBlocking(MeasureMessage.MeasureData(data))
             }
         }
 
         Log.d(TAG, "Registering for data")
-        measureClient.registerCallback(DataType.HEART_RATE_BPM, callback)
+        measureClient.registerMeasureCallback(DataType.HEART_RATE_BPM, callback)
 
         awaitClose {
             Log.d(TAG, "Unregistering for data")
-            measureClient.unregisterCallback(DataType.HEART_RATE_BPM, callback)
+            runBlocking {
+                measureClient.unregisterMeasureCallbackAsync(DataType.HEART_RATE_BPM, callback)
+            }
         }
     }
 }
 
 sealed class MeasureMessage {
-    class MeasureAvailabilty(val availability: DataTypeAvailability) : MeasureMessage()
+    class MeasureAvailability(val availability: DataTypeAvailability) : MeasureMessage()
     class MeasureData(val data: List<DataPoint>): MeasureMessage()
 }

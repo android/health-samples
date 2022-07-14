@@ -16,16 +16,13 @@
 
 package com.example.passivegoals
 
-import android.content.ComponentName
 import android.content.Context
 import android.util.Log
 import androidx.concurrent.futures.await
 import androidx.health.services.client.HealthServicesClient
-import androidx.health.services.client.data.ComparisonType
-import androidx.health.services.client.data.DataType
-import androidx.health.services.client.data.DataTypeCondition
-import androidx.health.services.client.data.PassiveGoal
-import androidx.health.services.client.data.Value
+import androidx.health.services.client.data.*
+import com.google.common.util.concurrent.FutureCallback
+import com.google.common.util.concurrent.Futures
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
@@ -34,12 +31,12 @@ val dailyStepsGoal by lazy {
     // 10000 steps per day
     val condition = DataTypeCondition(
         dataType = DataType.DAILY_STEPS,
-        threshold = Value.ofLong(10_000),
+        threshold = Value.ofLong(10),
         comparisonType = ComparisonType.GREATER_THAN_OR_EQUAL
     )
     // For DAILY_* DataTypes, REPEATED goals trigger only once per 24 period, resetting each day
     // at midnight local time.
-    PassiveGoal(condition, PassiveGoal.TriggerType.REPEATED)
+    PassiveGoal(condition, PassiveGoal.TriggerFrequency.REPEATED)
 }
 
 val floorsGoal by lazy {
@@ -50,7 +47,16 @@ val floorsGoal by lazy {
         comparisonType = ComparisonType.GREATER_THAN_OR_EQUAL
     )
     // REPEATED means we will be notified on every occurrence until we unsubscribe.
-    PassiveGoal(condition, PassiveGoal.TriggerType.REPEATED)
+    PassiveGoal(condition, PassiveGoal.TriggerFrequency.REPEATED)
+}
+
+val hrGoal by lazy {
+    val condition = DataTypeCondition(
+        dataType = DataType.HEART_RATE_BPM,
+        threshold = Value.ofDouble(50.0),
+        comparisonType = ComparisonType.GREATER_THAN_OR_EQUAL
+    )
+    PassiveGoal(condition, PassiveGoal.TriggerFrequency.REPEATED)
 }
 
 /**
@@ -64,26 +70,44 @@ class HealthServicesManager @Inject constructor(
     private val passiveMonitoringClient = healthServicesClient.passiveMonitoringClient
 
     suspend fun hasFloorsAndDailyStepsCapability(): Boolean {
-        val capabilities = passiveMonitoringClient.capabilities.await()
-        return capabilities.supportedDataTypesEvents.containsAll(
+        val capabilities = passiveMonitoringClient.getCapabilitiesAsync().await()
+        val s = capabilities.supportedDataTypesPassiveGoals.joinToString("\n") { it.toString() }
+        Log.d("qqqqqq", s)
+        return capabilities.supportedDataTypesPassiveGoals.containsAll(
             setOf(
-                DataType.TOTAL_CALORIES,
-                DataType.FLOORS
+                DataType.DAILY_STEPS,
+                DataType.FLOORS,
+                DataType.HEART_RATE_BPM
             )
         )
     }
 
     suspend fun subscribeForGoals() {
         Log.i(TAG, "Subscribing for goals")
-        val componentName = ComponentName(context, PassiveGoalsReceiver::class.java)
-        // Each goal is a separate subscription.
-        passiveMonitoringClient.registerPassiveGoalCallback(dailyStepsGoal, componentName).await()
-        passiveMonitoringClient.registerPassiveGoalCallback(floorsGoal, componentName).await()
+        val passiveListenerConfig = PassiveListenerConfig.builder()
+            .setPassiveGoals(setOf(dailyStepsGoal, floorsGoal, hrGoal))
+            .build()
+        val future = passiveMonitoringClient.setPassiveListenerServiceAsync(
+            PassiveGoalService::class.java,
+            passiveListenerConfig
+        )
+        Futures.addCallback(
+            future, object : FutureCallback<Void> {
+                override fun onSuccess(result: Void?) {
+                    Log.d("qqqqqq", "successful")
+                }
+
+                override fun onFailure(t: Throwable) {
+                    Log.d("qqqqqq", "failure")
+                }
+            },
+            // causes the callbacks to be executed on the main (UI) thread
+            context.mainExecutor
+        )
     }
 
     suspend fun unsubscribeFromGoals() {
         Log.i(TAG, "Unsubscribing from goals")
-        passiveMonitoringClient.unregisterPassiveGoalCallback(dailyStepsGoal).await()
-        passiveMonitoringClient.unregisterPassiveGoalCallback(floorsGoal).await()
+        passiveMonitoringClient.clearPassiveListenerServiceAsync().await()
     }
 }

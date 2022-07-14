@@ -25,6 +25,7 @@
     <!-- For receiving steps and floors data. -->
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <!-- Needed in order to re-register for goals on device startup. -->
+    <uses-permission android:name="android.permission.BODY_SENSORS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <!-- When an app targets Android 11 (API level 30) or higher and queries for information about
@@ -63,17 +64,9 @@
             </intent-filter>
         </activity>
 
-        <!-- Receiver that gets notified of goals in the background. We use the same receiver for
-             multiple goals.
-        -->
-        <receiver
-            android:name=".PassiveGoalsReceiver"
-            android:exported="true"
-            tools:ignore="ExportedReceiver">
-            <intent-filter>
-                <action android:name="hs.passivemonitoring.GOAL" />
-            </intent-filter>
-        </receiver>
+        <service android:name=".PassiveGoalService"
+            android:permission="com.google.android.wearable.healthservices.permission.PASSIVE_DATA_BINDING"
+            android:exported="true" />
 
         <!-- Receiver that re-registers for goals after a device restart. -->
         <receiver

@@ -28,12 +28,7 @@ import android.os.IBinder
 import android.os.SystemClock
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.health.services.client.data.AggregateDataPoint
-import androidx.health.services.client.data.DataPoint
-import androidx.health.services.client.data.DataType
-import androidx.health.services.client.data.ExerciseState
-import androidx.health.services.client.data.ExerciseUpdate
-import androidx.health.services.client.data.LocationAvailability
+import androidx.health.services.client.data.*
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
@@ -194,7 +189,7 @@ class ExerciseService : LifecycleService() {
 
     private fun processExerciseUpdate(exerciseUpdate: ExerciseUpdate) {
         val oldState = _exerciseState.value
-        if (!oldState.isEnded && exerciseUpdate.state.isEnded) {
+        if (!oldState.isEnded && exerciseUpdate.exerciseStateInfo.state.isEnded) {
             // Our exercise ended. Gracefully handle this termination be doing the following:
             // TODO Save partial workout state, show workout summary, and let the user know why the exercise was ended.
 
@@ -202,7 +197,7 @@ class ExerciseService : LifecycleService() {
             removeOngoingActivityNotification()
 
             // Custom flow for the possible states captured by the isEnded boolean
-            when (exerciseUpdate.state) {
+            when (exerciseUpdate.exerciseStateInfo.state) {
                 ExerciseState.TERMINATED -> {
                     // TODO Send the user a notification (another app ended their workout)
                     Log.i(
@@ -227,12 +222,12 @@ class ExerciseService : LifecycleService() {
                 else -> {
                 }
             }
-        } else if (oldState.isEnded && exerciseUpdate.state == ExerciseState.ACTIVE) {
+        } else if (oldState.isEnded && exerciseUpdate.exerciseStateInfo.state == ExerciseState.ACTIVE) {
             // Reset laps.
             _exerciseLaps.value = 0
         }
 
-        _exerciseState.value = exerciseUpdate.state
+        _exerciseState.value = exerciseUpdate.exerciseStateInfo.state
         _exerciseMetrics.value = exerciseUpdate.latestMetrics
         _aggregateMetrics.value = exerciseUpdate.latestAggregateMetrics
         _exerciseDurationUpdate.value =

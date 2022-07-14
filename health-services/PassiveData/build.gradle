@@ -35,6 +35,14 @@ buildscript {
     }
 }
 
+allprojects {
+    repositories {
+        maven { url("/tmp/m2repo") }
+        google()
+        mavenCentral()
+    }
+}
+
 task clean(type: Delete) {
     delete rootProject.buildDir
 }

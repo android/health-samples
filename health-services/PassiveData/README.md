@@ -16,6 +16,8 @@ like this:
 Use the switch to enable or disable passive data updates. The most recent measurement received is
 shown below that.
 
+Note that on some devices, it may take several minutes for a value to be returned and displayed.
+
 On devices where heart rate data is not available, you will see a screen like this:
 
 ![heart rate unavailable screenshot](screenshots/whs_passive_data_not_available.png)
