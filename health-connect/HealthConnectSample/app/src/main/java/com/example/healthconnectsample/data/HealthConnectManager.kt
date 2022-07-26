@@ -17,31 +17,32 @@ package com.example.healthconnectsample.data
 
 import android.content.Context
 import android.os.Build
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.compose.runtime.mutableStateOf
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.changes.Change
-import androidx.health.connect.client.metadata.DataOrigin
-import androidx.health.connect.client.permission.HealthDataRequestPermissions
 import androidx.health.connect.client.permission.Permission
-import androidx.health.connect.client.records.ActivityEvent
-import androidx.health.connect.client.records.ActivitySession
-import androidx.health.connect.client.records.Distance
-import androidx.health.connect.client.records.HeartRate
-import androidx.health.connect.client.records.HeartRateSeries
+import androidx.health.connect.client.records.DistanceRecord
+import androidx.health.connect.client.records.ExerciseEventRecord
+import androidx.health.connect.client.records.ExerciseSessionRecord
+import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.Record
-import androidx.health.connect.client.records.SleepSession
-import androidx.health.connect.client.records.SleepStage
-import androidx.health.connect.client.records.Speed
-import androidx.health.connect.client.records.SpeedSeries
-import androidx.health.connect.client.records.Steps
-import androidx.health.connect.client.records.TotalCaloriesBurned
-import androidx.health.connect.client.records.TotalEnergyBurned
-import androidx.health.connect.client.records.Weight
+import androidx.health.connect.client.records.SleepSessionRecord
+import androidx.health.connect.client.records.SleepStageRecord
+import androidx.health.connect.client.records.SpeedRecord
+import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
+import androidx.health.connect.client.records.WeightRecord
+import androidx.health.connect.client.records.metadata.DataOrigin
 import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.request.ChangesTokenRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
+import androidx.health.connect.client.units.Energy
+import androidx.health.connect.client.units.Length
+import androidx.health.connect.client.units.Mass
+import androidx.health.connect.client.units.Velocity
 import com.example.healthconnectsample.R
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -80,7 +81,7 @@ class HealthConnectManager(private val context: Context) {
      * Determines whether all the specified permissions are already granted. It is recommended to
      * call [PermissionController.getGrantedPermissions] first in the permissions flow, as if the
      * permissions are already granted then there is no need to request permissions via
-     * [HealthDataRequestPermissions].
+     * [PermissionController.createRequestPermissionActivityContract].
      */
     suspend fun hasAllPermissions(permissions: Set<Permission>): Boolean {
         return permissions == healthConnectClient.permissionController.getGrantedPermissions(
@@ -88,15 +89,19 @@ class HealthConnectManager(private val context: Context) {
         )
     }
 
+    fun requestPermissionsActivityContract(): ActivityResultContract<Set<Permission>, Set<Permission>> {
+        return healthConnectClient.permissionController.createRequestPermissionActivityContract()
+    }
+
     /**
-     * Obtains a list of [ActivitySession]s in a specified time frame. An Activity Session is a
+     * Obtains a list of [ExerciseSessionRecord]s in a specified time frame. An Exercise Session Record is a
      * period of time given to an activity, that would make sense to a user, e.g. "Afternoon run"
      * etc. It does not necessarily mean, however, that the user was *running* for that entire time,
      * more that conceptually, this was the activity being undertaken.
      */
-    suspend fun readActivitySessions(start: Instant, end: Instant): List<ActivitySession> {
+    suspend fun readExerciseSessions(start: Instant, end: Instant): List<ExerciseSessionRecord> {
         val request = ReadRecordsRequest(
-            recordType = ActivitySession::class,
+            recordType = ExerciseSessionRecord::class,
             timeRangeFilter = TimeRangeFilter.between(start, end)
         )
         val response = healthConnectClient.readRecords(request)
@@ -104,21 +109,21 @@ class HealthConnectManager(private val context: Context) {
     }
 
     /**
-     * Writes an [ActivitySession] to Health Connect, and additionally writes underlying data for
-     * the session too, such as [Steps], [Distance] etc.
+     * Writes an [ExerciseSessionRecord] to Health Connect, and additionally writes underlying data for
+     * the session too, such as [StepsRecord], [DistanceRecord] etc.
      */
-    suspend fun writeActivitySession(start: ZonedDateTime, end: ZonedDateTime) {
+    suspend fun writeExerciseSession(start: ZonedDateTime, end: ZonedDateTime) {
         healthConnectClient.insertRecords(
             listOf(
-                ActivitySession(
+                ExerciseSessionRecord(
                     startTime = start.toInstant(),
                     startZoneOffset = start.offset,
                     endTime = end.toInstant(),
                     endZoneOffset = end.offset,
-                    activityType = ActivitySession.ActivityType.RUNNING,
+                    exerciseType = ExerciseSessionRecord.ExerciseType.RUNNING,
                     title = "My Run #${Random.nextInt(0, 60)}"
                 ),
-                Steps(
+                StepsRecord(
                     startTime = start.toInstant(),
                     startZoneOffset = start.offset,
                     endTime = end.toInstant(),
@@ -126,52 +131,52 @@ class HealthConnectManager(private val context: Context) {
                     count = (1000 + 1000 * Random.nextInt(3)).toLong()
                 ),
                 // Mark a 5 minute pause during the workout
-                ActivityEvent(
+                ExerciseEventRecord(
                     startTime = start.toInstant().plus(10, ChronoUnit.MINUTES),
                     startZoneOffset = start.offset,
                     endTime = start.toInstant().plus(15, ChronoUnit.MINUTES),
                     endZoneOffset = end.offset,
-                    eventType = ActivityEvent.EventType.PAUSE
+                    eventType = ExerciseEventRecord.EventType.PAUSE
                 ),
-                Distance(
+                DistanceRecord(
                     startTime = start.toInstant(),
                     startZoneOffset = start.offset,
                     endTime = end.toInstant(),
                     endZoneOffset = end.offset,
-                    distanceMeters = (1000 + 100 * Random.nextInt(20)).toDouble()
+                    distance = Length.meters((1000 + 100 * Random.nextInt(20)).toDouble())
                 ),
-                TotalCaloriesBurned(
+                TotalCaloriesBurnedRecord(
                     startTime = start.toInstant(),
                     startZoneOffset = start.offset,
                     endTime = end.toInstant(),
                     endZoneOffset = end.offset,
-                    energyKcal = (140 + Random.nextInt(20)) * 0.01
+                    energy = Energy.calories((140 + Random.nextInt(20)) * 0.01)
                 )
             ) + buildHeartRateSeries(start, end) + buildSpeedSeries(start, end)
         )
     }
 
     /**
-     * Deletes an [ActivitySession] and underlying data.
+     * Deletes an [ExerciseSessionRecord] and underlying data.
      */
-    suspend fun deleteActivitySession(uid: String) {
-        val activitySession = healthConnectClient.readRecord(ActivitySession::class, uid)
+    suspend fun deleteExerciseSession(uid: String) {
+        val exerciseSession = healthConnectClient.readRecord(ExerciseSessionRecord::class, uid)
         healthConnectClient.deleteRecords(
-            ActivitySession::class,
+            ExerciseSessionRecord::class,
             uidsList = listOf(uid),
             clientIdsList = emptyList()
         )
         val timeRangeFilter = TimeRangeFilter.between(
-            activitySession.record.startTime,
-            activitySession.record.endTime
+            exerciseSession.record.startTime,
+            exerciseSession.record.endTime
         )
         val rawDataTypes: Set<KClass<out Record>> = setOf(
-            HeartRateSeries::class,
-            SpeedSeries::class,
-            Distance::class,
-            Steps::class,
-            TotalCaloriesBurned::class,
-            ActivityEvent::class
+            HeartRateRecord::class,
+            SpeedRecord::class,
+            DistanceRecord::class,
+            StepsRecord::class,
+            TotalCaloriesBurnedRecord::class,
+            ExerciseEventRecord::class
         )
         rawDataTypes.forEach { rawType ->
             healthConnectClient.deleteRecords(rawType, timeRangeFilter)
@@ -179,56 +184,56 @@ class HealthConnectManager(private val context: Context) {
     }
 
     /**
-     * Reads aggregated data and raw data for selected data types, for a given [ActivitySession].
+     * Reads aggregated data and raw data for selected data types, for a given [ExerciseSessionRecord].
      */
     suspend fun readAssociatedSessionData(
         uid: String
-    ): ActivitySessionData {
-        val activitySession = healthConnectClient.readRecord(ActivitySession::class, uid)
+    ): ExerciseSessionData {
+        val exerciseSession = healthConnectClient.readRecord(ExerciseSessionRecord::class, uid)
         // Use the start time and end time from the session, for reading raw and aggregate data.
         val timeRangeFilter = TimeRangeFilter.between(
-            startTime = activitySession.record.startTime,
-            endTime = activitySession.record.endTime
+            startTime = exerciseSession.record.startTime,
+            endTime = exerciseSession.record.endTime
         )
         val aggregateDataTypes = setOf(
-            ActivitySession.ACTIVE_TIME_TOTAL,
-            Steps.COUNT_TOTAL,
-            Distance.DISTANCE_TOTAL,
-            TotalCaloriesBurned.CALORIES_TOTAL,
-            HeartRateSeries.BPM_AVG,
-            HeartRateSeries.BPM_MAX,
-            HeartRateSeries.BPM_MIN,
-            SpeedSeries.SPEED_AVG,
-            SpeedSeries.SPEED_MAX,
-            SpeedSeries.SPEED_MIN
+            ExerciseSessionRecord.ACTIVE_TIME_TOTAL,
+            StepsRecord.COUNT_TOTAL,
+            DistanceRecord.DISTANCE_TOTAL,
+            TotalCaloriesBurnedRecord.ENERGY_TOTAL,
+            HeartRateRecord.BPM_AVG,
+            HeartRateRecord.BPM_MAX,
+            HeartRateRecord.BPM_MIN,
+            SpeedRecord.SPEED_AVG,
+            SpeedRecord.SPEED_MAX,
+            SpeedRecord.SPEED_MIN
         )
         // Limit the data read to just the application that wrote the session. This may or may not
         // be desirable depending on the use case: In some cases, it may be useful to combine with
         // data written by other apps.
-        val dataOriginFilter = listOf(activitySession.record.metadata.dataOrigin)
+        val dataOriginFilter = setOf(exerciseSession.record.metadata.dataOrigin)
         val aggregateRequest = AggregateRequest(
             metrics = aggregateDataTypes,
             timeRangeFilter = timeRangeFilter,
             dataOriginFilter = dataOriginFilter
         )
         val aggregateData = healthConnectClient.aggregate(aggregateRequest)
-        val speedData = readData<SpeedSeries>(timeRangeFilter, dataOriginFilter)
-        val heartRateData = readData<HeartRateSeries>(timeRangeFilter, dataOriginFilter)
+        val speedData = readData<SpeedRecord>(timeRangeFilter, dataOriginFilter)
+        val heartRateData = readData<HeartRateRecord>(timeRangeFilter, dataOriginFilter)
 
-        return ActivitySessionData(
+        return ExerciseSessionData(
             uid = uid,
-            totalActiveTime = aggregateData[ActivitySession.ACTIVE_TIME_TOTAL],
-            totalSteps = aggregateData[Steps.COUNT_TOTAL],
-            totalDistance = aggregateData[Distance.DISTANCE_TOTAL],
-            totalEnergyBurned = aggregateData[TotalEnergyBurned.TOTAL],
-            minHeartRate = aggregateData[HeartRateSeries.BPM_MIN],
-            maxHeartRate = aggregateData[HeartRateSeries.BPM_MAX],
-            avgHeartRate = aggregateData[HeartRateSeries.BPM_AVG],
+            totalActiveTime = aggregateData[ExerciseSessionRecord.ACTIVE_TIME_TOTAL],
+            totalSteps = aggregateData[StepsRecord.COUNT_TOTAL],
+            totalDistance = aggregateData[DistanceRecord.DISTANCE_TOTAL],
+            totalEnergyBurned = aggregateData[TotalCaloriesBurnedRecord.ENERGY_TOTAL],
+            minHeartRate = aggregateData[HeartRateRecord.BPM_MIN],
+            maxHeartRate = aggregateData[HeartRateRecord.BPM_MAX],
+            avgHeartRate = aggregateData[HeartRateRecord.BPM_AVG],
             heartRateSeries = heartRateData,
-            speedSeries = speedData,
-            minSpeed = aggregateData[SpeedSeries.SPEED_MIN],
-            maxSpeed = aggregateData[SpeedSeries.SPEED_MAX],
-            avgSpeed = aggregateData[SpeedSeries.SPEED_AVG],
+            speedRecord = speedData,
+            minSpeed = aggregateData[SpeedRecord.SPEED_MIN],
+            maxSpeed = aggregateData[SpeedRecord.SPEED_MAX],
+            avgSpeed = aggregateData[SpeedRecord.SPEED_AVG],
         )
     }
 
@@ -237,14 +242,14 @@ class HealthConnectManager(private val context: Context) {
      */
     suspend fun deleteAllSleepData() {
         val now = Instant.now()
-        healthConnectClient.deleteRecords(SleepStage::class, TimeRangeFilter.before(now))
-        healthConnectClient.deleteRecords(SleepSession::class, TimeRangeFilter.before(now))
+        healthConnectClient.deleteRecords(SleepStageRecord::class, TimeRangeFilter.before(now))
+        healthConnectClient.deleteRecords(SleepSessionRecord::class, TimeRangeFilter.before(now))
     }
 
     /**
-     * Generates a week's worth of sleep data using both a [SleepSession] to describe the overall
-     * period of sleep, and additionally multiple [SleepStage] periods which cover the entire
-     * [SleepSession]. For the purposes of this sample, the sleep stage data is generated randomly.
+     * Generates a week's worth of sleep data using both a [SleepSessionRecord] to describe the overall
+     * period of sleep, and additionally multiple [SleepStageRecord] periods which cover the entire
+     * [SleepSessionRecord]. For the purposes of this sample, the sleep stage data is generated randomly.
      */
     suspend fun generateSleepData() {
         val records = mutableListOf<Record>()
@@ -259,7 +264,7 @@ class HealthConnectManager(private val context: Context) {
             val bedtime = wakeUp.minusDays(1)
                 .withHour(Random.nextInt(19, 22))
                 .withMinute(Random.nextInt(0, 60))
-            val sleepSession = SleepSession(
+            val sleepSession = SleepSessionRecord(
                 notes = notes[Random.nextInt(0, notes.size)],
                 startTime = bedtime.toInstant(),
                 startZoneOffset = bedtime.offset,
@@ -277,8 +282,8 @@ class HealthConnectManager(private val context: Context) {
      * Reads sleep sessions for the previous seven days (from yesterday) to show a week's worth of
      * sleep data.
      *
-     * In addition to reading [SleepSession]s, for each session, the duration is calculated to
-     * demonstrate aggregation, and the underlying [SleepStage] data is also read.
+     * In addition to reading [SleepSessionRecord]s, for each session, the duration is calculated to
+     * demonstrate aggregation, and the underlying [SleepStageRecord] data is also read.
      */
     suspend fun readSleepSessions(): List<SleepSessionData> {
         val lastDay = ZonedDateTime.now().truncatedTo(ChronoUnit.DAYS)
@@ -289,7 +294,7 @@ class HealthConnectManager(private val context: Context) {
 
         val sessions = mutableListOf<SleepSessionData>()
         val sleepSessionRequest = ReadRecordsRequest(
-            recordType = SleepSession::class,
+            recordType = SleepSessionRecord::class,
             timeRangeFilter = TimeRangeFilter.between(firstDay.toInstant(), lastDay.toInstant()),
             ascendingOrder = false
         )
@@ -297,12 +302,12 @@ class HealthConnectManager(private val context: Context) {
         sleepSessions.records.forEach { session ->
             val sessionTimeFilter = TimeRangeFilter.between(session.startTime, session.endTime)
             val durationAggregateRequest = AggregateRequest(
-                metrics = setOf(SleepSession.SLEEP_DURATION_TOTAL),
+                metrics = setOf(SleepSessionRecord.SLEEP_DURATION_TOTAL),
                 timeRangeFilter = sessionTimeFilter
             )
             val aggregateResponse = healthConnectClient.aggregate(durationAggregateRequest)
             val stagesRequest = ReadRecordsRequest(
-                recordType = SleepStage::class,
+                recordType = SleepStageRecord::class,
                 timeRangeFilter = sessionTimeFilter
             )
             val stagesResponse = healthConnectClient.readRecords(stagesRequest)
@@ -315,7 +320,7 @@ class HealthConnectManager(private val context: Context) {
                     startZoneOffset = session.startZoneOffset,
                     endTime = session.endTime,
                     endZoneOffset = session.endZoneOffset,
-                    duration = aggregateResponse[SleepSession.SLEEP_DURATION_TOTAL],
+                    duration = aggregateResponse[SleepSessionRecord.SLEEP_DURATION_TOTAL],
                     stages = stagesResponse.records
                 )
             )
@@ -324,19 +329,19 @@ class HealthConnectManager(private val context: Context) {
     }
 
     /**
-     * Writes [Weight] record to Health Connect.
+     * Writes [WeightRecord] to Health Connect.
      */
-    suspend fun writeWeightInput(weight: Weight) {
+    suspend fun writeWeightInput(weight: WeightRecord) {
         val records = listOf(weight)
         healthConnectClient.insertRecords(records)
     }
 
     /**
-     * Reads in existing [Weight] records.
+     * Reads in existing [WeightRecord]s.
      */
-    suspend fun readWeightInputs(start: Instant, end: Instant): List<Weight> {
+    suspend fun readWeightInputs(start: Instant, end: Instant): List<WeightRecord> {
         val request = ReadRecordsRequest(
-            recordType = Weight::class,
+            recordType = WeightRecord::class,
             timeRangeFilter = TimeRangeFilter.between(start, end)
         )
         val response = healthConnectClient.readRecords(request)
@@ -344,23 +349,23 @@ class HealthConnectManager(private val context: Context) {
     }
 
     /**
-     * Returns the weekly average of [Weight] records.
+     * Returns the weekly average of [WeightRecord]s.
      */
-    suspend fun computeWeeklyAverage(start: Instant, end: Instant): Double? {
+    suspend fun computeWeeklyAverage(start: Instant, end: Instant): Mass? {
         val request = AggregateRequest(
-            metrics = setOf(Weight.WEIGHT_AVG),
+            metrics = setOf(WeightRecord.WEIGHT_AVG),
             timeRangeFilter = TimeRangeFilter.between(start, end)
         )
         val response = healthConnectClient.aggregate(request)
-        return response[Weight.WEIGHT_AVG]
+        return response[WeightRecord.WEIGHT_AVG]
     }
 
     /**
-     * Deletes a [Weight] record.
+     * Deletes a [WeightRecord]s.
      */
     suspend fun deleteWeightInput(uid: String) {
         healthConnectClient.deleteRecords(
-            Weight::class,
+            WeightRecord::class,
             uidsList = listOf(uid),
             clientIdsList = emptyList()
         )
@@ -400,14 +405,17 @@ class HealthConnectManager(private val context: Context) {
     /**
      * Creates a random list of sleep stages that spans the specified [start] to [end] time.
      */
-    private fun generateSleepStages(start: ZonedDateTime, end: ZonedDateTime): List<SleepStage> {
-        val sleepStages = mutableListOf<SleepStage>()
+    private fun generateSleepStages(
+        start: ZonedDateTime,
+        end: ZonedDateTime
+    ): List<SleepStageRecord> {
+        val sleepStages = mutableListOf<SleepStageRecord>()
         var stageStart = start
         while (stageStart < end) {
             val stageEnd = stageStart.plusMinutes(Random.nextLong(30, 120))
             val checkedEnd = if (stageEnd > end) end else stageEnd
             sleepStages.add(
-                SleepStage(
+                SleepStageRecord(
                     stage = randomSleepStage(),
                     startTime = stageStart.toInstant(),
                     startZoneOffset = stageStart.offset,
@@ -425,7 +433,7 @@ class HealthConnectManager(private val context: Context) {
      */
     private suspend inline fun <reified T : Record> readData(
         timeRangeFilter: TimeRangeFilter,
-        dataOriginFilter: List<DataOrigin> = listOf()
+        dataOriginFilter: Set<DataOrigin> = setOf()
     ): List<T> {
         val request = ReadRecordsRequest(
             recordType = T::class,
@@ -438,19 +446,19 @@ class HealthConnectManager(private val context: Context) {
     private fun buildHeartRateSeries(
         sessionStartTime: ZonedDateTime,
         sessionEndTime: ZonedDateTime
-    ): HeartRateSeries {
-        val samples = mutableListOf<HeartRate>()
+    ): HeartRateRecord {
+        val samples = mutableListOf<HeartRateRecord.Sample>()
         var time = sessionStartTime
         while (time.isBefore(sessionEndTime)) {
             samples.add(
-                HeartRate(
+                HeartRateRecord.Sample(
                     time = time.toInstant(),
                     beatsPerMinute = (80 + Random.nextInt(80)).toLong()
                 )
             )
             time = time.plusSeconds(30)
         }
-        return HeartRateSeries(
+        return HeartRateRecord(
             startTime = sessionStartTime.toInstant(),
             startZoneOffset = sessionStartTime.offset,
             endTime = sessionEndTime.toInstant(),
@@ -462,23 +470,23 @@ class HealthConnectManager(private val context: Context) {
     private fun buildSpeedSeries(
         sessionStartTime: ZonedDateTime,
         sessionEndTime: ZonedDateTime
-    ) = SpeedSeries(
+    ) = SpeedRecord(
         startTime = sessionStartTime.toInstant(),
         startZoneOffset = sessionStartTime.offset,
         endTime = sessionEndTime.toInstant(),
         endZoneOffset = sessionEndTime.offset,
         samples = listOf(
-            Speed(
+            SpeedRecord.Sample(
                 time = sessionStartTime.toInstant(),
-                metersPerSecond = 2.5
+                speed = Velocity.metersPerSecond(2.5)
             ),
-            Speed(
+            SpeedRecord.Sample(
                 time = sessionStartTime.toInstant().plus(5, ChronoUnit.MINUTES),
-                metersPerSecond = 2.7
+                speed = Velocity.metersPerSecond(2.7)
             ),
-            Speed(
+            SpeedRecord.Sample(
                 time = sessionStartTime.toInstant().plus(10, ChronoUnit.MINUTES),
-                metersPerSecond = 2.9
+                speed = Velocity.metersPerSecond(2.9)
             )
         )
     )

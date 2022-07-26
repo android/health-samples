@@ -18,6 +18,7 @@ package com.example.healthconnectsample.presentation.screen.changes
 import android.content.ContentValues.TAG
 import android.os.RemoteException
 import android.util.Log
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -25,16 +26,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.health.connect.client.changes.Change
 import androidx.health.connect.client.permission.Permission
-import androidx.health.connect.client.records.ActivityEvent
-import androidx.health.connect.client.records.ActivitySession
-import androidx.health.connect.client.records.Distance
-import androidx.health.connect.client.records.HeartRateSeries
-import androidx.health.connect.client.records.SleepSession
-import androidx.health.connect.client.records.SleepStage
-import androidx.health.connect.client.records.SpeedSeries
-import androidx.health.connect.client.records.Steps
-import androidx.health.connect.client.records.TotalCaloriesBurned
-import androidx.health.connect.client.records.Weight
+import androidx.health.connect.client.records.ExerciseEventRecord
+import androidx.health.connect.client.records.ExerciseSessionRecord
+import androidx.health.connect.client.records.DistanceRecord
+import androidx.health.connect.client.records.HeartRateRecord
+import androidx.health.connect.client.records.SleepSessionRecord
+import androidx.health.connect.client.records.SleepStageRecord
+import androidx.health.connect.client.records.SpeedRecord
+import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
+import androidx.health.connect.client.records.WeightRecord
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -47,17 +48,18 @@ class DifferentialChangesViewModel(private val healthConnectManager: HealthConne
     ViewModel() {
 
     private val changesDataTypes = setOf(
-        ActivitySession::class,
-        ActivityEvent::class,
-        Steps::class,
-        SpeedSeries::class,
-        Distance::class,
-        TotalCaloriesBurned::class,
-        HeartRateSeries::class,
-        SleepSession::class,
-        SleepStage::class,
-        Weight::class
+        ExerciseSessionRecord::class,
+        ExerciseEventRecord::class,
+        StepsRecord::class,
+        SpeedRecord::class,
+        DistanceRecord::class,
+        TotalCaloriesBurnedRecord::class,
+        HeartRateRecord::class,
+        SleepSessionRecord::class,
+        SleepStageRecord::class,
+        WeightRecord::class
     )
+
     val permissions = changesDataTypes.map { Permission.createReadPermission(it) }.toSet()
 
     var permissionsGranted = mutableStateOf(false)
@@ -71,6 +73,8 @@ class DifferentialChangesViewModel(private val healthConnectManager: HealthConne
 
     var uiState: UiState by mutableStateOf(UiState.Uninitialized)
         private set
+
+    val permissionsLauncher = healthConnectManager.requestPermissionsActivityContract()
 
     fun initialLoad() {
         viewModelScope.launch {

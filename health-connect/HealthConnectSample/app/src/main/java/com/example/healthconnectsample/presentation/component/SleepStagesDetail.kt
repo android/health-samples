@@ -26,13 +26,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.health.connect.client.records.SleepStage
+import androidx.health.connect.client.records.SleepStageRecord
 import com.example.healthconnectsample.formatDisplayTimeStartEnd
 import com.example.healthconnectsample.presentation.theme.HealthConnectTheme
 import java.time.ZonedDateTime
 
 @Composable
-fun SleepStagesDetail(sleepStages: List<SleepStage>) {
+fun SleepStagesDetail(sleepStages: List<SleepStageRecord>) {
     sleepStages.forEach { stage ->
         Row(
             modifier = Modifier
@@ -68,15 +68,15 @@ fun SleepStagesDetailPreview() {
         Column {
             SleepStagesDetail(
                 sleepStages = listOf(
-                    SleepStage(
-                        stage = SleepStage.StageType.DEEP,
+                    SleepStageRecord(
+                        stage = SleepStageRecord.StageType.DEEP,
                         startTime = start2.toInstant(),
                         startZoneOffset = start2.offset,
                         endTime = end2.toInstant(),
                         endZoneOffset = end2.offset
                     ),
-                    SleepStage(
-                        stage = SleepStage.StageType.LIGHT,
+                    SleepStageRecord(
+                        stage = SleepStageRecord.StageType.LIGHT,
                         startTime = start1.toInstant(),
                         startZoneOffset = start1.offset,
                         endTime = start2.toInstant(),

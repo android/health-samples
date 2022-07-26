@@ -15,6 +15,7 @@
  */
 package com.example.healthconnectsample.presentation.navigation
 
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.material.ScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,15 +27,15 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navDeepLink
 import com.example.healthconnectsample.data.HealthConnectManager
 import com.example.healthconnectsample.presentation.screen.WelcomeScreen
-import com.example.healthconnectsample.presentation.screen.activitysession.ActivitySessionScreen
-import com.example.healthconnectsample.presentation.screen.activitysession.ActivitySessionViewModel
-import com.example.healthconnectsample.presentation.screen.activitysession.ActivitySessionViewModelFactory
-import com.example.healthconnectsample.presentation.screen.activitysessiondetail.ActivitySessionDetailScreen
-import com.example.healthconnectsample.presentation.screen.activitysessiondetail.ActivitySessionDetailViewModel
-import com.example.healthconnectsample.presentation.screen.activitysessiondetail.ActivitySessionDetailViewModelFactory
 import com.example.healthconnectsample.presentation.screen.changes.DifferentialChangesScreen
 import com.example.healthconnectsample.presentation.screen.changes.DifferentialChangesViewModel
 import com.example.healthconnectsample.presentation.screen.changes.DifferentialChangesViewModelFactory
+import com.example.healthconnectsample.presentation.screen.exercisesession.ExerciseSessionScreen
+import com.example.healthconnectsample.presentation.screen.exercisesession.ExerciseSessionViewModel
+import com.example.healthconnectsample.presentation.screen.exercisesession.ExerciseSessionViewModelFactory
+import com.example.healthconnectsample.presentation.screen.exercisesessiondetail.ExerciseSessionDetailScreen
+import com.example.healthconnectsample.presentation.screen.exercisesessiondetail.ExerciseSessionDetailViewModel
+import com.example.healthconnectsample.presentation.screen.exercisesessiondetail.ExerciseSessionDetailViewModelFactory
 import com.example.healthconnectsample.presentation.screen.inputreadings.InputReadingsScreen
 import com.example.healthconnectsample.presentation.screen.inputreadings.InputReadingsViewModel
 import com.example.healthconnectsample.presentation.screen.inputreadings.InputReadingsViewModelFactory
@@ -74,41 +75,47 @@ fun HealthConnectNavigation(
         ) {
             PrivacyPolicyScreen()
         }
-        composable(Screen.ActivitySessions.route) {
-            val viewModel: ActivitySessionViewModel = viewModel(
-                factory = ActivitySessionViewModelFactory(
+        composable(Screen.ExerciseSessions.route) {
+            val viewModel: ExerciseSessionViewModel = viewModel(
+                factory = ExerciseSessionViewModelFactory(
                     healthConnectManager = healthConnectManager
                 )
             )
             val permissionsGranted by viewModel.permissionsGranted
             val sessionsList by viewModel.sessionsList
             val permissions = viewModel.permissions
-            ActivitySessionScreen(
+            val onPermissionsResult = {viewModel.initialLoad()}
+            val permissionsLauncher =
+                rememberLauncherForActivityResult(viewModel.permissionsLauncher) {
+                onPermissionsResult()}
+            ExerciseSessionScreen(
                 permissionsGranted = permissionsGranted,
                 permissions = permissions,
                 sessionsList = sessionsList,
                 uiState = viewModel.uiState,
                 onInsertClick = {
-                    viewModel.insertActivitySession()
+                    viewModel.insertExerciseSession()
                 },
                 onDetailsClick = { uid ->
-                    navController.navigate(Screen.ActivitySessionDetail.route + "/" + uid)
+                    navController.navigate(Screen.ExerciseSessionDetail.route + "/" + uid)
                 },
                 onDeleteClick = { uid ->
-                    viewModel.deleteActivitySession(uid)
+                    viewModel.deleteExerciseSession(uid)
                 },
                 onError = { exception ->
                     showExceptionSnackbar(scaffoldState, scope, exception)
                 },
                 onPermissionsResult = {
                     viewModel.initialLoad()
-                }
+                },
+                onPermissionsLaunch = { values ->
+                    permissionsLauncher.launch(values)}
             )
         }
-        composable(Screen.ActivitySessionDetail.route + "/{$UID_NAV_ARGUMENT}") {
+        composable(Screen.ExerciseSessionDetail.route + "/{$UID_NAV_ARGUMENT}") {
             val uid = it.arguments?.getString(UID_NAV_ARGUMENT)!!
-            val viewModel: ActivitySessionDetailViewModel = viewModel(
-                factory = ActivitySessionDetailViewModelFactory(
+            val viewModel: ExerciseSessionDetailViewModel = viewModel(
+                factory = ExerciseSessionDetailViewModelFactory(
                     uid = uid,
                     healthConnectManager = healthConnectManager
                 )
@@ -116,7 +123,11 @@ fun HealthConnectNavigation(
             val permissionsGranted by viewModel.permissionsGranted
             val sessionMetrics by viewModel.sessionMetrics
             val permissions = viewModel.permissions
-            ActivitySessionDetailScreen(
+            val onPermissionsResult = {viewModel.initialLoad()}
+            val permissionsLauncher =
+                rememberLauncherForActivityResult(viewModel.permissionsLauncher) {
+                onPermissionsResult()}
+            ExerciseSessionDetailScreen(
                 permissions = permissions,
                 permissionsGranted = permissionsGranted,
                 sessionMetrics = sessionMetrics,
@@ -126,7 +137,9 @@ fun HealthConnectNavigation(
                 },
                 onPermissionsResult = {
                     viewModel.initialLoad()
-                }
+                },
+                onPermissionsLaunch = { values ->
+                    permissionsLauncher.launch(values)}
             )
         }
         composable(Screen.SleepSessions.route) {
@@ -138,6 +151,10 @@ fun HealthConnectNavigation(
             val permissionsGranted by viewModel.permissionsGranted
             val sessionsList by viewModel.sessionsList
             val permissions = viewModel.permissions
+            val onPermissionsResult = {viewModel.initialLoad()}
+            val permissionsLauncher =
+                rememberLauncherForActivityResult(viewModel.permissionsLauncher) {
+                onPermissionsResult()}
             SleepSessionScreen(
                 permissionsGranted = permissionsGranted,
                 permissions = permissions,
@@ -151,7 +168,9 @@ fun HealthConnectNavigation(
                 },
                 onPermissionsResult = {
                     viewModel.initialLoad()
-                }
+                },
+                onPermissionsLaunch = { values ->
+                    permissionsLauncher.launch(values)}
             )
         }
         composable(Screen.InputReadings.route) {
@@ -164,9 +183,14 @@ fun HealthConnectNavigation(
             val readingsList by viewModel.readingsList
             val permissions = viewModel.permissions
             val weeklyAvg by viewModel.weeklyAvg
+            val onPermissionsResult = {viewModel.initialLoad()}
+            val permissionsLauncher =
+                rememberLauncherForActivityResult(viewModel.permissionsLauncher) {
+                onPermissionsResult()}
             InputReadingsScreen(
                 permissionsGranted = permissionsGranted,
                 permissions = permissions,
+
                 uiState = viewModel.uiState,
                 onInsertClick = { weightInput ->
                     viewModel.inputReadings(weightInput)
@@ -181,7 +205,9 @@ fun HealthConnectNavigation(
                 },
                 onPermissionsResult = {
                     viewModel.initialLoad()
-                }
+                },
+                onPermissionsLaunch = { values ->
+                    permissionsLauncher.launch(values)}
             )
         }
         composable(Screen.DifferentialChanges.route) {
@@ -193,6 +219,10 @@ fun HealthConnectNavigation(
             val changesToken by viewModel.changesToken
             val permissionsGranted by viewModel.permissionsGranted
             val permissions = viewModel.permissions
+            val onPermissionsResult = {viewModel.initialLoad()}
+            val permissionsLauncher =
+                rememberLauncherForActivityResult(viewModel.permissionsLauncher) {
+                onPermissionsResult()}
             DifferentialChangesScreen(
                 permissionsGranted = permissionsGranted,
                 permissions = permissions,
@@ -211,7 +241,9 @@ fun HealthConnectNavigation(
                 },
                 onPermissionsResult = {
                     viewModel.initialLoad()
-                }
+                },
+                onPermissionsLaunch = { values ->
+                    permissionsLauncher.launch(values)}
             )
         }
     }

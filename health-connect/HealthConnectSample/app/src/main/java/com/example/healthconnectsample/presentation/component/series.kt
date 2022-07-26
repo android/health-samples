@@ -31,9 +31,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.health.connect.client.records.HeartRate
-import androidx.health.connect.client.records.HeartRateSeries
-import androidx.health.connect.client.records.SpeedSeries
+import androidx.health.connect.client.records.HeartRateRecord
+import androidx.health.connect.client.records.SpeedRecord
 import com.example.healthconnectsample.R
 import com.example.healthconnectsample.data.dateTimeWithOffsetOrDefault
 import com.example.healthconnectsample.presentation.theme.HealthConnectTheme
@@ -48,7 +47,7 @@ import java.time.format.FormatStyle
  */
 fun LazyListScope.speedSeries(
     @StringRes labelId: Int,
-    series: List<SpeedSeries>
+    series: List<SpeedRecord>
 ) {
     seriesHeading(labelId)
     series.forEach { serie ->
@@ -58,7 +57,7 @@ fun LazyListScope.speedSeries(
             end = serie.endTime,
             endZoneOffset = serie.endZoneOffset
         )
-        items(serie.samples) { SeriesRow(String.format("%.1f", it.metersPerSecond)) }
+        items(serie.samples) { SeriesRow(String.format("%.1f", it.speed.inMetersPerSecond)) }
     }
 }
 
@@ -67,7 +66,7 @@ fun LazyListScope.speedSeries(
  */
 fun LazyListScope.heartRateSeries(
     @StringRes labelId: Int,
-    series: List<HeartRateSeries>
+    series: List<HeartRateRecord>
 ) {
     seriesHeading(labelId)
     series.forEach { serie ->
@@ -142,17 +141,17 @@ fun HeartRateSeriesPreview() {
             heartRateSeries(
                 labelId = R.string.hr_series,
                 series = listOf(
-                    HeartRateSeries(
+                    HeartRateRecord(
                         startTime = time2,
                         startZoneOffset = ZoneId.systemDefault().rules.getOffset(time2),
                         endTime = time1,
                         endZoneOffset = ZoneId.systemDefault().rules.getOffset(time1),
                         samples = listOf(
-                            HeartRate(
+                            HeartRateRecord.Sample(
                                 beatsPerMinute = 103,
                                 time = time1
                             ),
-                            HeartRate(
+                            HeartRateRecord.Sample(
                                 beatsPerMinute = 85,
                                 time = time2
                             )

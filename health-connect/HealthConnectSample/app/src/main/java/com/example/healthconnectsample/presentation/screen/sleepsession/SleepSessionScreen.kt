@@ -16,6 +16,7 @@
 package com.example.healthconnectsample.presentation.screen.sleepsession
 
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,12 +32,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.health.connect.client.permission.HealthDataRequestPermissions
+import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.permission.Permission
-import androidx.health.connect.client.records.SleepStage
+import androidx.health.connect.client.records.SleepStageRecord
 import com.example.healthconnectsample.R
 import com.example.healthconnectsample.data.SleepSessionData
 import com.example.healthconnectsample.presentation.component.SleepSessionRow
@@ -57,10 +59,8 @@ fun SleepSessionScreen(
     onInsertClick: () -> Unit = {},
     onError: (Throwable?) -> Unit = {},
     onPermissionsResult: () -> Unit = {},
+    onPermissionsLaunch: (Set<Permission>) -> Unit = {}
 ) {
-    val launcher = rememberLauncherForActivityResult(HealthDataRequestPermissions()) {
-        onPermissionsResult()
-    }
 
     // Remember the last error ID, such that it is possible to avoid re-launching the error
     // notification for the same error when the screen is recomposed, or configuration changes etc.
@@ -91,7 +91,7 @@ fun SleepSessionScreen(
             if (!permissionsGranted) {
                 item {
                     Button(
-                        onClick = { launcher.launch(permissions) }
+                        onClick = { onPermissionsLaunch(permissions) }
                     ) {
                         Text(text = stringResource(R.string.permissions_button_label))
                     }
@@ -141,8 +141,8 @@ fun SleepSessionScreenPreview() {
                     endZoneOffset = end1.offset,
                     duration = Duration.between(start1, end1),
                     stages = listOf(
-                        SleepStage(
-                            stage = SleepStage.StageType.DEEP,
+                        SleepStageRecord(
+                            stage = SleepStageRecord.StageType.DEEP,
                             startTime = start1.toInstant(),
                             startZoneOffset = start1.offset,
                             endTime = end1.toInstant(),
@@ -160,8 +160,8 @@ fun SleepSessionScreenPreview() {
                     endZoneOffset = end2.offset,
                     duration = Duration.between(start2, end2),
                     stages = listOf(
-                        SleepStage(
-                            stage = SleepStage.StageType.DEEP,
+                        SleepStageRecord(
+                            stage = SleepStageRecord.StageType.DEEP,
                             startTime = start2.toInstant(),
                             startZoneOffset = start2.offset,
                             endTime = end2.toInstant(),

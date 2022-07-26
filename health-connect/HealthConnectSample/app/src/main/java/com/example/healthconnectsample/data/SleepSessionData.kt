@@ -15,14 +15,14 @@
  */
 package com.example.healthconnectsample.data
 
-import androidx.health.connect.client.records.SleepSession
-import androidx.health.connect.client.records.SleepStage
+import androidx.health.connect.client.records.SleepSessionRecord
+import androidx.health.connect.client.records.SleepStageRecord
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneOffset
 
 /**
- * Represents sleep data, raw, aggregated and sleep stages, for a given [SleepSession].
+ * Represents sleep data, raw, aggregated and sleep stages, for a given [SleepSessionRecord].
  */
 data class SleepSessionData(
     val uid: String,
@@ -33,5 +33,5 @@ data class SleepSessionData(
     val endTime: Instant,
     val endZoneOffset: ZoneOffset?,
     val duration: Duration?,
-    val stages: List<SleepStage> = listOf()
+    val stages: List<SleepStageRecord> = listOf()
 )

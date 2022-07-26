@@ -15,7 +15,6 @@
  */
 package com.example.healthconnectsample.presentation.screen.changes
 
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -35,7 +34,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.health.connect.client.changes.Change
-import androidx.health.connect.client.permission.HealthDataRequestPermissions
 import androidx.health.connect.client.permission.Permission
 import com.example.healthconnectsample.R
 import com.example.healthconnectsample.presentation.component.FormattedChange
@@ -56,10 +54,8 @@ fun DifferentialChangesScreen(
     uiState: DifferentialChangesViewModel.UiState,
     onError: (Throwable?) -> Unit = {},
     onPermissionsResult: () -> Unit = {},
+    onPermissionsLaunch: (Set<Permission>) -> Unit = {}
 ) {
-    val launcher = rememberLauncherForActivityResult(HealthDataRequestPermissions()) {
-        onPermissionsResult()
-    }
 
     // Remember the last error ID, such that it is possible to avoid re-launching the error
     // notification for the same error when the screen is recomposed, or configuration changes etc.
@@ -91,7 +87,7 @@ fun DifferentialChangesScreen(
                 item {
                     Button(
                         onClick = {
-                            launcher.launch(permissions)
+                            onPermissionsLaunch(permissions)
                         }
                     ) {
                         Text(text = stringResource(R.string.permissions_button_label))

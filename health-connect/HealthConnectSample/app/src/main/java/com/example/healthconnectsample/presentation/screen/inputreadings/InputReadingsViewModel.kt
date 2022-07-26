@@ -16,12 +16,14 @@
 package com.example.healthconnectsample.presentation.screen.inputreadings
 
 import android.os.RemoteException
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.health.connect.client.permission.Permission
-import androidx.health.connect.client.records.Weight
+import androidx.health.connect.client.records.WeightRecord
+import androidx.health.connect.client.units.Mass
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -36,20 +38,22 @@ import java.util.UUID
 class InputReadingsViewModel(private val healthConnectManager: HealthConnectManager) :
     ViewModel() {
     val permissions = setOf(
-        Permission.createReadPermission(Weight::class),
-        Permission.createWritePermission(Weight::class),
+        Permission.createReadPermission(WeightRecord::class),
+        Permission.createWritePermission(WeightRecord::class),
     )
-    var weeklyAvg: MutableState<Double?> = mutableStateOf(0.0)
+    var weeklyAvg: MutableState<Mass?> = mutableStateOf(Mass.kilograms(0.0))
         private set
 
     var permissionsGranted = mutableStateOf(false)
         private set
 
-    var readingsList: MutableState<List<Weight>> = mutableStateOf(listOf())
+    var readingsList: MutableState<List<WeightRecord>> = mutableStateOf(listOf())
         private set
 
     var uiState: UiState by mutableStateOf(UiState.Uninitialized)
         private set
+
+    val permissionsLauncher = healthConnectManager.requestPermissionsActivityContract()
 
     fun initialLoad() {
         viewModelScope.launch {
@@ -63,8 +67,8 @@ class InputReadingsViewModel(private val healthConnectManager: HealthConnectMana
         viewModelScope.launch {
             tryWithPermissionsCheck {
                 val time = ZonedDateTime.now().withNano(0)
-                val weight = Weight(
-                    weightKg = inputValue,
+                val weight = WeightRecord(
+                    weight = Mass.kilograms(inputValue),
                     time = time.toInstant(),
                     zoneOffset = time.offset
                 )

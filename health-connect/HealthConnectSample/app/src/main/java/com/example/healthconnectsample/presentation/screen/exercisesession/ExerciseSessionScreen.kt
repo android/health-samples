@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.healthconnectsample.presentation.screen.activitysession
+package com.example.healthconnectsample.presentation.screen.exercisesession
 
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,34 +33,31 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.health.connect.client.metadata.Metadata
-import androidx.health.connect.client.permission.HealthDataRequestPermissions
 import androidx.health.connect.client.permission.Permission
-import androidx.health.connect.client.records.ActivitySession
+import androidx.health.connect.client.records.ExerciseSessionRecord
+import androidx.health.connect.client.records.metadata.Metadata
 import com.example.healthconnectsample.R
-import com.example.healthconnectsample.presentation.component.ActivitySessionRow
+import com.example.healthconnectsample.presentation.component.ExerciseSessionRow
 import com.example.healthconnectsample.presentation.theme.HealthConnectTheme
 import java.time.ZonedDateTime
 import java.util.UUID
 
 /**
- * Shows a list of [ActivitySession]s from today.
+ * Shows a list of [ExerciseSessionRecord]s from today.
  */
 @Composable
-fun ActivitySessionScreen(
+fun ExerciseSessionScreen(
     permissions: Set<Permission>,
     permissionsGranted: Boolean,
-    sessionsList: List<ActivitySession>,
-    uiState: ActivitySessionViewModel.UiState,
+    sessionsList: List<ExerciseSessionRecord>,
+    uiState: ExerciseSessionViewModel.UiState,
     onInsertClick: () -> Unit = {},
     onDetailsClick: (String) -> Unit = {},
     onDeleteClick: (String) -> Unit = {},
     onError: (Throwable?) -> Unit = {},
     onPermissionsResult: () -> Unit = {},
+    onPermissionsLaunch: (Set<Permission>) -> Unit = {}
 ) {
-    val launcher = rememberLauncherForActivityResult(HealthDataRequestPermissions()) {
-        onPermissionsResult()
-    }
 
     // Remember the last error ID, such that it is possible to avoid re-launching the error
     // notification for the same error when the screen is recomposed, or configuration changes etc.
@@ -69,21 +65,21 @@ fun ActivitySessionScreen(
 
     LaunchedEffect(uiState) {
         // If the initial data load has not taken place, attempt to load the data.
-        if (uiState is ActivitySessionViewModel.UiState.Uninitialized) {
+        if (uiState is ExerciseSessionViewModel.UiState.Uninitialized) {
             onPermissionsResult()
         }
 
-        // The [ActivitySessionViewModel.UiState] provides details of whether the last action was a
+        // The [ExerciseSessionViewModel.UiState] provides details of whether the last action was a
         // success or resulted in an error. Where an error occurred, for example in reading and
         // writing to Health Connect, the user is notified, and where the error is one that can be
         // recovered from, an attempt to do so is made.
-        if (uiState is ActivitySessionViewModel.UiState.Error && errorId.value != uiState.uuid) {
+        if (uiState is ExerciseSessionViewModel.UiState.Error && errorId.value != uiState.uuid) {
             onError(uiState.exception)
             errorId.value = uiState.uuid
         }
     }
 
-    if (uiState != ActivitySessionViewModel.UiState.Uninitialized) {
+    if (uiState != ExerciseSessionViewModel.UiState.Uninitialized) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Top,
@@ -93,7 +89,7 @@ fun ActivitySessionScreen(
                 item {
                     Button(
                         onClick = {
-                            launcher.launch(permissions)
+                            onPermissionsLaunch(permissions)
                         }
                     ) {
                         Text(text = stringResource(R.string.permissions_button_label))
@@ -110,12 +106,12 @@ fun ActivitySessionScreen(
                             onInsertClick()
                         }
                     ) {
-                        Text(stringResource(id = R.string.insert_activity_session))
+                        Text(stringResource(id = R.string.insert_exercise_session))
                     }
                 }
 
                 items(sessionsList) { session ->
-                    ActivitySessionRow(
+                    ExerciseSessionRow(
                         ZonedDateTime.ofInstant(session.startTime, session.startZoneOffset),
                         ZonedDateTime.ofInstant(session.endTime, session.endZoneOffset),
                         session.metadata.uid ?: stringResource(R.string.not_available_abbrev),
@@ -135,18 +131,18 @@ fun ActivitySessionScreen(
 
 @Preview
 @Composable
-fun ActivitySessionScreenPreview() {
+fun ExerciseSessionScreenPreview() {
     HealthConnectTheme {
         val runningStartTime = ZonedDateTime.now()
         val runningEndTime = runningStartTime.plusMinutes(30)
         val walkingStartTime = ZonedDateTime.now().minusMinutes(120)
         val walkingEndTime = walkingStartTime.plusMinutes(30)
-        ActivitySessionScreen(
+        ExerciseSessionScreen(
             permissions = setOf(),
             permissionsGranted = true,
             sessionsList = listOf(
-                ActivitySession(
-                    activityType = ActivitySession.ActivityType.RUNNING,
+                ExerciseSessionRecord(
+                    exerciseType = ExerciseSessionRecord.ExerciseType.RUNNING,
                     title = "Running",
                     startTime = runningStartTime.toInstant(),
                     startZoneOffset = runningStartTime.offset,
@@ -154,8 +150,8 @@ fun ActivitySessionScreenPreview() {
                     endZoneOffset = runningEndTime.offset,
                     metadata = Metadata(UUID.randomUUID().toString())
                 ),
-                ActivitySession(
-                    activityType = ActivitySession.ActivityType.WALKING,
+                ExerciseSessionRecord(
+                    exerciseType = ExerciseSessionRecord.ExerciseType.WALKING,
                     title = "Walking",
                     startTime = walkingStartTime.toInstant(),
                     startZoneOffset = walkingStartTime.offset,
@@ -164,7 +160,7 @@ fun ActivitySessionScreenPreview() {
                     metadata = Metadata(UUID.randomUUID().toString())
                 )
             ),
-            uiState = ActivitySessionViewModel.UiState.Done
+            uiState = ExerciseSessionViewModel.UiState.Done
         )
     }
 }

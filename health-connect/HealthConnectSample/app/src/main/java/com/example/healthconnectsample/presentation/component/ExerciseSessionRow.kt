@@ -29,17 +29,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.health.connect.client.records.ActivitySession
+import androidx.health.connect.client.records.ExerciseSessionRecord
 import com.example.healthconnectsample.R
 import com.example.healthconnectsample.presentation.theme.HealthConnectTheme
 import java.time.ZonedDateTime
 import java.util.UUID
 
 /**
- * Creates a row to represent an [ActivitySession]
+ * Creates a row to represent an [ExerciseSessionRecord]
  */
 @Composable
-fun ActivitySessionRow(
+fun ExerciseSessionRow(
     start: ZonedDateTime,
     end: ZonedDateTime,
     uid: String,
@@ -54,7 +54,7 @@ fun ActivitySessionRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        ActivitySessionInfoColumn(
+        ExerciseSessionInfoColumn(
             start = start,
             end = end,
             uid = uid,
@@ -71,9 +71,9 @@ fun ActivitySessionRow(
 
 @Preview
 @Composable
-fun ActivitySessionRowPreview() {
+fun ExerciseSessionRowPreview() {
     HealthConnectTheme {
-        ActivitySessionRow(
+        ExerciseSessionRow(
             ZonedDateTime.now().minusMinutes(30),
             ZonedDateTime.now(),
             UUID.randomUUID().toString(),

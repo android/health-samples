@@ -22,17 +22,17 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.health.connect.client.records.ActivitySession
+import androidx.health.connect.client.records.ExerciseSessionRecord
 import com.example.healthconnectsample.presentation.theme.HealthConnectTheme
 import java.time.ZonedDateTime
 import java.util.UUID
 
 /**
- * Displays summary information about the [ActivitySession]
+ * Displays summary information about the [ExerciseSessionRecord]
  */
 
 @Composable
-fun ActivitySessionInfoColumn(
+fun ExerciseSessionInfoColumn(
     start: ZonedDateTime,
     end: ZonedDateTime,
     uid: String,
@@ -56,9 +56,9 @@ fun ActivitySessionInfoColumn(
 
 @Preview
 @Composable
-fun ActivitySessionInfoColumnPreview() {
+fun ExerciseSessionInfoColumnPreview() {
     HealthConnectTheme {
-        ActivitySessionInfoColumn(
+        ExerciseSessionInfoColumn(
             ZonedDateTime.now().minusMinutes(30),
             ZonedDateTime.now(),
             UUID.randomUUID().toString(),

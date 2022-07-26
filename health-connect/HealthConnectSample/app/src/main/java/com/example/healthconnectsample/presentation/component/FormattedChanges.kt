@@ -18,16 +18,16 @@ import androidx.compose.ui.unit.dp
 import androidx.health.connect.client.changes.Change
 import androidx.health.connect.client.changes.DeletionChange
 import androidx.health.connect.client.changes.UpsertionChange
-import androidx.health.connect.client.records.ActivityEvent
-import androidx.health.connect.client.records.ActivitySession
-import androidx.health.connect.client.records.Distance
-import androidx.health.connect.client.records.HeartRateSeries
-import androidx.health.connect.client.records.SleepSession
-import androidx.health.connect.client.records.SleepStage
-import androidx.health.connect.client.records.SpeedSeries
-import androidx.health.connect.client.records.Steps
-import androidx.health.connect.client.records.TotalCaloriesBurned
-import androidx.health.connect.client.records.Weight
+import androidx.health.connect.client.records.ExerciseEventRecord
+import androidx.health.connect.client.records.ExerciseSessionRecord
+import androidx.health.connect.client.records.DistanceRecord
+import androidx.health.connect.client.records.HeartRateRecord
+import androidx.health.connect.client.records.SleepSessionRecord
+import androidx.health.connect.client.records.SleepStageRecord
+import androidx.health.connect.client.records.SpeedRecord
+import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
+import androidx.health.connect.client.records.WeightRecord
 import com.example.healthconnectsample.R
 import com.example.healthconnectsample.data.dateTimeWithOffsetOrDefault
 import com.example.healthconnectsample.presentation.TAG
@@ -48,51 +48,51 @@ fun FormattedChange(change: Change) {
 @Composable
 fun FormattedUpsertionChange(change: UpsertionChange) {
     when (change.record) {
-        is ActivitySession -> {
-            val activity = change.record as ActivitySession
+        is ExerciseSessionRecord -> {
+            val activity = change.record as ExerciseSessionRecord
             FormattedChangeRow(
                 startTime = dateTimeWithOffsetOrDefault(
                     activity.startTime,
                     activity.startZoneOffset
                 ),
-                recordType = stringResource(R.string.differential_changes_type_activity_session),
+                recordType = stringResource(R.string.differential_changes_type_exercise_session),
                 dataSource = change.record.metadata.dataOrigin.packageName
             )
         }
-        is ActivityEvent -> {
-            val event = change.record as ActivityEvent
+        is ExerciseEventRecord -> {
+            val event = change.record as ExerciseEventRecord
             FormattedChangeRow(
                 startTime = dateTimeWithOffsetOrDefault(event.startTime, event.startZoneOffset),
-                recordType = stringResource(R.string.differential_changes_type_activity_event),
+                recordType = stringResource(R.string.differential_changes_type_exercise_event),
                 dataSource = change.record.metadata.dataOrigin.packageName
             )
         }
-        is Steps -> {
-            val steps = change.record as Steps
+        is StepsRecord -> {
+            val steps = change.record as StepsRecord
             FormattedChangeRow(
                 startTime = dateTimeWithOffsetOrDefault(steps.startTime, steps.startZoneOffset),
                 recordType = stringResource(R.string.differential_changes_type_steps),
                 dataSource = change.record.metadata.dataOrigin.packageName
             )
         }
-        is SpeedSeries -> {
-            val speed = change.record as SpeedSeries
+        is SpeedRecord -> {
+            val speed = change.record as SpeedRecord
             FormattedChangeRow(
                 startTime = dateTimeWithOffsetOrDefault(speed.startTime, speed.startZoneOffset),
                 recordType = stringResource(R.string.differential_changes_type_speed_series),
                 dataSource = change.record.metadata.dataOrigin.packageName
             )
         }
-        is HeartRateSeries -> {
-            val hr = change.record as HeartRateSeries
+        is HeartRateRecord -> {
+            val hr = change.record as HeartRateRecord
             FormattedChangeRow(
                 startTime = dateTimeWithOffsetOrDefault(hr.startTime, hr.startZoneOffset),
                 recordType = stringResource(R.string.differential_changes_type_heart_rate_series),
                 dataSource = change.record.metadata.dataOrigin.packageName
             )
         }
-        is TotalCaloriesBurned -> {
-            val calories = change.record as TotalCaloriesBurned
+        is TotalCaloriesBurnedRecord -> {
+            val calories = change.record as TotalCaloriesBurnedRecord
             FormattedChangeRow(
                 startTime = dateTimeWithOffsetOrDefault(
                     calories.startTime,
@@ -102,32 +102,32 @@ fun FormattedUpsertionChange(change: UpsertionChange) {
                 dataSource = change.record.metadata.dataOrigin.packageName
             )
         }
-        is SleepSession -> {
-            val sleep = change.record as SleepSession
+        is SleepSessionRecord -> {
+            val sleep = change.record as SleepSessionRecord
             FormattedChangeRow(
                 startTime = dateTimeWithOffsetOrDefault(sleep.startTime, sleep.startZoneOffset),
                 recordType = stringResource(R.string.differential_changes_type_sleep_session),
                 dataSource = change.record.metadata.dataOrigin.packageName
             )
         }
-        is SleepStage -> {
-            val sleep = change.record as SleepStage
+        is SleepStageRecord -> {
+            val sleep = change.record as SleepStageRecord
             FormattedChangeRow(
                 startTime = dateTimeWithOffsetOrDefault(sleep.startTime, sleep.startZoneOffset),
                 recordType = stringResource(R.string.differential_changes_type_sleep_stage),
                 dataSource = change.record.metadata.dataOrigin.packageName
             )
         }
-        is Weight -> {
-            val weight = change.record as Weight
+        is WeightRecord -> {
+            val weight = change.record as WeightRecord
             FormattedChangeRow(
                 startTime = dateTimeWithOffsetOrDefault(weight.time, weight.zoneOffset),
                 recordType = stringResource(R.string.differential_changes_type_weight),
                 dataSource = change.record.metadata.dataOrigin.packageName
             )
         }
-        is Distance -> {
-            val distance = change.record as Distance
+        is DistanceRecord -> {
+            val distance = change.record as DistanceRecord
             FormattedChangeRow(
                 startTime = dateTimeWithOffsetOrDefault(
                     distance.startTime,
@@ -215,7 +215,7 @@ fun FormattedChangeRowPreview() {
     HealthConnectTheme {
         FormattedChangeRow(
             startTime = ZonedDateTime.now().withNano(0),
-            recordType = stringResource(id = R.string.differential_changes_type_activity_session),
+            recordType = stringResource(id = R.string.differential_changes_type_exercise_session),
             dataSource = LocalContext.current.packageName
         )
     }

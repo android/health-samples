@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.healthconnectsample.presentation.screen.activitysessiondetail
+package com.example.healthconnectsample.presentation.screen.exercisesessiondetail
 
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,19 +26,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.health.connect.client.permission.HealthDataRequestPermissions
+import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.permission.Permission
-import androidx.health.connect.client.records.ActivitySession
-import androidx.health.connect.client.records.HeartRate
-import androidx.health.connect.client.records.HeartRateSeries
-import androidx.health.connect.client.records.Speed
-import androidx.health.connect.client.records.SpeedSeries
+import androidx.health.connect.client.records.ExerciseSessionRecord
+import androidx.health.connect.client.records.HeartRateRecord
+import androidx.health.connect.client.records.SpeedRecord
+import androidx.health.connect.client.units.Energy
+import androidx.health.connect.client.units.Length
+import androidx.health.connect.client.units.Velocity
 import com.example.healthconnectsample.R
-import com.example.healthconnectsample.data.ActivitySessionData
+import com.example.healthconnectsample.data.ExerciseSessionData
 import com.example.healthconnectsample.data.formatTime
-import com.example.healthconnectsample.presentation.component.ActivitySessionDetailsMinMaxAvg
+import com.example.healthconnectsample.presentation.component.ExerciseSessionDetailsMinMaxAvg
 import com.example.healthconnectsample.presentation.component.heartRateSeries
 import com.example.healthconnectsample.presentation.component.sessionDetailsItem
 import com.example.healthconnectsample.presentation.component.speedSeries
@@ -50,20 +51,18 @@ import java.util.UUID
 import kotlin.random.Random
 
 /**
- * Shows a details of a given [ActivitySession], including aggregates and underlying raw data.
+ * Shows a details of a given [ExerciseSessionRecord], including aggregates and underlying raw data.
  */
 @Composable
-fun ActivitySessionDetailScreen(
+fun ExerciseSessionDetailScreen(
     permissions: Set<Permission>,
     permissionsGranted: Boolean,
-    sessionMetrics: ActivitySessionData,
-    uiState: ActivitySessionDetailViewModel.UiState,
+    sessionMetrics: ExerciseSessionData,
+    uiState: ExerciseSessionDetailViewModel.UiState,
     onError: (Throwable?) -> Unit = {},
     onPermissionsResult: () -> Unit = {},
+    onPermissionsLaunch: (Set<Permission>) -> Unit = {}
 ) {
-    val launcher = rememberLauncherForActivityResult(HealthDataRequestPermissions()) {
-        onPermissionsResult()
-    }
 
     // Remember the last error ID, such that it is possible to avoid re-launching the error
     // notification for the same error when the screen is recomposed, or configuration changes etc.
@@ -71,15 +70,15 @@ fun ActivitySessionDetailScreen(
 
     LaunchedEffect(uiState) {
         // If the initial data load has not taken place, attempt to load the data.
-        if (uiState is ActivitySessionDetailViewModel.UiState.Uninitialized) {
+        if (uiState is ExerciseSessionDetailViewModel.UiState.Uninitialized) {
             onPermissionsResult()
         }
 
-        // The [ActivitySessionDetailViewModel.UiState] provides details of whether the last action
+        // The [ExerciseSessionDetailViewModel.UiState] provides details of whether the last action
         // was a success or resulted in an error. Where an error occurred, for example in reading
         // and writing to Health Connect, the user is notified, and where the error is one that can
         // be recovered from, an attempt to do so is made.
-        if (uiState is ActivitySessionDetailViewModel.UiState.Error &&
+        if (uiState is ExerciseSessionDetailViewModel.UiState.Error &&
             errorId.value != uiState.uuid
         ) {
             onError(uiState.exception)
@@ -87,7 +86,7 @@ fun ActivitySessionDetailScreen(
         }
     }
 
-    if (uiState != ActivitySessionDetailViewModel.UiState.Uninitialized) {
+    if (uiState != ExerciseSessionDetailViewModel.UiState.Uninitialized) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Top,
@@ -96,7 +95,7 @@ fun ActivitySessionDetailScreen(
             if (!permissionsGranted) {
                 item {
                     Button(
-                        onClick = { launcher.launch(permissions) }
+                        onClick = { onPermissionsLaunch(permissions) }
                     ) {
                         Text(text = stringResource(R.string.permissions_button_label))
                     }
@@ -110,24 +109,34 @@ fun ActivitySessionDetailScreen(
                     Text(sessionMetrics.totalSteps?.toString() ?: "0")
                 }
                 sessionDetailsItem(labelId = R.string.total_distance) {
-                    Text(String.format("%.0f", sessionMetrics.totalDistance ?: 0.0))
+                    Text(sessionMetrics.totalDistance?.toString() ?: "0.0")
                 }
                 sessionDetailsItem(labelId = R.string.total_energy) {
-                    Text(String.format("%.1f", sessionMetrics.totalEnergyBurned ?: 0.0))
+                    Text(sessionMetrics.totalEnergyBurned?.inCalories.toString())
                 }
                 sessionDetailsItem(labelId = R.string.speed_stats) {
-                    ActivitySessionDetailsMinMaxAvg(
-                        sessionMetrics.minSpeed?.let { String.format("%.1f", it) },
-                        sessionMetrics.maxSpeed?.let { String.format("%.1f", it) },
-                        sessionMetrics.avgSpeed?.let { String.format("%.1f", it) }
+                    ExerciseSessionDetailsMinMaxAvg(
+                        sessionMetrics.minSpeed?.inMetersPerSecond.let {
+                            String.format(
+                                "%.1f",
+                                it
+                            )
+                        },
+                        sessionMetrics.maxSpeed?.inMetersPerSecond.let {
+                            String.format(
+                                "%.1f",
+                                it
+                            )
+                        },
+                        sessionMetrics.avgSpeed?.inMetersPerSecond.let { String.format("%.1f", it) }
                     )
                 }
                 speedSeries(
                     labelId = R.string.speed_series,
-                    series = sessionMetrics.speedSeries
+                    series = sessionMetrics.speedRecord
                 )
                 sessionDetailsItem(labelId = R.string.hr_stats) {
-                    ActivitySessionDetailsMinMaxAvg(
+                    ExerciseSessionDetailsMinMaxAvg(
                         sessionMetrics.minHeartRate?.toString()
                             ?: stringResource(id = R.string.not_available_abbrev),
                         sessionMetrics.maxHeartRate?.toString()
@@ -147,48 +156,48 @@ fun ActivitySessionDetailScreen(
 
 @Preview
 @Composable
-fun ActivitySessionScreenPreview() {
+fun ExerciseSessionScreenPreview() {
     HealthConnectTheme {
         val uid = UUID.randomUUID().toString()
-        val sessionMetrics = ActivitySessionData(
+        val sessionMetrics = ExerciseSessionData(
             uid = uid,
             totalSteps = 5152,
-            totalDistance = 11923.4,
-            totalEnergyBurned = 1131.2,
+            totalDistance = Length.meters(11923.4),
+            totalEnergyBurned = Energy.calories(1131.2),
             minHeartRate = 55,
             maxHeartRate = 103,
             avgHeartRate = 77,
             heartRateSeries = generateHeartRateSeries(),
-            minSpeed = 2.5,
-            maxSpeed = 3.1,
-            avgSpeed = 2.8,
-            speedSeries = generateSpeedData(),
+            minSpeed = Velocity.metersPerSecond(2.5),
+            maxSpeed = Velocity.metersPerSecond(3.1),
+            avgSpeed = Velocity.metersPerSecond(2.8),
+            speedRecord = generateSpeedData(),
         )
 
-        ActivitySessionDetailScreen(
+        ExerciseSessionDetailScreen(
             permissions = setOf(),
             permissionsGranted = true,
             sessionMetrics = sessionMetrics,
-            uiState = ActivitySessionDetailViewModel.UiState.Done
+            uiState = ExerciseSessionDetailViewModel.UiState.Done
         )
     }
 }
 
-private fun generateSpeedData(): List<SpeedSeries> {
-    val data = mutableListOf<Speed>()
+private fun generateSpeedData(): List<SpeedRecord> {
+    val data = mutableListOf<SpeedRecord.Sample>()
     val end = ZonedDateTime.now()
     var time = ZonedDateTime.now()
     for (index in 1..10) {
         time = end.minusMinutes(index.toLong())
         data.add(
-            Speed(
+            SpeedRecord.Sample(
                 time = time.toInstant(),
-                metersPerSecond = Random.nextDouble(1.0, 5.0)
+                speed = Velocity.metersPerSecond((Random.nextDouble(1.0, 5.0)))
             )
         )
     }
     return listOf(
-        SpeedSeries(
+        SpeedRecord(
             startTime = time.toInstant(),
             startZoneOffset = time.offset,
             endTime = end.toInstant(),
@@ -198,21 +207,21 @@ private fun generateSpeedData(): List<SpeedSeries> {
     )
 }
 
-private fun generateHeartRateSeries(): List<HeartRateSeries> {
-    val data = mutableListOf<HeartRate>()
+private fun generateHeartRateSeries(): List<HeartRateRecord> {
+    val data = mutableListOf<HeartRateRecord.Sample>()
     val end = ZonedDateTime.now()
     var time = ZonedDateTime.now()
     for (index in 1..10) {
         time = end.minusMinutes(index.toLong())
         data.add(
-            HeartRate(
+            HeartRateRecord.Sample(
                 time = time.toInstant(),
                 beatsPerMinute = Random.nextLong(55, 180)
             )
         )
     }
     return listOf(
-        HeartRateSeries(
+        HeartRateRecord(
             startTime = time.toInstant(),
             startZoneOffset = time.offset,
             endTime = end.toInstant(),

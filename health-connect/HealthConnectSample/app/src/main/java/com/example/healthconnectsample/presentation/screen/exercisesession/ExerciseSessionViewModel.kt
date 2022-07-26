@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.healthconnectsample.presentation.screen.activitysessiondetail
+package com.example.healthconnectsample.presentation.screen.exercisesession
 
 import android.os.RemoteException
 import androidx.compose.runtime.MutableState
@@ -21,51 +21,91 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.health.connect.client.permission.Permission
-import androidx.health.connect.client.records.Distance
-import androidx.health.connect.client.records.HeartRateSeries
-import androidx.health.connect.client.records.SpeedSeries
-import androidx.health.connect.client.records.Steps
-import androidx.health.connect.client.records.TotalCaloriesBurned
+import androidx.health.connect.client.records.ExerciseEventRecord
+import androidx.health.connect.client.records.ExerciseSessionRecord
+import androidx.health.connect.client.records.DistanceRecord
+import androidx.health.connect.client.records.HeartRateRecord
+import androidx.health.connect.client.records.SpeedRecord
+import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.healthconnectsample.data.ActivitySessionData
 import com.example.healthconnectsample.data.HealthConnectManager
 import kotlinx.coroutines.launch
 import java.io.IOException
+import java.time.Duration
+import java.time.Instant
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import java.util.UUID
+import kotlin.random.Random
 
-class ActivitySessionDetailViewModel(
-    private val uid: String,
-    private val healthConnectManager: HealthConnectManager
-) : ViewModel() {
+class ExerciseSessionViewModel(private val healthConnectManager: HealthConnectManager) :
+    ViewModel() {
     val permissions = setOf(
-        Permission.createReadPermission(Steps::class),
-        Permission.createReadPermission(Distance::class),
-        Permission.createReadPermission(SpeedSeries::class),
-        Permission.createReadPermission(TotalCaloriesBurned::class),
-        Permission.createReadPermission(HeartRateSeries::class)
+        Permission.createWritePermission(ExerciseSessionRecord::class),
+        Permission.createReadPermission(ExerciseSessionRecord::class),
+        Permission.createWritePermission(ExerciseEventRecord::class),
+        Permission.createWritePermission(StepsRecord::class),
+        Permission.createWritePermission(SpeedRecord::class),
+        Permission.createWritePermission(DistanceRecord::class),
+        Permission.createWritePermission(TotalCaloriesBurnedRecord::class),
+        Permission.createWritePermission(HeartRateRecord::class)
     )
 
     var permissionsGranted = mutableStateOf(false)
         private set
 
-    var sessionMetrics: MutableState<ActivitySessionData> = mutableStateOf(ActivitySessionData(uid))
+    var sessionsList: MutableState<List<ExerciseSessionRecord>> = mutableStateOf(listOf())
         private set
 
     var uiState: UiState by mutableStateOf(UiState.Uninitialized)
         private set
 
-    fun initialLoad() {
-        readAssociatedSessionData()
-    }
+    val permissionsLauncher = healthConnectManager.requestPermissionsActivityContract()
 
-    private fun readAssociatedSessionData() {
+    fun initialLoad() {
         viewModelScope.launch {
             tryWithPermissionsCheck {
-                sessionMetrics.value = healthConnectManager.readAssociatedSessionData(uid)
+                readExerciseSessions()
             }
         }
+    }
+
+    fun insertExerciseSession() {
+        viewModelScope.launch {
+            tryWithPermissionsCheck {
+                val startOfDay = ZonedDateTime.now().truncatedTo(ChronoUnit.DAYS)
+                val latestStartOfSession = ZonedDateTime.now().minusMinutes(30)
+                val offset = Random.nextDouble()
+
+                // Generate random start time between the start of the day and (now - 30mins).
+                val startOfSession = startOfDay.plusSeconds(
+                    (Duration.between(startOfDay, latestStartOfSession).seconds * offset).toLong()
+                )
+                val endOfSession = startOfSession.plusMinutes(30)
+
+                healthConnectManager.writeExerciseSession(startOfSession, endOfSession)
+                readExerciseSessions()
+            }
+        }
+    }
+
+    fun deleteExerciseSession(uid: String) {
+        viewModelScope.launch {
+            tryWithPermissionsCheck {
+                healthConnectManager.deleteExerciseSession(uid)
+                readExerciseSessions()
+            }
+        }
+    }
+
+    private suspend fun readExerciseSessions() {
+        val startOfDay = ZonedDateTime.now().truncatedTo(ChronoUnit.DAYS)
+        val now = Instant.now()
+
+        sessionsList.value = healthConnectManager.readExerciseSessions(startOfDay.toInstant(), now)
     }
 
     /**
@@ -106,15 +146,13 @@ class ActivitySessionDetailViewModel(
     }
 }
 
-class ActivitySessionDetailViewModelFactory(
-    private val uid: String,
+class ExerciseSessionViewModelFactory(
     private val healthConnectManager: HealthConnectManager
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(ActivitySessionDetailViewModel::class.java)) {
+        if (modelClass.isAssignableFrom(ExerciseSessionViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return ActivitySessionDetailViewModel(
-                uid = uid,
+            return ExerciseSessionViewModel(
                 healthConnectManager = healthConnectManager
             ) as T
         }

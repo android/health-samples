@@ -29,8 +29,8 @@ const val UID_NAV_ARGUMENT = "uid"
  */
 enum class Screen(val route: String, val titleId: Int, val hasMenuItem: Boolean = true) {
     WelcomeScreen("welcome_screen", R.string.welcome_screen, false),
-    ActivitySessions("activity_sessions", R.string.activity_sessions),
-    ActivitySessionDetail("activity_session_detail", R.string.activity_session_detail, false),
+    ExerciseSessions("exercise_sessions", R.string.exercise_sessions),
+    ExerciseSessionDetail("exercise_session_detail", R.string.exercise_session_detail, false),
     SleepSessions("sleep_sessions", R.string.sleep_sessions),
     SleepSessionDetail("sleep_session_detail", R.string.sleep_session_detail, false),
     InputReadings("input_readings", R.string.input_readings),

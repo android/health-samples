@@ -15,7 +15,6 @@
  */
 package com.example.healthconnectsample.presentation.screen.inputreadings
 
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -47,9 +46,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.health.connect.client.permission.HealthDataRequestPermissions
 import androidx.health.connect.client.permission.Permission
-import androidx.health.connect.client.records.Weight
+import androidx.health.connect.client.records.WeightRecord
+import androidx.health.connect.client.units.Mass
 import com.example.healthconnectsample.R
 import com.example.healthconnectsample.data.dateTimeWithOffsetOrDefault
 import com.example.healthconnectsample.presentation.theme.HealthConnectTheme
@@ -62,17 +61,15 @@ import java.util.UUID
 fun InputReadingsScreen(
     permissions: Set<Permission>,
     permissionsGranted: Boolean,
-    readingsList: List<Weight>,
+    readingsList: List<WeightRecord>,
     uiState: InputReadingsViewModel.UiState,
     onInsertClick: (Double) -> Unit = {},
     onDeleteClick: (String) -> Unit = {},
     onError: (Throwable?) -> Unit = {},
     onPermissionsResult: () -> Unit = {},
-    weeklyAvg: Double?
+    weeklyAvg: Mass?,
+    onPermissionsLaunch: (Set<Permission>) -> Unit = {}
 ) {
-    val launcher = rememberLauncherForActivityResult(HealthDataRequestPermissions()) {
-        onPermissionsResult()
-    }
 
     // Remember the last error ID, such that it is possible to avoid re-launching the error
     // notification for the same error when the screen is recomposed, or configuration changes etc.
@@ -114,7 +111,7 @@ fun InputReadingsScreen(
             if (!permissionsGranted) {
                 item {
                     Button(
-                        onClick = { launcher.launch(permissions) }
+                        onClick = { onPermissionsLaunch(permissions)}
                     ) {
                         Text(text = stringResource(R.string.permissions_button_label))
                     }
@@ -174,7 +171,7 @@ fun InputReadingsScreen(
                             dateTimeWithOffsetOrDefault(reading.time, reading.zoneOffset)
                         val uid = reading.metadata.uid
                         Text(
-                            text = "${reading.weightKg}" + stringResource(id = R.string.kilograms),
+                            text = "${reading.weight}" + " ",
                         )
                         Text(text = formatter.format(zonedDateTime))
                         IconButton(
@@ -215,22 +212,24 @@ fun InputReadingsScreenPreview() {
     HealthConnectTheme(darkTheme = false) {
         InputReadingsScreen(
             permissions = setOf(),
-            weeklyAvg = 54.5,
+            weeklyAvg = Mass.kilograms(54.5),
             permissionsGranted = true,
             readingsList = listOf(
-                Weight(
-                    54.0,
+                WeightRecord(
+                    Mass.kilograms(54.0),
                     time = inputTime,
                     zoneOffset = null
                 ),
-                Weight(
-                    55.0,
+                WeightRecord(
+                    Mass.kilograms(55.0),
                     time = inputTime,
                     zoneOffset = null
                 )
             ),
-
             uiState = InputReadingsViewModel.UiState.Done
         )
+
     }
 }
+
+
