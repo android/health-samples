@@ -1,11 +1,9 @@
 package com.example.passivedata
 
-import android.util.Log
 import androidx.health.services.client.PassiveListenerService
-import androidx.health.services.client.data.*
+import androidx.health.services.client.data.DataPoint
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.runBlocking
-import java.time.Instant
 import javax.inject.Inject
 
 @AndroidEntryPoint

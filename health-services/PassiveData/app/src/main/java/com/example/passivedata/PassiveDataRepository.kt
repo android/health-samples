@@ -53,7 +53,6 @@ class PassiveDataRepository @Inject constructor(
     }
 
     suspend fun storeLatestHeartRate(heartRate: Double) {
-        Log.d("qqqqqq", "storing heartRate $heartRate")
         dataStore.edit { prefs ->
             prefs[LATEST_HEART_RATE] = heartRate
         }
