@@ -15,32 +15,20 @@
  */
 package com.example.healthconnectsample.presentation.screen.inputreadings
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Button
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -52,10 +40,15 @@ import androidx.health.connect.client.units.Mass
 import com.example.healthconnectsample.R
 import com.example.healthconnectsample.data.dateTimeWithOffsetOrDefault
 import com.example.healthconnectsample.presentation.theme.HealthConnectTheme
+import me.bytebeats.views.charts.line.LineChart
+import me.bytebeats.views.charts.line.LineChartData
+import me.bytebeats.views.charts.line.render.point.FilledCircularPointDrawer
+import me.bytebeats.views.charts.line.render.xaxis.SimpleXAxisDrawer
+import me.bytebeats.views.charts.line.render.yaxis.SimpleYAxisDrawer
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-import java.util.UUID
+import java.util.*
 
 @Composable
 fun InputReadingsScreen(
@@ -111,7 +104,7 @@ fun InputReadingsScreen(
             if (!permissionsGranted) {
                 item {
                     Button(
-                        onClick = { onPermissionsLaunch(permissions)}
+                        onClick = { onPermissionsLaunch(permissions) }
                     ) {
                         Text(text = stringResource(R.string.permissions_button_label))
                     }
@@ -171,9 +164,8 @@ fun InputReadingsScreen(
                             dateTimeWithOffsetOrDefault(reading.time, reading.zoneOffset)
                         val uid = reading.metadata.uid
                         Text(
-                            text = "${reading.weight}" + " ",
+                            text = "${reading.weight} ${formatter.format(zonedDateTime)}",
                         )
-                        Text(text = formatter.format(zonedDateTime))
                         IconButton(
                             onClick = {
                                 if (uid != null) {
@@ -198,6 +190,57 @@ fun InputReadingsScreen(
                         Text(text = "0.0" + stringResource(id = R.string.kilograms))
                     } else {
                         Text(text = "$weeklyAvg".take(5) + stringResource(id = R.string.kilograms))
+                    }
+                }
+                if (readingsList.size >= 3) {
+                    var index = -1
+                    val points = MutableList(readingsList.size) {
+                        ++index
+                        val reading = readingsList[index]
+
+                        val zonedDateTime =
+                            dateTimeWithOffsetOrDefault(reading.time, reading.zoneOffset)
+
+                        val formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
+
+                        LineChartData.Point(
+                            reading.weight.inKilograms.toFloat(),
+                            formatter.format(zonedDateTime)
+                        )
+                    }
+                    item {
+                        Row(Modifier.defaultMinSize(minHeight = 160.dp)) {
+
+                            val chartTextColor = if (isSystemInDarkTheme()) {
+                                Color.White
+                            } else {
+                                Color.Black
+                            }
+
+                            val pointColor = if (isSystemInDarkTheme()) {
+                                Color.LightGray
+                            } else {
+                                Color.Blue
+                            }
+
+                            LineChart(
+                                lineChartData = LineChartData(
+                                    points = points
+                                ),
+                                modifier = Modifier.height(160.dp),
+                                pointDrawer = FilledCircularPointDrawer(color = pointColor),
+                                xAxisDrawer = SimpleXAxisDrawer(
+                                    labelTextSize = 10.sp,
+                                    labelTextColor = chartTextColor,
+                                    axisLineColor = chartTextColor
+                                ),
+                                yAxisDrawer = SimpleYAxisDrawer(
+                                    labelTextSize = 10.sp,
+                                    labelTextColor = chartTextColor,
+                                    axisLineColor = chartTextColor
+                                )
+                            )
+                        }
                     }
                 }
             }
@@ -231,5 +274,3 @@ fun InputReadingsScreenPreview() {
 
     }
 }
-
-

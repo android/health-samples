@@ -25,6 +25,8 @@ buildscript {
         concurrent_futures_version = '1.1.0'
         health_connect_version = '1.0.0-alpha03'
         lifecycle_version = '2.4.1'
+
+        compose_charts_version = '0.1.2'
     }
     repositories {
         google()
