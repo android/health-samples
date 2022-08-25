@@ -33,7 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.health.connect.client.permission.Permission
+import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.metadata.Metadata
 import com.example.healthconnectsample.R
@@ -47,7 +47,7 @@ import java.util.UUID
  */
 @Composable
 fun ExerciseSessionScreen(
-    permissions: Set<Permission>,
+    permissions: Set<HealthPermission>,
     permissionsGranted: Boolean,
     sessionsList: List<ExerciseSessionRecord>,
     uiState: ExerciseSessionViewModel.UiState,
@@ -56,7 +56,7 @@ fun ExerciseSessionScreen(
     onDeleteClick: (String) -> Unit = {},
     onError: (Throwable?) -> Unit = {},
     onPermissionsResult: () -> Unit = {},
-    onPermissionsLaunch: (Set<Permission>) -> Unit = {}
+    onPermissionsLaunch: (Set<HealthPermission>) -> Unit = {}
 ) {
 
     // Remember the last error ID, such that it is possible to avoid re-launching the error
@@ -114,7 +114,7 @@ fun ExerciseSessionScreen(
                     ExerciseSessionRow(
                         ZonedDateTime.ofInstant(session.startTime, session.startZoneOffset),
                         ZonedDateTime.ofInstant(session.endTime, session.endZoneOffset),
-                        session.metadata.uid ?: stringResource(R.string.not_available_abbrev),
+                        session.metadata.uid,
                         session.title ?: stringResource(R.string.no_title),
                         onDeleteClick = { uid ->
                             onDeleteClick(uid)

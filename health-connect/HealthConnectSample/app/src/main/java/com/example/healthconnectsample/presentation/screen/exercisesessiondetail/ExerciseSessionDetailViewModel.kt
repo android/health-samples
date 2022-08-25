@@ -16,12 +16,11 @@
 package com.example.healthconnectsample.presentation.screen.exercisesessiondetail
 
 import android.os.RemoteException
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.health.connect.client.permission.Permission
+import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.SpeedRecord
@@ -30,7 +29,6 @@ import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.healthconnectsample.data.ExerciseSessionData
 import com.example.healthconnectsample.data.HealthConnectManager
 import kotlinx.coroutines.launch
@@ -42,11 +40,11 @@ class ExerciseSessionDetailViewModel(
     private val healthConnectManager: HealthConnectManager
 ) : ViewModel() {
     val permissions = setOf(
-        Permission.createReadPermission(StepsRecord::class),
-        Permission.createReadPermission(DistanceRecord::class),
-        Permission.createReadPermission(SpeedRecord::class),
-        Permission.createReadPermission(TotalCaloriesBurnedRecord::class),
-        Permission.createReadPermission(HeartRateRecord::class)
+        HealthPermission.createReadPermission(StepsRecord::class),
+        HealthPermission.createReadPermission(DistanceRecord::class),
+        HealthPermission.createReadPermission(SpeedRecord::class),
+        HealthPermission.createReadPermission(TotalCaloriesBurnedRecord::class),
+        HealthPermission.createReadPermission(HeartRateRecord::class)
     )
 
     var permissionsGranted = mutableStateOf(false)

@@ -43,7 +43,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
 /**
- * Displays a list of [SpeedSeries] data in the [LazyColumn].
+ * Displays a list of [SpeedRecord] data in the [LazyColumn].
  */
 fun LazyListScope.speedSeries(
     @StringRes labelId: Int,
@@ -62,7 +62,7 @@ fun LazyListScope.speedSeries(
 }
 
 /**
- * Displays a list of [HeartRateSeries] data in the [LazyColumn].
+ * Displays a list of [HeartRateRecord] data in the [LazyColumn].
  */
 fun LazyListScope.heartRateSeries(
     @StringRes labelId: Int,

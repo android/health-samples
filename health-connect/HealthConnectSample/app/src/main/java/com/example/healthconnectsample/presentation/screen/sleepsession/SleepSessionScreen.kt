@@ -15,8 +15,6 @@
  */
 package com.example.healthconnectsample.presentation.screen.sleepsession
 
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,12 +30,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.health.connect.client.HealthConnectClient
-import androidx.health.connect.client.permission.Permission
+import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.SleepStageRecord
 import com.example.healthconnectsample.R
 import com.example.healthconnectsample.data.SleepSessionData
@@ -52,14 +48,14 @@ import java.util.UUID
  */
 @Composable
 fun SleepSessionScreen(
-    permissions: Set<Permission>,
+    permissions: Set<HealthPermission>,
     permissionsGranted: Boolean,
     sessionsList: List<SleepSessionData>,
     uiState: SleepSessionViewModel.UiState,
     onInsertClick: () -> Unit = {},
     onError: (Throwable?) -> Unit = {},
     onPermissionsResult: () -> Unit = {},
-    onPermissionsLaunch: (Set<Permission>) -> Unit = {}
+    onPermissionsLaunch: (Set<HealthPermission>) -> Unit = {}
 ) {
 
     // Remember the last error ID, such that it is possible to avoid re-launching the error

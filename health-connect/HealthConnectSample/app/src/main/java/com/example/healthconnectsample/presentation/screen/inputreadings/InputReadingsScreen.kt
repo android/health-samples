@@ -46,7 +46,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.health.connect.client.permission.Permission
+import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.WeightRecord
 import androidx.health.connect.client.units.Mass
 import com.example.healthconnectsample.R
@@ -59,7 +59,7 @@ import java.util.UUID
 
 @Composable
 fun InputReadingsScreen(
-    permissions: Set<Permission>,
+    permissions: Set<HealthPermission>,
     permissionsGranted: Boolean,
     readingsList: List<WeightRecord>,
     uiState: InputReadingsViewModel.UiState,
@@ -68,7 +68,7 @@ fun InputReadingsScreen(
     onError: (Throwable?) -> Unit = {},
     onPermissionsResult: () -> Unit = {},
     weeklyAvg: Mass?,
-    onPermissionsLaunch: (Set<Permission>) -> Unit = {}
+    onPermissionsLaunch: (Set<HealthPermission>) -> Unit = {}
 ) {
 
     // Remember the last error ID, such that it is possible to avoid re-launching the error
@@ -175,11 +175,7 @@ fun InputReadingsScreen(
                         )
                         Text(text = formatter.format(zonedDateTime))
                         IconButton(
-                            onClick = {
-                                if (uid != null) {
-                                    onDeleteClick(uid)
-                                }
-                            },
+                            onClick = { onDeleteClick(uid) },
                         ) {
                             Icon(
                                 Icons.Default.Delete,

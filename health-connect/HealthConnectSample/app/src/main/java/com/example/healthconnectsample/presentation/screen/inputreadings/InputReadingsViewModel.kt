@@ -16,12 +16,11 @@
 package com.example.healthconnectsample.presentation.screen.inputreadings
 
 import android.os.RemoteException
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.health.connect.client.permission.Permission
+import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.WeightRecord
 import androidx.health.connect.client.units.Mass
 import androidx.lifecycle.ViewModel
@@ -38,8 +37,8 @@ import java.util.UUID
 class InputReadingsViewModel(private val healthConnectManager: HealthConnectManager) :
     ViewModel() {
     val permissions = setOf(
-        Permission.createReadPermission(WeightRecord::class),
-        Permission.createWritePermission(WeightRecord::class),
+        HealthPermission.createReadPermission(WeightRecord::class),
+        HealthPermission.createWritePermission(WeightRecord::class),
     )
     var weeklyAvg: MutableState<Mass?> = mutableStateOf(Mass.kilograms(0.0))
         private set
