@@ -18,9 +18,9 @@ import androidx.compose.ui.unit.dp
 import androidx.health.connect.client.changes.Change
 import androidx.health.connect.client.changes.DeletionChange
 import androidx.health.connect.client.changes.UpsertionChange
+import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.ExerciseEventRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
-import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.SleepStageRecord
@@ -164,7 +164,7 @@ fun FormattedDeletionChange(change: DeletionChange) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("UID: ${change.deletedUid}")
+            Text("UID: ${change.uid}")
         }
     }
 }

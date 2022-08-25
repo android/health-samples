@@ -15,6 +15,7 @@
  */
 package com.example.healthconnectsample.presentation
 
+import android.annotation.SuppressLint
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
@@ -42,6 +43,7 @@ import kotlinx.coroutines.launch
 
 const val TAG = "Health Connect sample"
 
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun HealthConnectApp(healthConnectManager: HealthConnectManager) {
     HealthConnectTheme {

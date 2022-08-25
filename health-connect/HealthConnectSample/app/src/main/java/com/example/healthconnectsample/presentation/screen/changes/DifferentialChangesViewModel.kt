@@ -18,17 +18,16 @@ package com.example.healthconnectsample.presentation.screen.changes
 import android.content.ContentValues.TAG
 import android.os.RemoteException
 import android.util.Log
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.health.connect.client.changes.Change
-import androidx.health.connect.client.permission.Permission
+import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.ExerciseEventRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
-import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.SleepStageRecord
@@ -60,7 +59,7 @@ class DifferentialChangesViewModel(private val healthConnectManager: HealthConne
         WeightRecord::class
     )
 
-    val permissions = changesDataTypes.map { Permission.createReadPermission(it) }.toSet()
+    val permissions = changesDataTypes.map { HealthPermission.createReadPermission(it) }.toSet()
 
     var permissionsGranted = mutableStateOf(false)
         private set

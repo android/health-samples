@@ -20,7 +20,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.health.connect.client.permission.Permission
+import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.SleepStageRecord
 import androidx.lifecycle.ViewModel
@@ -36,10 +36,10 @@ class SleepSessionViewModel(private val healthConnectManager: HealthConnectManag
     ViewModel() {
 
     val permissions = setOf(
-        Permission.createReadPermission(SleepSessionRecord::class),
-        Permission.createWritePermission(SleepSessionRecord::class),
-        Permission.createReadPermission(SleepStageRecord::class),
-        Permission.createWritePermission(SleepStageRecord::class)
+        HealthPermission.createReadPermission(SleepSessionRecord::class),
+        HealthPermission.createWritePermission(SleepSessionRecord::class),
+        HealthPermission.createReadPermission(SleepStageRecord::class),
+        HealthPermission.createWritePermission(SleepStageRecord::class)
     )
 
     var permissionsGranted = mutableStateOf(false)

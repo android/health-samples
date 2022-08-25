@@ -34,7 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.health.connect.client.changes.Change
-import androidx.health.connect.client.permission.Permission
+import androidx.health.connect.client.permission.HealthPermission
 import com.example.healthconnectsample.R
 import com.example.healthconnectsample.presentation.component.FormattedChange
 import java.util.UUID
@@ -44,7 +44,7 @@ import java.util.UUID
  */
 @Composable
 fun DifferentialChangesScreen(
-    permissions: Set<Permission>,
+    permissions: Set<HealthPermission>,
     permissionsGranted: Boolean,
     changesEnabled: Boolean,
     onChangesEnable: (Boolean) -> Unit,
@@ -54,7 +54,7 @@ fun DifferentialChangesScreen(
     uiState: DifferentialChangesViewModel.UiState,
     onError: (Throwable?) -> Unit = {},
     onPermissionsResult: () -> Unit = {},
-    onPermissionsLaunch: (Set<Permission>) -> Unit = {}
+    onPermissionsLaunch: (Set<HealthPermission>) -> Unit = {}
 ) {
 
     // Remember the last error ID, such that it is possible to avoid re-launching the error

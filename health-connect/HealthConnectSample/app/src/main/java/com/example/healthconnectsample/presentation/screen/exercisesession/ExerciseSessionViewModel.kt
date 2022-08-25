@@ -20,10 +20,10 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.health.connect.client.permission.Permission
+import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.ExerciseEventRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
-import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.SpeedRecord
 import androidx.health.connect.client.records.StepsRecord
@@ -44,14 +44,14 @@ import kotlin.random.Random
 class ExerciseSessionViewModel(private val healthConnectManager: HealthConnectManager) :
     ViewModel() {
     val permissions = setOf(
-        Permission.createWritePermission(ExerciseSessionRecord::class),
-        Permission.createReadPermission(ExerciseSessionRecord::class),
-        Permission.createWritePermission(ExerciseEventRecord::class),
-        Permission.createWritePermission(StepsRecord::class),
-        Permission.createWritePermission(SpeedRecord::class),
-        Permission.createWritePermission(DistanceRecord::class),
-        Permission.createWritePermission(TotalCaloriesBurnedRecord::class),
-        Permission.createWritePermission(HeartRateRecord::class)
+        HealthPermission.createWritePermission(ExerciseSessionRecord::class),
+        HealthPermission.createReadPermission(ExerciseSessionRecord::class),
+        HealthPermission.createWritePermission(ExerciseEventRecord::class),
+        HealthPermission.createWritePermission(StepsRecord::class),
+        HealthPermission.createWritePermission(SpeedRecord::class),
+        HealthPermission.createWritePermission(DistanceRecord::class),
+        HealthPermission.createWritePermission(TotalCaloriesBurnedRecord::class),
+        HealthPermission.createWritePermission(HeartRateRecord::class)
     )
 
     var permissionsGranted = mutableStateOf(false)

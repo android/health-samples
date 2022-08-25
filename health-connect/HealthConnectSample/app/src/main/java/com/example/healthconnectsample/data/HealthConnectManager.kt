@@ -22,7 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.changes.Change
-import androidx.health.connect.client.permission.Permission
+import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.ExerciseEventRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
@@ -83,13 +83,13 @@ class HealthConnectManager(private val context: Context) {
      * permissions are already granted then there is no need to request permissions via
      * [PermissionController.createRequestPermissionActivityContract].
      */
-    suspend fun hasAllPermissions(permissions: Set<Permission>): Boolean {
+    suspend fun hasAllPermissions(permissions: Set<HealthPermission>): Boolean {
         return permissions == healthConnectClient.permissionController.getGrantedPermissions(
             permissions
         )
     }
 
-    fun requestPermissionsActivityContract(): ActivityResultContract<Set<Permission>, Set<Permission>> {
+    fun requestPermissionsActivityContract(): ActivityResultContract<Set<HealthPermission>, Set<HealthPermission>> {
         return healthConnectClient.permissionController.createRequestPermissionActivityContract()
     }
 
@@ -164,7 +164,7 @@ class HealthConnectManager(private val context: Context) {
         healthConnectClient.deleteRecords(
             ExerciseSessionRecord::class,
             uidsList = listOf(uid),
-            clientIdsList = emptyList()
+            clientRecordIdsList = emptyList()
         )
         val timeRangeFilter = TimeRangeFilter.between(
             exerciseSession.record.startTime,
@@ -313,7 +313,7 @@ class HealthConnectManager(private val context: Context) {
             val stagesResponse = healthConnectClient.readRecords(stagesRequest)
             sessions.add(
                 SleepSessionData(
-                    uid = session.metadata.uid!!,
+                    uid = session.metadata.uid,
                     title = session.title,
                     notes = session.notes,
                     startTime = session.startTime,
@@ -367,7 +367,7 @@ class HealthConnectManager(private val context: Context) {
         healthConnectClient.deleteRecords(
             WeightRecord::class,
             uidsList = listOf(uid),
-            clientIdsList = emptyList()
+            clientRecordIdsList = emptyList()
         )
     }
 
