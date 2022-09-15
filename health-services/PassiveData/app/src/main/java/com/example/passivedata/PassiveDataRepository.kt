@@ -27,6 +27,7 @@ import androidx.health.services.client.data.DataType
 import androidx.health.services.client.data.HeartRateAccuracy
 import androidx.health.services.client.data.HeartRateAccuracy.SensorStatus.Companion.ACCURACY_HIGH
 import androidx.health.services.client.data.HeartRateAccuracy.SensorStatus.Companion.ACCURACY_MEDIUM
+import androidx.health.services.client.data.SampleDataPoint
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -65,7 +66,7 @@ class PassiveDataRepository @Inject constructor(
     }
 }
 
-fun List<DataPoint>.latestHeartRate(): Double? {
+fun List<SampleDataPoint<Double>>.latestHeartRate(): Double? {
     return this
         // dataPoints can have multiple types (e.g. if the app is registered for multiple types).
         .filter { it.dataType == DataType.HEART_RATE_BPM }
@@ -80,8 +81,8 @@ fun List<DataPoint>.latestHeartRate(): Double? {
                     ).contains((it.accuracy as HeartRateAccuracy).sensorStatus)
         }
         .filter {
-            it.value.asDouble() > 0
+            it.value > 0
         }
         // HEART_RATE_BPM is a SAMPLE type, so start and end times are the same.
-        .maxByOrNull { it.endDurationFromBoot }?.value?.asDouble()
+        .maxByOrNull { it.timeDurationFromBoot }?.value
 }
