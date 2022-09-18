@@ -15,6 +15,8 @@
  */
 package com.example.healthconnectsample.presentation.navigation
 
+import android.app.Activity
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,14 +25,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -44,6 +50,8 @@ import com.example.healthconnectsample.presentation.theme.HealthConnectTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+const val HEALTH_CONNECT_SETTINGS_ACTION = "androidx.health.ACTION_HEALTH_CONNECT_SETTINGS"
+
 /**
  * The side navigation drawer used to explore each Health Connect feature.
  */
@@ -55,6 +63,7 @@ fun Drawer(
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    val activity = LocalContext.current as Activity
     Column {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -107,6 +116,27 @@ fun Drawer(
                         scaffoldState.drawerState.close()
                     }
                 }
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(
+                    onClick = {
+                        val settingsIntent = Intent()
+                        settingsIntent.action = HEALTH_CONNECT_SETTINGS_ACTION
+                        activity.startActivity(settingsIntent)
+                    }
+                )
+                .height(48.dp)
+                .padding(start = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.settings),
+                style = MaterialTheme.typography.h5,
+                color = MaterialTheme.colors.onBackground
             )
         }
     }
