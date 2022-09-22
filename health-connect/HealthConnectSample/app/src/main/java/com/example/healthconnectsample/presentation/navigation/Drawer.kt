@@ -63,7 +63,7 @@ fun Drawer(
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    val activity = LocalContext.current as Activity
+    val activity = LocalContext.current
     Column {
         Row(
             modifier = Modifier.fillMaxWidth(),
