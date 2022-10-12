@@ -164,7 +164,7 @@ fun FormattedDeletionChange(change: DeletionChange) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("UID: ${change.uid}")
+            Text("UID: ${change.recordId}")
         }
     }
 }
