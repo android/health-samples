@@ -81,7 +81,7 @@ class HealthConnectManager(private val context: Context) {
      * Determines whether all the specified permissions are already granted. It is recommended to
      * call [PermissionController.getGrantedPermissions] first in the permissions flow, as if the
      * permissions are already granted then there is no need to request permissions via
-     * [PermissionController.createRequestPermissionActivityContract].
+     * [PermissionController.createRequestPermissionResultContract].
      */
     suspend fun hasAllPermissions(permissions: Set<HealthPermission>): Boolean {
         return permissions == healthConnectClient.permissionController.getGrantedPermissions(
@@ -90,7 +90,7 @@ class HealthConnectManager(private val context: Context) {
     }
 
     fun requestPermissionsActivityContract(): ActivityResultContract<Set<HealthPermission>, Set<HealthPermission>> {
-        return healthConnectClient.permissionController.createRequestPermissionActivityContract()
+        return PermissionController.createRequestPermissionResultContract()
     }
 
     /**
@@ -163,7 +163,7 @@ class HealthConnectManager(private val context: Context) {
         val exerciseSession = healthConnectClient.readRecord(ExerciseSessionRecord::class, uid)
         healthConnectClient.deleteRecords(
             ExerciseSessionRecord::class,
-            uidsList = listOf(uid),
+            recordIdsList = listOf(uid),
             clientRecordIdsList = emptyList()
         )
         val timeRangeFilter = TimeRangeFilter.between(
@@ -313,7 +313,7 @@ class HealthConnectManager(private val context: Context) {
             val stagesResponse = healthConnectClient.readRecords(stagesRequest)
             sessions.add(
                 SleepSessionData(
-                    uid = session.metadata.uid,
+                    uid = session.metadata.id,
                     title = session.title,
                     notes = session.notes,
                     startTime = session.startTime,
@@ -366,7 +366,7 @@ class HealthConnectManager(private val context: Context) {
     suspend fun deleteWeightInput(uid: String) {
         healthConnectClient.deleteRecords(
             WeightRecord::class,
-            uidsList = listOf(uid),
+            recordIdsList = listOf(uid),
             clientRecordIdsList = emptyList()
         )
     }
