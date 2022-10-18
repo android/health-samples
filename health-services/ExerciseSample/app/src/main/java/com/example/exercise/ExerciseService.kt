@@ -28,12 +28,7 @@ import android.os.IBinder
 import android.os.SystemClock
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.health.services.client.data.AggregateDataPoint
-import androidx.health.services.client.data.DataPoint
-import androidx.health.services.client.data.DataType
-import androidx.health.services.client.data.ExerciseState
-import androidx.health.services.client.data.ExerciseUpdate
-import androidx.health.services.client.data.LocationAvailability
+import androidx.health.services.client.data.*
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
@@ -45,7 +40,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.Instant
@@ -73,14 +67,11 @@ class ExerciseService : LifecycleService() {
     private var isStarted = false
     private var isForeground = false
 
-    private val _exerciseState = MutableStateFlow(ExerciseState.USER_ENDED)
+    private val _exerciseState = MutableStateFlow(ExerciseState.ENDED)
     val exerciseState: StateFlow<ExerciseState> = _exerciseState
 
-    private val _exerciseMetrics = MutableStateFlow(emptyMap<DataType, List<DataPoint>>())
-    val exerciseMetrics: StateFlow<Map<DataType, List<DataPoint>>> = _exerciseMetrics
-
-    private val _aggregateMetrics = MutableStateFlow(emptyMap<DataType, AggregateDataPoint>())
-    val aggregateMetrics: StateFlow<Map<DataType, AggregateDataPoint>> = _aggregateMetrics
+    private val _latestMetrics = MutableStateFlow<DataPointContainer?>(null)
+    val latestMetrics: StateFlow<DataPointContainer?> = _latestMetrics
 
     private val _exerciseLaps = MutableStateFlow(0)
     val exerciseLaps: StateFlow<Int> = _exerciseLaps
@@ -194,7 +185,7 @@ class ExerciseService : LifecycleService() {
 
     private fun processExerciseUpdate(exerciseUpdate: ExerciseUpdate) {
         val oldState = _exerciseState.value
-        if (!oldState.isEnded && exerciseUpdate.state.isEnded) {
+        if (!oldState.isEnded && exerciseUpdate.exerciseStateInfo.state.isEnded) {
             // Our exercise ended. Gracefully handle this termination be doing the following:
             // TODO Save partial workout state, show workout summary, and let the user know why the exercise was ended.
 
@@ -202,22 +193,22 @@ class ExerciseService : LifecycleService() {
             removeOngoingActivityNotification()
 
             // Custom flow for the possible states captured by the isEnded boolean
-            when (exerciseUpdate.state) {
-                ExerciseState.TERMINATED -> {
+            when (exerciseUpdate.exerciseStateInfo.endReason) {
+                ExerciseEndReason.AUTO_END_SUPERSEDED -> {
                     // TODO Send the user a notification (another app ended their workout)
                     Log.i(
                         TAG,
                         "Your exercise was terminated because another app started tracking an exercise"
                     )
                 }
-                ExerciseState.AUTO_ENDED -> {
+                ExerciseEndReason.AUTO_END_MISSING_LISTENER -> {
                     // TODO Send the user a notification
                     Log.i(
                         TAG,
                         "Your exercise was auto ended because there were no registered listeners"
                     )
                 }
-                ExerciseState.AUTO_ENDED_PERMISSION_LOST -> {
+                ExerciseEndReason.AUTO_END_PERMISSION_LOST -> {
                     // TODO Send the user a notification
                     Log.w(
                         TAG,
@@ -227,16 +218,13 @@ class ExerciseService : LifecycleService() {
                 else -> {
                 }
             }
-        } else if (oldState.isEnded && exerciseUpdate.state == ExerciseState.ACTIVE) {
+        } else if (oldState.isEnded && exerciseUpdate.exerciseStateInfo.state == ExerciseState.ACTIVE) {
             // Reset laps.
             _exerciseLaps.value = 0
         }
 
-        _exerciseState.value = exerciseUpdate.state
-        _exerciseMetrics.value = exerciseUpdate.latestMetrics
-        _aggregateMetrics.value = exerciseUpdate.latestAggregateMetrics
-        _exerciseDurationUpdate.value =
-            ActiveDurationUpdate(exerciseUpdate.activeDuration, Instant.now())
+        _exerciseState.value = exerciseUpdate.exerciseStateInfo.state
+        _latestMetrics.value = exerciseUpdate.latestMetrics
     }
 
     override fun onBind(intent: Intent): IBinder {
