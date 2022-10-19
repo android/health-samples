@@ -21,6 +21,7 @@ import androidx.health.services.client.data.DataTypeAvailability
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
@@ -56,15 +57,16 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    @ExperimentalCoroutinesApi
     suspend fun measureHeartRate() {
         healthServicesManager.heartRateMeasureFlow().collect {
             when (it) {
-                is MeasureMessage.MeasureAvailabilty -> {
+                is MeasureMessage.MeasureAvailability -> {
                     Log.d(TAG, "Availability changed: ${it.availability}")
                     _heartRateAvailable.value = it.availability
                 }
                 is MeasureMessage.MeasureData -> {
-                    val bpm = it.data.last().value.asDouble()
+                    val bpm = it.data.last().value
                     Log.d(TAG, "Data update: $bpm")
                     _heartRateBpm.value = bpm
                 }

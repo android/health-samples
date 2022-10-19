@@ -22,7 +22,7 @@ plugins {
 }
 
 android {
-    compileSdk 31
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.example.measuredata"
@@ -44,13 +44,18 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    kotlinOptions { jvmTarget = '1.8' }
+    kotlinOptions {
+        jvmTarget = '1.8'
+        freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+        freeCompilerArgs += "-Xjvm-default=all"
+    }
+    namespace 'com.example.measuredata'
 }
 
 dependencies {
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
-    implementation 'androidx.core:core-ktx:1.6.0'
-    implementation "androidx.fragment:fragment-ktx:1.3.6"
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.core:core-ktx:1.9.0'
+    implementation "androidx.fragment:fragment-ktx:1.5.3"
 
     // Hilt dependency injection
     implementation "com.google.dagger:hilt-android:$hilt_version"
@@ -61,15 +66,15 @@ dependencies {
     // Wear
     implementation 'androidx.wear:wear:1.2.0'
     // Health Services
-    implementation "androidx.health:health-services-client:1.0.0-alpha02"
+    implementation 'androidx.health:health-services-client:1.0.0-SNAPSHOT'
     // Used to bridge between Futures and coroutines
     implementation 'com.google.guava:guava:30.1.1-android'
     implementation "androidx.concurrent:concurrent-futures-ktx:1.1.0"
 
     // Lifecycle
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1"
-    implementation "androidx.lifecycle:lifecycle-service:2.3.1"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.5.1"
+    implementation "androidx.lifecycle:lifecycle-service:2.5.1"
 
     // Material
-    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'com.google.android.material:material:1.6.1'
 }
