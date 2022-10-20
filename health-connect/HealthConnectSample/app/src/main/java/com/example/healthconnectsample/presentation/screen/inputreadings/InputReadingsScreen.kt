@@ -169,7 +169,7 @@ fun InputReadingsScreen(
                         val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
                         val zonedDateTime =
                             dateTimeWithOffsetOrDefault(reading.time, reading.zoneOffset)
-                        val uid = reading.metadata.uid
+                        val uid = reading.metadata.id
                         Text(
                             text = "${reading.weight}" + " ",
                         )
