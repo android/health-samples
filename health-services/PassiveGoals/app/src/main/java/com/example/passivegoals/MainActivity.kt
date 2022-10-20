@@ -34,6 +34,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.example.passivegoals.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
