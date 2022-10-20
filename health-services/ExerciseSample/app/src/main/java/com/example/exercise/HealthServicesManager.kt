@@ -110,28 +110,6 @@ class HealthServicesManager @Inject constructor(
             )
         }
 
-        val config1 = ExerciseConfig(
-            exerciseType = ExerciseType.RUNNING,
-            dataTypes = dataTypes,
-            isAutoPauseAndResumeEnabled = false,
-            isGpsEnabled = true,
-            exerciseGoals = exerciseGoals
-        )
-
-        val config2 = ExerciseConfig.Builder(ExerciseType.RUNNING)
-            .setIsAutoPauseAndResumeEnabled(false)
-            .setDataTypes(dataTypes)
-            .setExerciseGoals(exerciseGoals)
-            .setIsGpsEnabled(true)
-            .build()
-
-        val config3 = ExerciseConfig.builder(ExerciseType.RUNNING)
-            .setIsAutoPauseAndResumeEnabled(false)
-            .setDataTypes(dataTypes)
-            .setExerciseGoals(exerciseGoals)
-            .setIsGpsEnabled(true)
-            .build()
-
         val config = ExerciseConfig(
             exerciseType = ExerciseType.RUNNING,
             dataTypes = dataTypes,
