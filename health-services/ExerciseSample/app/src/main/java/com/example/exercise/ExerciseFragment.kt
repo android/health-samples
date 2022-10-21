@@ -27,6 +27,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.health.services.client.data.DataPointContainer
 import androidx.health.services.client.data.DataType
 import androidx.health.services.client.data.ExerciseState
+import androidx.health.services.client.data.ExerciseUpdate
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -59,7 +60,8 @@ class ExerciseFragment : Fragment() {
     private var serviceConnection = ExerciseServiceConnection()
 
     private var cachedExerciseState = ExerciseState.ENDED
-    private var activeDurationUpdate = ActiveDurationUpdate()
+    private var activeDurationCheckpoint =
+        ExerciseUpdate.ActiveDurationCheckpoint(Instant.now(), Duration.ZERO)
     private var chronoTickJob: Job? = null
     private var uiBindingJob: Job? = null
 
@@ -183,29 +185,17 @@ class ExerciseFragment : Fragment() {
                         it?.let { updateMetrics(it) }
                     }
                 }
-                /*
-                launch {
-                    service.exerciseMetrics.collect {
-                        updateMetrics(it)
-                    }
-                }
-                launch {
-                    service.aggregateMetrics.collect {
-                        updateAggregateMetrics(it)
-                    }
-                }
-                */
                 launch {
                     service.exerciseLaps.collect {
                         updateLaps(it)
                     }
                 }
                 launch {
-                    service.exerciseDurationUpdate.collect {
+                    service.activeDurationCheckpoint.collect {
                         // We don't update the chronometer here since these updates come at irregular
                         // intervals. Instead we store the duration and update the chronometer with
                         // our own regularly-timed intervals.
-                        activeDurationUpdate = it
+                        activeDurationCheckpoint = it
                     }
                 }
             }
@@ -281,12 +271,7 @@ class ExerciseFragment : Fragment() {
         // We update the chronometer on our own regular intervals independent of the exercise
         // duration value received. If the exercise is still active, add the difference between
         // the last duration update and now.
-        val difference = if (cachedExerciseState == ExerciseState.ACTIVE) {
-            Duration.between(activeDurationUpdate.timestamp, Instant.now())
-        } else {
-            Duration.ZERO
-        }
-        val duration = activeDurationUpdate.duration + difference
+        val duration = activeDurationCheckpoint.displayDuration(Instant.now(), cachedExerciseState)
         binding.elapsedTime.text = formatElapsedTime(duration, !ambientController.isAmbient)
     }
 
@@ -334,7 +319,7 @@ class ExerciseFragment : Fragment() {
 
         service.latestMetrics.value?.let { updateMetrics(it) }
 
-        activeDurationUpdate = service.exerciseDurationUpdate.value
+        activeDurationCheckpoint = service.activeDurationCheckpoint.value
         updateChronometer()
     }
 

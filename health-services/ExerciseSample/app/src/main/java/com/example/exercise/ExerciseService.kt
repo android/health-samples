@@ -76,8 +76,12 @@ class ExerciseService : LifecycleService() {
     private val _exerciseLaps = MutableStateFlow(0)
     val exerciseLaps: StateFlow<Int> = _exerciseLaps
 
-    private val _exerciseDurationUpdate = MutableStateFlow(ActiveDurationUpdate())
-    val exerciseDurationUpdate: StateFlow<ActiveDurationUpdate> = _exerciseDurationUpdate
+    private val _activeDurationCheckpoint =
+        MutableStateFlow(
+            ExerciseUpdate.ActiveDurationCheckpoint(Instant.now(), Duration.ZERO)
+        )
+    val activeDurationCheckpoint:
+            StateFlow<ExerciseUpdate.ActiveDurationCheckpoint> = _activeDurationCheckpoint
 
     private val _locationAvailabilityState = MutableStateFlow(LocationAvailability.UNKNOWN)
     val locationAvailabilityState: StateFlow<LocationAvailability> = _locationAvailabilityState
@@ -225,6 +229,7 @@ class ExerciseService : LifecycleService() {
 
         _exerciseState.value = exerciseUpdate.exerciseStateInfo.state
         _latestMetrics.value = exerciseUpdate.latestMetrics
+        exerciseUpdate.activeDurationCheckpoint?.let { _activeDurationCheckpoint.value = it }
     }
 
     override fun onBind(intent: Intent): IBinder {
@@ -307,8 +312,8 @@ class ExerciseService : LifecycleService() {
 
         // Ongoing Activity allows an ongoing Notification to appear on additional surfaces in the
         // Wear OS user interface, so that users can stay more engaged with long running tasks.
-        val lastUpdate = exerciseDurationUpdate.value
-        val duration = lastUpdate.duration + Duration.between(lastUpdate.timestamp, Instant.now())
+        val duration =
+            activeDurationCheckpoint.value.displayDuration(Instant.now(), exerciseState.value)
         val startMillis = SystemClock.elapsedRealtime() - duration.toMillis()
         val ongoingActivityStatus = Status.Builder()
             .addTemplate(ONGOING_STATUS_TEMPLATE)
@@ -351,10 +356,13 @@ class ExerciseService : LifecycleService() {
     }
 }
 
-/** Keeps track of the last time we received an update for active exercise duration. */
-data class ActiveDurationUpdate(
-    /** The last active duration reported. */
-    val duration: Duration = Duration.ZERO,
-    /** The instant at which the last duration was reported. */
-    val timestamp: Instant = Instant.now()
-)
+fun ExerciseUpdate.ActiveDurationCheckpoint.displayDuration(
+    now: Instant,
+    state: ExerciseState
+): Duration {
+    val isActive = with(state) {
+        !isEnded && !isPaused && !isEnding && !isResuming
+    }
+    val extraDuration = if (isActive) Duration.between(this.time, now) else Duration.ZERO
+    return this.activeDuration.plus(extraDuration)
+}
