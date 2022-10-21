@@ -53,7 +53,6 @@ class HealthServicesManager @Inject constructor(
 
     suspend fun unregisterForHeartRateData() {
         Log.i(TAG, "Unregistering listeners")
-        passiveMonitoringClient.clearPassiveListenerCallbackAsync().await()
         passiveMonitoringClient.clearPassiveListenerServiceAsync().await()
     }
 }
