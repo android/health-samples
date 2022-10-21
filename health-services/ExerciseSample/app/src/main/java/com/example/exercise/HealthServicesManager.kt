@@ -26,7 +26,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.shareIn
 import javax.inject.Inject
 
 /**
@@ -177,14 +176,10 @@ class HealthServicesManager @Inject constructor(
     }
 
     /**
-     * A shared flow for [ExerciseUpdate]s.
+     * A flow for [ExerciseUpdate]s.
      *
-     * When the flow starts, it will register an [ExerciseUpdateListener] and start to emit
-     * messages. When there are no more subscribers, or when the coroutine scope of [shareIn] is
-     * cancelled, this flow will unregister the listener.
-     *
-     * A shared flow is used because only a single [ExerciseUpdateListener] can be registered at a
-     * time, even if there are multiple consumers of the flow.
+     * When the flow starts, it will register an [ExerciseUpdateCallback] and start to emit
+     * messages.
      *
      * [callbackFlow] is used to bridge between a callback-based API and Kotlin flows.
      */
