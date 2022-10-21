@@ -16,7 +16,6 @@
 
 package com.example.passivedata
 
-import android.content.Context
 import android.util.Log
 import androidx.concurrent.futures.await
 import androidx.health.services.client.HealthServicesClient
