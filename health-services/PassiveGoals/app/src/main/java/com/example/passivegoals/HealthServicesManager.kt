@@ -73,23 +73,14 @@ class HealthServicesManager @Inject constructor(
         val passiveListenerConfig =
             PassiveListenerConfig.builder().setDailyGoals(setOf(dailyStepsGoal, floorsGoal))
                 .build()
-        val future = passiveMonitoringClient.setPassiveListenerServiceAsync(
-            PassiveGoalService::class.java,
-            passiveListenerConfig
-        )
-        return suspendCancellableCoroutine { continuation ->
-            Futures.addCallback(
-                future, object : FutureCallback<Void> {
-                    override fun onSuccess(result: Void?) {
-                        continuation.resume(true) { }
-                    }
-
-                    override fun onFailure(t: Throwable) {
-                        continuation.cancel(t)
-                    }
-                },
-                context.mainExecutor
-            )
+        return try {
+            passiveMonitoringClient.setPassiveListenerServiceAsync(
+                PassiveGoalService::class.java,
+                passiveListenerConfig
+            ).await()
+            true
+        } catch (t: Throwable) {
+            false
         }
     }
 
