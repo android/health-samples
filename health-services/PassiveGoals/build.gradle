@@ -40,8 +40,6 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        // https://androidx.dev/snapshots/builds for latest buildId
-        maven { url 'https://androidx.dev/snapshots/builds/9194100/artifacts/repository' }
     }
 }
 
