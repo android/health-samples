@@ -18,28 +18,14 @@ package com.example.exercise
 
 import android.util.Log
 import androidx.concurrent.futures.await
-import androidx.health.services.client.ExerciseUpdateListener
+import androidx.health.services.client.ExerciseUpdateCallback
 import androidx.health.services.client.HealthServicesClient
-import androidx.health.services.client.data.Availability
-import androidx.health.services.client.data.ComparisonType
-import androidx.health.services.client.data.DataType
-import androidx.health.services.client.data.DataTypeCondition
-import androidx.health.services.client.data.ExerciseConfig
-import androidx.health.services.client.data.ExerciseGoal
-import androidx.health.services.client.data.ExerciseLapSummary
-import androidx.health.services.client.data.ExerciseTrackedStatus
-import androidx.health.services.client.data.ExerciseType
-import androidx.health.services.client.data.ExerciseTypeCapabilities
-import androidx.health.services.client.data.ExerciseUpdate
-import androidx.health.services.client.data.LocationAvailability
-import androidx.health.services.client.data.Value
-import androidx.health.services.client.data.WarmUpConfig
+import androidx.health.services.client.data.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.shareIn
 import javax.inject.Inject
 
 /**
@@ -56,7 +42,7 @@ class HealthServicesManager @Inject constructor(
 
     suspend fun getExerciseCapabilities(): ExerciseTypeCapabilities? {
         if (!capabilitiesLoaded) {
-            val capabilities = exerciseClient.capabilities.await()
+            val capabilities = exerciseClient.getCapabilitiesAsync().await()
             if (ExerciseType.RUNNING in capabilities.supportedExerciseTypes) {
                 exerciseCapabilities =
                     capabilities.getExerciseTypeCapabilities(ExerciseType.RUNNING)
@@ -71,12 +57,12 @@ class HealthServicesManager @Inject constructor(
     }
 
     suspend fun isExerciseInProgress(): Boolean {
-        val exerciseInfo = exerciseClient.currentExerciseInfo.await()
+        val exerciseInfo = exerciseClient.getCurrentExerciseInfoAsync().await()
         return exerciseInfo.exerciseTrackedStatus == ExerciseTrackedStatus.OWNED_EXERCISE_IN_PROGRESS
     }
 
     suspend fun isTrackingExerciseInAnotherApp(): Boolean {
-        val exerciseInfo = exerciseClient.currentExerciseInfo.await()
+        val exerciseInfo = exerciseClient.getCurrentExerciseInfoAsync().await()
         return exerciseInfo.exerciseTrackedStatus == ExerciseTrackedStatus.OTHER_APP_IN_PROGRESS
     }
 
@@ -90,21 +76,18 @@ class HealthServicesManager @Inject constructor(
         val capabilities = getExerciseCapabilities() ?: return
         val dataTypes = setOf(
             DataType.HEART_RATE_BPM,
-        ).intersect(capabilities.supportedDataTypes)
-
-        val aggDataTypes = setOf(
-            DataType.TOTAL_CALORIES,
+            DataType.CALORIES_TOTAL,
             DataType.DISTANCE
         ).intersect(capabilities.supportedDataTypes)
 
-        val exerciseGoals = mutableListOf<ExerciseGoal>()
+        val exerciseGoals = mutableListOf<ExerciseGoal<Double>>()
         if (supportsCalorieGoal(capabilities)) {
             // Create a one-time goal.
             exerciseGoals.add(
                 ExerciseGoal.createOneTimeGoal(
                     DataTypeCondition(
-                        dataType = DataType.TOTAL_CALORIES,
-                        threshold = Value.ofDouble(CALORIES_THRESHOLD),
+                        dataType = DataType.CALORIES_TOTAL,
+                        threshold = CALORIES_THRESHOLD,
                         comparisonType = ComparisonType.GREATER_THAN_OR_EQUAL
                     )
                 )
@@ -117,34 +100,32 @@ class HealthServicesManager @Inject constructor(
             exerciseGoals.add(
                 ExerciseGoal.createMilestone(
                     condition = DataTypeCondition(
-                        dataType = DataType.DISTANCE,
-                        threshold = Value.ofDouble(DISTANCE_THRESHOLD),
+                        dataType = DataType.DISTANCE_TOTAL,
+                        threshold = DISTANCE_THRESHOLD,
                         comparisonType = ComparisonType.GREATER_THAN_OR_EQUAL
                     ),
-                    period = Value.ofDouble(DISTANCE_THRESHOLD)
+                    period = DISTANCE_THRESHOLD
                 )
             )
         }
 
-        val config = ExerciseConfig.builder()
-            .setExerciseType(ExerciseType.RUNNING)
-            .setShouldEnableAutoPauseAndResume(false)
-            .setAggregateDataTypes(aggDataTypes)
-            .setDataTypes(dataTypes)
-            .setExerciseGoals(exerciseGoals)
-            // Required for GPS for LOCATION data type, optional for some other types.
-            .setShouldEnableGps(true)
-            .build()
-        exerciseClient.startExercise(config).await()
+        val config = ExerciseConfig(
+            exerciseType = ExerciseType.RUNNING,
+            dataTypes = dataTypes,
+            isAutoPauseAndResumeEnabled = false,
+            isGpsEnabled = true,
+            exerciseGoals = exerciseGoals
+        )
+        exerciseClient.startExerciseAsync(config).await()
     }
 
     private fun supportsCalorieGoal(capabilities: ExerciseTypeCapabilities): Boolean {
-        val supported = capabilities.supportedGoals[DataType.TOTAL_CALORIES]
+        val supported = capabilities.supportedGoals[DataType.CALORIES_TOTAL]
         return supported != null && ComparisonType.GREATER_THAN_OR_EQUAL in supported
     }
 
     private fun supportsDistanceMilestone(capabilities: ExerciseTypeCapabilities): Boolean {
-        val supported = capabilities.supportedMilestones[DataType.DISTANCE]
+        val supported = capabilities.supportedMilestones[DataType.DISTANCE_TOTAL]
         return supported != null && ComparisonType.GREATER_THAN_OR_EQUAL in supported
     }
 
@@ -155,18 +136,19 @@ class HealthServicesManager @Inject constructor(
     suspend fun prepareExercise() {
         Log.d(TAG, "Preparing an exercise")
 
-        val warmUpConfig = WarmUpConfig.builder()
-            .setExerciseType(ExerciseType.RUNNING)
-            .setDataTypes(
-                setOf(
-                    DataType.HEART_RATE_BPM,
-                    DataType.LOCATION
-                )
+        // TODO Handle various exerciseTrackedStatus states, especially OWNED_EXERCISE_IN_PROGRESS
+        // and OTHER_APP_IN_PROGRESS
+
+        val warmUpConfig = WarmUpConfig(
+            ExerciseType.RUNNING,
+            setOf(
+                DataType.HEART_RATE_BPM,
+                DataType.LOCATION
             )
-            .build()
+        )
 
         try {
-            exerciseClient.prepareExercise(warmUpConfig).await()
+            exerciseClient.prepareExerciseAsync(warmUpConfig).await()
         } catch (e: Exception) {
             Log.e(TAG, "Prepare exercise failed - ${e.message}")
         }
@@ -174,53 +156,59 @@ class HealthServicesManager @Inject constructor(
 
     suspend fun endExercise() {
         Log.d(TAG, "Ending exercise")
-        exerciseClient.endExercise().await()
+        exerciseClient.endExerciseAsync().await()
     }
 
     suspend fun pauseExercise() {
         Log.d(TAG, "Pausing exercise")
-        exerciseClient.pauseExercise().await()
+        exerciseClient.pauseExerciseAsync().await()
     }
 
     suspend fun resumeExercise() {
         Log.d(TAG, "Resuming exercise")
-        exerciseClient.resumeExercise().await()
+        exerciseClient.resumeExerciseAsync().await()
     }
 
     suspend fun markLap() {
         if (isExerciseInProgress()) {
-            exerciseClient.markLap().await()
+            exerciseClient.markLapAsync().await()
         }
     }
 
     /**
-     * A shared flow for [ExerciseUpdate]s.
+     * A flow for [ExerciseUpdate]s.
      *
-     * When the flow starts, it will register an [ExerciseUpdateListener] and start to emit
-     * messages. When there are no more subscribers, or when the coroutine scope of [shareIn] is
-     * cancelled, this flow will unregister the listener.
-     *
-     * A shared flow is used because only a single [ExerciseUpdateListener] can be reigstered at a
-     * time, even if there are multiple consumers of the flow.
+     * When the flow starts, it will register an [ExerciseUpdateCallback] and start to emit
+     * messages.
      *
      * [callbackFlow] is used to bridge between a callback-based API and Kotlin flows.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
-    val exerciseUpdateFlow = callbackFlow<ExerciseMessage> {
-        val listener = object : ExerciseUpdateListener {
-            override fun onExerciseUpdate(update: ExerciseUpdate) {
+    val exerciseUpdateFlow = callbackFlow {
+        val callback = object : ExerciseUpdateCallback {
+            override fun onExerciseUpdateReceived(update: ExerciseUpdate) {
                 coroutineScope.runCatching {
                     trySendBlocking(ExerciseMessage.ExerciseUpdateMessage(update))
                 }
             }
 
-            override fun onLapSummary(lapSummary: ExerciseLapSummary) {
+            override fun onLapSummaryReceived(lapSummary: ExerciseLapSummary) {
                 coroutineScope.runCatching {
                     trySendBlocking(ExerciseMessage.LapSummaryMessage(lapSummary))
                 }
             }
 
-            override fun onAvailabilityChanged(dataType: DataType, availability: Availability) {
+            override fun onRegistered() {
+            }
+
+            override fun onRegistrationFailed(throwable: Throwable) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onAvailabilityChanged(
+                dataType: DataType<*, *>,
+                availability: Availability
+            ) {
                 if (availability is LocationAvailability) {
                     coroutineScope.runCatching {
                         trySendBlocking(ExerciseMessage.LocationAvailabilityMessage(availability))
@@ -228,9 +216,9 @@ class HealthServicesManager @Inject constructor(
                 }
             }
         }
-        exerciseClient.setUpdateListener(listener)
+        exerciseClient.setUpdateCallback(callback)
         awaitClose {
-            exerciseClient.clearUpdateListener(listener)
+            exerciseClient.clearUpdateCallbackAsync(callback)
         }
     }
 

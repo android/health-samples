@@ -31,7 +31,7 @@ class PrepareFragment : Fragment(R.layout.fragment_prepare) {
             Log.i(TAG, "All required permissions granted")
 
             viewLifecycleOwner.lifecycleScope.launch {
-                // Await biding of ExerciseService, since it takes a bit of time
+                // Await binding of ExerciseService, since it takes a bit of time
                 // to instantiate the service.
                 serviceConnection.repeatWhenConnected {
                     checkNotNull(serviceConnection.exerciseService) {
@@ -92,7 +92,7 @@ class PrepareFragment : Fragment(R.layout.fragment_prepare) {
         val gpsText = when (locationAvailability) {
             LocationAvailability.ACQUIRED_TETHERED,
             LocationAvailability.ACQUIRED_UNTETHERED -> R.string.gps_acquired
-            LocationAvailability.NO_GPS -> R.string.gps_disabled // TODO Consider redirecting user to change device settings in this case
+            LocationAvailability.NO_GNSS -> R.string.gps_disabled // TODO Consider redirecting user to change device settings in this case
             LocationAvailability.ACQUIRING -> R.string.gps_acquiring
             else -> R.string.gps_unavailable
         }
