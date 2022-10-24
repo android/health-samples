@@ -24,11 +24,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.health.services.client.data.AggregateDataPoint
-import androidx.health.services.client.data.CumulativeDataPoint
-import androidx.health.services.client.data.DataPoint
+import androidx.health.services.client.data.DataPointContainer
 import androidx.health.services.client.data.DataType
 import androidx.health.services.client.data.ExerciseState
+import androidx.health.services.client.data.ExerciseUpdate
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -38,7 +37,6 @@ import com.example.exercise.databinding.FragmentExerciseBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.Instant
@@ -61,8 +59,9 @@ class ExerciseFragment : Fragment() {
 
     private var serviceConnection = ExerciseServiceConnection()
 
-    private var cachedExerciseState = ExerciseState.USER_ENDED
-    private var activeDurationUpdate = ActiveDurationUpdate()
+    private var cachedExerciseState = ExerciseState.ENDED
+    private var activeDurationCheckpoint =
+        ExerciseUpdate.ActiveDurationCheckpoint(Instant.now(), Duration.ZERO)
     private var chronoTickJob: Job? = null
     private var uiBindingJob: Job? = null
 
@@ -102,7 +101,7 @@ class ExerciseFragment : Fragment() {
 
                 // Set enabled state for relevant text elements.
                 binding.heartRateText.isEnabled = DataType.HEART_RATE_BPM in supportedTypes
-                binding.caloriesText.isEnabled = DataType.TOTAL_CALORIES in supportedTypes
+                binding.caloriesText.isEnabled = DataType.CALORIES_TOTAL in supportedTypes
                 binding.distanceText.isEnabled = DataType.DISTANCE in supportedTypes
                 binding.lapsText.isEnabled = true
             }
@@ -182,13 +181,8 @@ class ExerciseFragment : Fragment() {
                     }
                 }
                 launch {
-                    service.exerciseMetrics.collect {
-                        updateMetrics(it)
-                    }
-                }
-                launch {
-                    service.aggregateMetrics.collect {
-                        updateAggregateMetrics(it)
+                    service.latestMetrics.collect {
+                        it?.let { updateMetrics(it) }
                     }
                 }
                 launch {
@@ -197,11 +191,11 @@ class ExerciseFragment : Fragment() {
                     }
                 }
                 launch {
-                    service.exerciseDurationUpdate.collect {
+                    service.activeDurationCheckpoint.collect {
                         // We don't update the chronometer here since these updates come at irregular
                         // intervals. Instead we store the duration and update the chronometer with
                         // our own regularly-timed intervals.
-                        activeDurationUpdate = it
+                        activeDurationCheckpoint = it
                     }
                 }
             }
@@ -237,18 +231,17 @@ class ExerciseFragment : Fragment() {
         binding.pauseResumeButton.isEnabled = !state.isEnded
     }
 
-    private fun updateMetrics(data: Map<DataType, List<DataPoint>>) {
-        data[DataType.HEART_RATE_BPM]?.let {
-            binding.heartRateText.text = it.last().value.asDouble().roundToInt().toString()
+    private fun updateMetrics(latestMetrics: DataPointContainer) {
+        latestMetrics.getData(DataType.HEART_RATE_BPM).let {
+            if (it.isNotEmpty()) {
+                binding.heartRateText.text = it.last().value.roundToInt().toString()
+            }
         }
-    }
-
-    private fun updateAggregateMetrics(data: Map<DataType, AggregateDataPoint>) {
-        (data[DataType.DISTANCE] as? CumulativeDataPoint)?.let {
-            binding.distanceText.text = formatDistanceKm(it.total.asDouble())
+        latestMetrics.getData(DataType.DISTANCE_TOTAL)?.let {
+            binding.distanceText.text = formatDistanceKm(it.total)
         }
-        (data[DataType.TOTAL_CALORIES] as? CumulativeDataPoint)?.let {
-            binding.caloriesText.text = formatCalories(it.total.asDouble())
+        latestMetrics.getData(DataType.CALORIES_TOTAL)?.let {
+            binding.caloriesText.text = formatCalories(it.total)
         }
     }
 
@@ -278,12 +271,7 @@ class ExerciseFragment : Fragment() {
         // We update the chronometer on our own regular intervals independent of the exercise
         // duration value received. If the exercise is still active, add the difference between
         // the last duration update and now.
-        val difference = if (cachedExerciseState == ExerciseState.ACTIVE) {
-            Duration.between(activeDurationUpdate.timestamp, Instant.now())
-        } else {
-            Duration.ZERO
-        }
-        val duration = activeDurationUpdate.duration + difference
+        val duration = activeDurationCheckpoint.displayDuration(Instant.now(), cachedExerciseState)
         binding.elapsedTime.text = formatElapsedTime(duration, !ambientController.isAmbient)
     }
 
@@ -327,10 +315,11 @@ class ExerciseFragment : Fragment() {
             "Failed to achieve ExerciseService instance"
         }
         updateExerciseStatus(service.exerciseState.value)
-        updateMetrics(service.exerciseMetrics.value)
         updateLaps(service.exerciseLaps.value)
 
-        activeDurationUpdate = service.exerciseDurationUpdate.value
+        service.latestMetrics.value?.let { updateMetrics(it) }
+
+        activeDurationCheckpoint = service.activeDurationCheckpoint.value
         updateChronometer()
     }
 
