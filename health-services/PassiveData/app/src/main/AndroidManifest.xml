@@ -17,8 +17,7 @@
 
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.passivedata">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-feature android:name="android.hardware.type.watch" />
 
@@ -62,15 +61,9 @@
             </intent-filter>
         </activity>
 
-        <!-- Receiver that gets notified of new data in the background. -->
-        <receiver
-            android:name="com.example.passivedata.PassiveDataReceiver"
-            android:exported="true"
-            tools:ignore="ExportedReceiver">
-            <intent-filter>
-              <action android:name="hs.passivemonitoring.DATA" />
-            </intent-filter>
-        </receiver>
+        <service android:name=".PassiveDataService"
+            android:permission="com.google.android.wearable.healthservices.permission.PASSIVE_DATA_BINDING"
+            android:exported="true" />
 
         <!-- Receiver that re-registers for background data after a device restart. -->
         <receiver

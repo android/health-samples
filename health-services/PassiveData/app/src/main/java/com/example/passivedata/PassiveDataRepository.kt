@@ -21,6 +21,11 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.health.services.client.data.DataType
+import androidx.health.services.client.data.HeartRateAccuracy
+import androidx.health.services.client.data.HeartRateAccuracy.SensorStatus.Companion.ACCURACY_HIGH
+import androidx.health.services.client.data.HeartRateAccuracy.SensorStatus.Companion.ACCURACY_MEDIUM
+import androidx.health.services.client.data.SampleDataPoint
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -42,7 +47,7 @@ class PassiveDataRepository @Inject constructor(
         }
     }
 
-    val lastestHeartRate: Flow<Double> = dataStore.data.map { prefs ->
+    val latestHeartRate: Flow<Double> = dataStore.data.map { prefs ->
         prefs[LATEST_HEART_RATE] ?: 0.0
     }
 
@@ -57,4 +62,25 @@ class PassiveDataRepository @Inject constructor(
         private val PASSIVE_DATA_ENABLED = booleanPreferencesKey("passive_data_enabled")
         private val LATEST_HEART_RATE = doublePreferencesKey("latest_heart_rate")
     }
+}
+
+fun List<SampleDataPoint<Double>>.latestHeartRate(): Double? {
+    return this
+        // dataPoints can have multiple types (e.g. if the app is registered for multiple types).
+        .filter { it.dataType == DataType.HEART_RATE_BPM }
+        // where accuracy information is available, only show readings that are of medium or
+        // high accuracy. (Where accuracy information isn't available, show the reading if it is
+        // a positive value).
+        .filter {
+            it.accuracy == null ||
+                    setOf(
+                        ACCURACY_HIGH,
+                        ACCURACY_MEDIUM
+                    ).contains((it.accuracy as HeartRateAccuracy).sensorStatus)
+        }
+        .filter {
+            it.value > 0
+        }
+        // HEART_RATE_BPM is a SAMPLE type, so start and end times are the same.
+        .maxByOrNull { it.timeDurationFromBoot }?.value
 }

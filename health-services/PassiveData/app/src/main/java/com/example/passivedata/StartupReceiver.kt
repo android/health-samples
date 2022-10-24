@@ -76,7 +76,7 @@ class StartupReceiver : BroadcastReceiver() {
 class RegisterForBackgroundDataWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
-    private val healthServicesManager: HealthServicesManager
+    private val healthServicesManager: HealthServicesManager,
 ) : Worker(appContext, workerParams) {
 
     override fun doWork(): Result {
