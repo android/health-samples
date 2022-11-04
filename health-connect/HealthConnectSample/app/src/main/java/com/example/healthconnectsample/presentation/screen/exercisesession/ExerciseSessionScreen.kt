@@ -30,16 +30,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ExerciseSessionRecord
-import androidx.health.connect.client.records.metadata.Metadata
 import com.example.healthconnectsample.R
+import com.example.healthconnectsample.data.ExerciseSession
+import com.example.healthconnectsample.data.HealthConnectAppInfo
 import com.example.healthconnectsample.presentation.component.ExerciseSessionRow
 import com.example.healthconnectsample.presentation.theme.HealthConnectTheme
-import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -50,7 +51,7 @@ import java.util.UUID
 fun ExerciseSessionScreen(
     permissions: Set<HealthPermission>,
     permissionsGranted: Boolean,
-    sessionsList: List<ExerciseSessionRecord>,
+    sessionsList: List<ExerciseSession>,
     uiState: ExerciseSessionViewModel.UiState,
     onInsertClick: () -> Unit = {},
     onDetailsClick: (String) -> Unit = {},
@@ -112,11 +113,14 @@ fun ExerciseSessionScreen(
                 }
 
                 items(sessionsList) { session ->
+                    val appInfo = session.sourceAppInfo
                     ExerciseSessionRow(
-                        ZonedDateTime.ofInstant(session.startTime, ZoneId.systemDefault()),
-                        ZonedDateTime.ofInstant(session.endTime, ZoneId.systemDefault()),
-                        session.metadata.id,
-                        session.title ?: stringResource(R.string.no_title),
+                        start = session.startTime,
+                        end = session.endTime,
+                        uid = session.id,
+                        name = session.title ?: stringResource(R.string.no_title),
+                        sourceAppName = appInfo?.appLabel ?: stringResource(R.string.unknown_app),
+                        sourceAppIcon = appInfo?.icon,
                         onDeleteClick = { uid ->
                             onDeleteClick(uid)
                         },
@@ -133,32 +137,36 @@ fun ExerciseSessionScreen(
 @Preview
 @Composable
 fun ExerciseSessionScreenPreview() {
+    val context = LocalContext.current
     HealthConnectTheme {
         val runningStartTime = ZonedDateTime.now()
         val runningEndTime = runningStartTime.plusMinutes(30)
         val walkingStartTime = ZonedDateTime.now().minusMinutes(120)
         val walkingEndTime = walkingStartTime.plusMinutes(30)
+
+        val appInfo = HealthConnectAppInfo(
+            packageName = "com.example.myfitnessapp",
+            appLabel = "My Fitness App",
+            icon = context.getDrawable(R.drawable.ic_launcher_foreground)!!
+        )
+
         ExerciseSessionScreen(
             permissions = setOf(),
             permissionsGranted = true,
             sessionsList = listOf(
-                ExerciseSessionRecord(
-                    exerciseType = ExerciseSessionRecord.ExerciseType.RUNNING,
+                ExerciseSession(
                     title = "Running",
-                    startTime = runningStartTime.toInstant(),
-                    startZoneOffset = runningStartTime.offset,
-                    endTime = runningEndTime.toInstant(),
-                    endZoneOffset = runningEndTime.offset,
-                    metadata = Metadata(UUID.randomUUID().toString())
+                    startTime = runningStartTime,
+                    endTime = runningEndTime,
+                    id = UUID.randomUUID().toString(),
+                    sourceAppInfo = appInfo
                 ),
-                ExerciseSessionRecord(
-                    exerciseType = ExerciseSessionRecord.ExerciseType.WALKING,
+                ExerciseSession(
                     title = "Walking",
-                    startTime = walkingStartTime.toInstant(),
-                    startZoneOffset = walkingStartTime.offset,
-                    endTime = walkingEndTime.toInstant(),
-                    endZoneOffset = walkingEndTime.offset,
-                    metadata = Metadata(UUID.randomUUID().toString())
+                    startTime = walkingStartTime,
+                    endTime = walkingEndTime,
+                    id = UUID.randomUUID().toString(),
+                    sourceAppInfo = appInfo
                 )
             ),
             uiState = ExerciseSessionViewModel.UiState.Done

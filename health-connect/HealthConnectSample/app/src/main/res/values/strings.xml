@@ -68,6 +68,7 @@
     <!-- Exercise Session screen -->
     <string name="insert_exercise_session">Insert session</string>
     <string name="no_title">[No title]</string>
+    <string name="unknown_app">[Unknown app]</string>
     <string name="delete_button">Delete</string>
 
     <!-- Exercise Session detail screen -->
@@ -105,7 +106,7 @@
     <string name="add_readings_button">Add</string>
     <string name="previous_readings"> Previous Measurements </string>
     <string name="weekly_avg"> Weekly Average </string>
-    <string name="kilograms">Kg\u0020</string>
+    <string name="kilograms">Kg</string>
     <string name="valid_weight_error_message"> Weight must be between 0 and 1000</string>
 
     <!-- Differential changes screen -->

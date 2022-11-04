@@ -15,11 +15,15 @@
  */
 package com.example.healthconnectsample.presentation.screen.inputreadings
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
@@ -41,18 +45,20 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.health.connect.client.permission.HealthPermission
-import androidx.health.connect.client.records.WeightRecord
 import androidx.health.connect.client.units.Mass
 import com.example.healthconnectsample.R
-import com.example.healthconnectsample.data.dateTimeWithOffsetOrDefault
+import com.example.healthconnectsample.data.HealthConnectAppInfo
+import com.example.healthconnectsample.data.WeightData
 import com.example.healthconnectsample.presentation.theme.HealthConnectTheme
-import java.time.Instant
+import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.UUID
@@ -61,7 +67,7 @@ import java.util.UUID
 fun InputReadingsScreen(
     permissions: Set<HealthPermission>,
     permissionsGranted: Boolean,
-    readingsList: List<WeightRecord>,
+    readingsList: List<WeightData>,
     uiState: InputReadingsViewModel.UiState,
     onInsertClick: (Double) -> Unit = {},
     onDeleteClick: (String) -> Unit = {},
@@ -111,7 +117,7 @@ fun InputReadingsScreen(
             if (!permissionsGranted) {
                 item {
                     Button(
-                        onClick = { onPermissionsLaunch(permissions)}
+                        onClick = { onPermissionsLaunch(permissions) }
                     ) {
                         Text(text = stringResource(R.string.permissions_button_label))
                     }
@@ -160,22 +166,28 @@ fun InputReadingsScreen(
                         color = MaterialTheme.colors.primary
                     )
                 }
+                val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
                 items(readingsList) { reading ->
                     Row(
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // show local date and time
-                        val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
-                        val zonedDateTime =
-                            dateTimeWithOffsetOrDefault(reading.time, reading.zoneOffset)
-                        val uid = reading.metadata.id
-                        Text(
-                            text = "${reading.weight}" + " ",
+                        Image(
+                            modifier = Modifier
+                                .padding(2.dp, 2.dp)
+                                .height(16.dp)
+                                .width(16.dp),
+                            painter = rememberDrawablePainter(drawable = reading.sourceAppInfo?.icon),
+                            contentDescription = "App Icon"
                         )
-                        Text(text = formatter.format(zonedDateTime))
+                        Text(
+                            text = "%.1f ${stringResource(id = R.string.kilograms)}"
+                                .format(reading.weight.inKilograms)
+                        )
+                        Text(text = formatter.format(reading.time))
                         IconButton(
-                            onClick = { onDeleteClick(uid) },
+                            onClick = { onDeleteClick(reading.id) },
                         ) {
                             Icon(
                                 Icons.Default.Delete,
@@ -191,9 +203,12 @@ fun InputReadingsScreen(
                         modifier = Modifier.padding(vertical = 20.dp)
                     )
                     if (weeklyAvg == null) {
-                        Text(text = "0.0" + stringResource(id = R.string.kilograms))
+                        Text(text = "0.0")
                     } else {
-                        Text(text = "$weeklyAvg".take(5) + stringResource(id = R.string.kilograms))
+                        Text(
+                            text = "%.1f ${stringResource(id = R.string.kilograms)}"
+                                .format(weeklyAvg.inKilograms)
+                        )
                     }
                 }
             }
@@ -204,22 +219,29 @@ fun InputReadingsScreen(
 @Preview
 @Composable
 fun InputReadingsScreenPreview() {
-    val inputTime = Instant.now()
+    val context = LocalContext.current
+    val appInfo = HealthConnectAppInfo(
+        packageName = "com.example.myfitnessapp",
+        appLabel = "My Fitness App",
+        icon = context.getDrawable(R.drawable.ic_launcher_foreground)!!
+    )
     HealthConnectTheme(darkTheme = false) {
         InputReadingsScreen(
             permissions = setOf(),
             weeklyAvg = Mass.kilograms(54.5),
             permissionsGranted = true,
             readingsList = listOf(
-                WeightRecord(
-                    Mass.kilograms(54.0),
-                    time = inputTime,
-                    zoneOffset = null
+                WeightData(
+                    weight = Mass.kilograms(54.01231),
+                    id = UUID.randomUUID().toString(),
+                    time = ZonedDateTime.now(),
+                    sourceAppInfo = appInfo
                 ),
-                WeightRecord(
-                    Mass.kilograms(55.0),
-                    time = inputTime,
-                    zoneOffset = null
+                WeightData(
+                    weight = Mass.kilograms(55.578),
+                    id = UUID.randomUUID().toString(),
+                    time = ZonedDateTime.now().minusMinutes(5),
+                    sourceAppInfo = appInfo
                 )
             ),
             uiState = InputReadingsViewModel.UiState.Done

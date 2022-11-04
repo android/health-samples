@@ -27,6 +27,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.healthconnectsample.data.HealthConnectManager
+import com.example.healthconnectsample.data.WeightData
+import com.example.healthconnectsample.data.dateTimeWithOffsetOrDefault
 import kotlinx.coroutines.launch
 import java.io.IOException
 import java.time.Instant
@@ -36,6 +38,8 @@ import java.util.UUID
 
 class InputReadingsViewModel(private val healthConnectManager: HealthConnectManager) :
     ViewModel() {
+    private val healthConnectCompatibleApps = healthConnectManager.healthConnectCompatibleApps
+
     val permissions = setOf(
         HealthPermission.createReadPermission(WeightRecord::class),
         HealthPermission.createWritePermission(WeightRecord::class),
@@ -46,7 +50,7 @@ class InputReadingsViewModel(private val healthConnectManager: HealthConnectMana
     var permissionsGranted = mutableStateOf(false)
         private set
 
-    var readingsList: MutableState<List<WeightRecord>> = mutableStateOf(listOf())
+    var readingsList: MutableState<List<WeightData>> = mutableStateOf(listOf())
         private set
 
     var uiState: UiState by mutableStateOf(UiState.Uninitialized)
@@ -90,7 +94,17 @@ class InputReadingsViewModel(private val healthConnectManager: HealthConnectMana
         val startOfDay = ZonedDateTime.now().truncatedTo(ChronoUnit.DAYS)
         val now = Instant.now()
         val endofWeek = startOfDay.toInstant().plus(7, ChronoUnit.DAYS)
-        readingsList.value = healthConnectManager.readWeightInputs(startOfDay.toInstant(), now)
+        readingsList.value = healthConnectManager
+            .readWeightInputs(startOfDay.toInstant(), now)
+            .map { record ->
+                val packageName = record.metadata.dataOrigin.packageName
+                WeightData(
+                    weight = record.weight,
+                    id = record.metadata.id,
+                    time = dateTimeWithOffsetOrDefault(record.time, record.zoneOffset),
+                    sourceAppInfo = healthConnectCompatibleApps[packageName]
+                )
+            }
         weeklyAvg.value =
             healthConnectManager.computeWeeklyAverage(startOfDay.toInstant(), endofWeek)
     }

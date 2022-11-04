@@ -15,7 +15,6 @@
  */
 package com.example.healthconnectsample.presentation.navigation
 
-import android.app.Activity
 import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
