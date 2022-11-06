@@ -31,7 +31,9 @@ import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.healthconnectsample.data.ExerciseSession
 import com.example.healthconnectsample.data.HealthConnectManager
+import com.example.healthconnectsample.data.dateTimeWithOffsetOrDefault
 import kotlinx.coroutines.launch
 import java.io.IOException
 import java.time.Duration
@@ -43,6 +45,8 @@ import kotlin.random.Random
 
 class ExerciseSessionViewModel(private val healthConnectManager: HealthConnectManager) :
     ViewModel() {
+    private val healthConnectCompatibleApps = healthConnectManager.healthConnectCompatibleApps
+
     val permissions = setOf(
         HealthPermission.createWritePermission(ExerciseSessionRecord::class),
         HealthPermission.createReadPermission(ExerciseSessionRecord::class),
@@ -57,7 +61,7 @@ class ExerciseSessionViewModel(private val healthConnectManager: HealthConnectMa
     var permissionsGranted = mutableStateOf(false)
         private set
 
-    var sessionsList: MutableState<List<ExerciseSessionRecord>> = mutableStateOf(listOf())
+    var sessionsList: MutableState<List<ExerciseSession>> = mutableStateOf(listOf())
         private set
 
     var uiState: UiState by mutableStateOf(UiState.Uninitialized)
@@ -105,7 +109,18 @@ class ExerciseSessionViewModel(private val healthConnectManager: HealthConnectMa
         val startOfDay = ZonedDateTime.now().truncatedTo(ChronoUnit.DAYS)
         val now = Instant.now()
 
-        sessionsList.value = healthConnectManager.readExerciseSessions(startOfDay.toInstant(), now)
+        sessionsList.value = healthConnectManager
+            .readExerciseSessions(startOfDay.toInstant(), now)
+            .map { record ->
+                val packageName = record.metadata.dataOrigin.packageName
+                ExerciseSession(
+                    startTime = dateTimeWithOffsetOrDefault(record.startTime, record.startZoneOffset),
+                    endTime = dateTimeWithOffsetOrDefault(record.startTime, record.startZoneOffset),
+                    id = record.metadata.id,
+                    sourceAppInfo = healthConnectCompatibleApps[packageName],
+                    title = record.title
+                )
+            }
     }
 
     /**
