@@ -87,14 +87,26 @@ fun HealthConnectNavigation(
             val onPermissionsResult = {viewModel.initialLoad()}
             val permissionsLauncher =
                 rememberLauncherForActivityResult(viewModel.permissionsLauncher) {
-                onPermissionsResult()}
+                    onPermissionsResult()}
             ExerciseSessionScreen(
                 permissionsGranted = permissionsGranted,
                 permissions = permissions,
                 sessionsList = sessionsList,
                 uiState = viewModel.uiState,
+                insertQueue = ExerciseSessionViewModel.sharedInsertQueue,
+                startQueueInsertions = viewModel.startQueueInsertions,
+                startHealthConnectInsertions = viewModel.startHealthConnectInsertions,
                 onInsertClick = {
                     viewModel.insertExerciseSession()
+                },
+                onRefreshListClick = {
+                    viewModel.refreshList()
+                },
+                onToggleQueueInsertions = {
+                    viewModel.toggleQueueInsertions()
+                },
+                onToggleHealthConnectInsertions = {
+                    viewModel.toggleHealthConnectInsertions()
                 },
                 onDetailsClick = { uid ->
                     navController.navigate(Screen.ExerciseSessionDetail.route + "/" + uid)
@@ -126,7 +138,7 @@ fun HealthConnectNavigation(
             val onPermissionsResult = {viewModel.initialLoad()}
             val permissionsLauncher =
                 rememberLauncherForActivityResult(viewModel.permissionsLauncher) {
-                onPermissionsResult()}
+                    onPermissionsResult()}
             ExerciseSessionDetailScreen(
                 permissions = permissions,
                 permissionsGranted = permissionsGranted,
@@ -154,7 +166,7 @@ fun HealthConnectNavigation(
             val onPermissionsResult = {viewModel.initialLoad()}
             val permissionsLauncher =
                 rememberLauncherForActivityResult(viewModel.permissionsLauncher) {
-                onPermissionsResult()}
+                    onPermissionsResult()}
             SleepSessionScreen(
                 permissionsGranted = permissionsGranted,
                 permissions = permissions,
@@ -186,7 +198,7 @@ fun HealthConnectNavigation(
             val onPermissionsResult = {viewModel.initialLoad()}
             val permissionsLauncher =
                 rememberLauncherForActivityResult(viewModel.permissionsLauncher) {
-                onPermissionsResult()}
+                    onPermissionsResult()}
             InputReadingsScreen(
                 permissionsGranted = permissionsGranted,
                 permissions = permissions,
@@ -222,7 +234,7 @@ fun HealthConnectNavigation(
             val onPermissionsResult = {viewModel.initialLoad()}
             val permissionsLauncher =
                 rememberLauncherForActivityResult(viewModel.permissionsLauncher) {
-                onPermissionsResult()}
+                    onPermissionsResult()}
             DifferentialChangesScreen(
                 permissionsGranted = permissionsGranted,
                 permissions = permissions,

@@ -18,6 +18,7 @@ package com.example.healthconnectsample.presentation.screen.exercisesession
 import android.os.RemoteException
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.health.connect.client.permission.HealthPermission
@@ -25,6 +26,7 @@ import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.ExerciseEventRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
+import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.SpeedRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
@@ -32,7 +34,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.healthconnectsample.data.HealthConnectManager
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.io.IOException
 import java.time.Duration
 import java.time.Instant
@@ -65,12 +70,87 @@ class ExerciseSessionViewModel(private val healthConnectManager: HealthConnectMa
 
     val permissionsLauncher = healthConnectManager.requestPermissionsActivityContract()
 
+    var startQueueInsertions by mutableStateOf(false)
+        private set
+    var startHealthConnectInsertions by mutableStateOf(false)
+        private set
+    private val mutex = Mutex()
+    private var startedAddSessions = false
+    private var startedInsertHealthConnectSessions = false
+
     fun initialLoad() {
         viewModelScope.launch {
             tryWithPermissionsCheck {
                 readExerciseSessions()
             }
         }
+    }
+
+    fun toggleQueueInsertions() {
+        startQueueInsertions = !startQueueInsertions
+        if(!startedAddSessions) {
+            viewModelScope.launch { insertExerciseSessionInToQueue() }
+            startedAddSessions = true
+        }
+    }
+
+    fun toggleHealthConnectInsertions() {
+        startHealthConnectInsertions = !startHealthConnectInsertions
+        if(startHealthConnectInsertions) {
+            viewModelScope.launch {
+                tryWithPermissionsCheck {
+                    mutex.withLock {
+                        healthConnectManager.startRecurrentHealthConnectInsertion()
+                    }
+                }
+            }
+            startedInsertHealthConnectSessions = true
+        }
+        else{
+            healthConnectManager.stopRecurrentHealthConnectInsertion()
+        }
+    }
+
+    fun refreshList() {
+        viewModelScope.launch {
+            tryWithPermissionsCheck {
+                println("READING SESSIONS")
+                readExerciseSessions()
+            }
+        }
+    }
+
+    private suspend fun insertExerciseSessionInToQueue() {
+        while (true) {
+            if (startQueueInsertions) {
+                mutex.withLock {
+                    sharedInsertQueue.add(createExerciseSessionRecord())
+                }
+                println("ADDED EXERCISE SESSION TO SHARED QUEUE")
+            }
+            delay(1000)
+        }
+    }
+
+    private fun createExerciseSessionRecord(): ExerciseSessionRecord {
+        val startOfDay = ZonedDateTime.now().truncatedTo(ChronoUnit.DAYS)
+        val latestStartOfSession = ZonedDateTime.now().minusMinutes(30)
+        val offset = Random.nextDouble()
+
+        // Generate random start time between the start of the day and (now - 30mins).
+        val startOfSession = startOfDay.plusSeconds(
+            (Duration.between(startOfDay, latestStartOfSession).seconds * offset).toLong()
+        )
+        val endOfSession = startOfSession.plusMinutes(30)
+
+        return ExerciseSessionRecord(
+            startTime = startOfSession.toInstant(),
+            startZoneOffset = startOfSession.offset,
+            endTime = endOfSession.toInstant(),
+            endZoneOffset = endOfSession.offset,
+            exerciseType = ExerciseSessionRecord.ExerciseType.RUNNING,
+            title = "My Run #${Random.nextInt(0, 60)}"
+        )
     }
 
     fun insertExerciseSession() {
@@ -143,6 +223,15 @@ class ExerciseSessionViewModel(private val healthConnectManager: HealthConnectMa
         // A random UUID is used in each Error object to allow errors to be uniquely identified,
         // and recomposition won't result in multiple snackbars.
         data class Error(val exception: Throwable, val uuid: UUID = UUID.randomUUID()) : UiState()
+    }
+
+    companion object {
+        var sharedInsertQueue = mutableStateListOf<Record>()
+            private set
+
+        fun emptySharedQueue() {
+            sharedInsertQueue.clear()
+        }
     }
 }
 

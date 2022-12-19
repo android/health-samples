@@ -69,6 +69,12 @@
     <string name="insert_exercise_session">Insert session</string>
     <string name="no_title">[No title]</string>
     <string name="delete_button">Delete</string>
+    <string name="start_insert_into_queue">Start inserting into queue</string>
+    <string name="stop_insert_into_queue">Stop inserting into queue</string>
+    <string name="start_insert_into_healthconnect">Start inserting into Health Connect</string>
+    <string name="stop_insert_into_healthconnect">Stop inserting into Health Connect</string>
+    <string name="refresh_list">Refresh List</string>
+    <string name="number_of_sessions_in_queue">Number of sessions in queue</string>
 
     <!-- Exercise Session detail screen -->
     <string name="total_active_duration">Total active duration</string>

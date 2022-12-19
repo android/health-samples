@@ -18,6 +18,7 @@ package com.example.healthconnectsample.data
 import android.content.Context
 import android.os.Build
 import androidx.activity.result.contract.ActivityResultContract
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
@@ -43,6 +44,8 @@ import androidx.health.connect.client.units.Energy
 import androidx.health.connect.client.units.Length
 import androidx.health.connect.client.units.Mass
 import androidx.health.connect.client.units.Velocity
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.healthconnectsample.R
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -50,6 +53,8 @@ import java.io.IOException
 import java.time.Instant
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
+import java.util.UUID
+import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 import kotlin.reflect.KClass
 
@@ -63,6 +68,8 @@ class HealthConnectManager(private val context: Context) {
     private val healthConnectClient by lazy { HealthConnectClient.getOrCreate(context) }
 
     var availability = mutableStateOf(HealthConnectAvailability.NOT_SUPPORTED)
+        private set
+    var insertWorkRequestId: UUID? = null
         private set
 
     init {
@@ -91,6 +98,21 @@ class HealthConnectManager(private val context: Context) {
 
     fun requestPermissionsActivityContract(): ActivityResultContract<Set<HealthPermission>, Set<HealthPermission>> {
         return healthConnectClient.permissionController.createRequestPermissionActivityContract()
+    }
+
+    /** Periodically insert contents of ExerciseSessionViewModel persistent queue into Health Connect */
+    fun startRecurrentHealthConnectInsertion(){
+        val workRequest = PeriodicWorkRequestBuilder<InsertWorker>(15, TimeUnit.MINUTES).build()
+        insertWorkRequestId = workRequest.id
+        println("STARTING HEALTH CONNECTION INSERTION")
+        WorkManager.getInstance(context).enqueue(workRequest)
+    }
+
+    /** Stops current periodic insertion of persistent queue into Health Connect */
+    fun stopRecurrentHealthConnectInsertion(){
+        println("STOPPING HEALTH CONNECTION INSERTION")
+        WorkManager.getInstance(context).cancelWorkById(insertWorkRequestId!!)
+        insertWorkRequestId = null
     }
 
     /**

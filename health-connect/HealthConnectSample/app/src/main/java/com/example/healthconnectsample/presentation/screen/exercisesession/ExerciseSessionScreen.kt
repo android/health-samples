@@ -26,8 +26,11 @@ import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -35,6 +38,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ExerciseSessionRecord
+import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.metadata.Metadata
 import com.example.healthconnectsample.R
 import com.example.healthconnectsample.presentation.component.ExerciseSessionRow
@@ -51,7 +55,13 @@ fun ExerciseSessionScreen(
     permissionsGranted: Boolean,
     sessionsList: List<ExerciseSessionRecord>,
     uiState: ExerciseSessionViewModel.UiState,
+    insertQueue: MutableList<Record>,
+    startQueueInsertions: Boolean,
+    startHealthConnectInsertions: Boolean,
     onInsertClick: () -> Unit = {},
+    onRefreshListClick: () -> Unit = {},
+    onToggleQueueInsertions: () -> Unit = {},
+    onToggleHealthConnectInsertions: () -> Unit = {},
     onDetailsClick: (String) -> Unit = {},
     onDeleteClick: (String) -> Unit = {},
     onError: (Throwable?) -> Unit = {},
@@ -62,6 +72,8 @@ fun ExerciseSessionScreen(
     // Remember the last error ID, such that it is possible to avoid re-launching the error
     // notification for the same error when the screen is recomposed, or configuration changes etc.
     val errorId = rememberSaveable { mutableStateOf(UUID.randomUUID()) }
+    var toggleQueueInsertTextId by remember { mutableStateOf(R.string.start_insert_into_queue) }
+    var toggleHealthConnectInsertTextId by remember { mutableStateOf(R.string.start_insert_into_healthconnect) }
 
     LaunchedEffect(uiState) {
         // If the initial data load has not taken place, attempt to load the data.
@@ -108,6 +120,56 @@ fun ExerciseSessionScreen(
                     ) {
                         Text(stringResource(id = R.string.insert_exercise_session))
                     }
+                }
+                item {
+                    Button(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .padding(4.dp),
+                        onClick = {
+                            toggleQueueInsertTextId =
+                                if (startQueueInsertions)
+                                    R.string.start_insert_into_queue
+                                else R.string.stop_insert_into_queue
+                            onToggleQueueInsertions()
+                        }
+                    ) {
+                        Text(stringResource(id = toggleQueueInsertTextId))
+                    }
+                }
+                item {
+                    Button(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .padding(4.dp),
+                        onClick = {
+                            toggleHealthConnectInsertTextId =
+                                if (startHealthConnectInsertions)
+                                    R.string.start_insert_into_healthconnect
+                                else R.string.stop_insert_into_healthconnect
+                            onToggleHealthConnectInsertions()
+                        }
+                    ) {
+                        Text(stringResource(id = toggleHealthConnectInsertTextId))
+                    }
+                }
+                item {
+                    Button(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .padding(4.dp),
+                        onClick = {
+                            onRefreshListClick()
+                        }
+                    ) {
+                        Text(stringResource(id = R.string.refresh_list))
+                    }
+                }
+                item {
+                    Text(text = stringResource(id = R.string.number_of_sessions_in_queue) +": "+ insertQueue.size)
                 }
 
                 items(sessionsList) { session ->
@@ -160,7 +222,10 @@ fun ExerciseSessionScreenPreview() {
                     metadata = Metadata(UUID.randomUUID().toString())
                 )
             ),
-            uiState = ExerciseSessionViewModel.UiState.Done
+            uiState = ExerciseSessionViewModel.UiState.Done,
+            insertQueue = mutableListOf(),
+            startQueueInsertions = false,
+            startHealthConnectInsertions = false
         )
     }
 }
