@@ -101,14 +101,14 @@ class HealthConnectManager(private val context: Context) {
     }
 
     /** Periodically insert contents of ExerciseSessionViewModel persistent queue into Health Connect */
-    fun startRecurrentHealthConnectInsertion(){
+    fun startRecurrentHealthConnectInsertion() {
         val workRequest = PeriodicWorkRequestBuilder<InsertWorker>(15, TimeUnit.MINUTES).build()
         insertWorkRequestId = workRequest.id
         WorkManager.getInstance(context).enqueue(workRequest)
     }
 
     /** Stops current periodic insertion of persistent queue into Health Connect */
-    fun stopRecurrentHealthConnectInsertion(){
+    fun stopRecurrentHealthConnectInsertion() {
         WorkManager.getInstance(context).cancelWorkById(insertWorkRequestId!!)
         insertWorkRequestId = null
     }

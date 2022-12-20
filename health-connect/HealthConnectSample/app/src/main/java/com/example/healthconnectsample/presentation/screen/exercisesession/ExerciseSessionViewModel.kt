@@ -88,7 +88,7 @@ class ExerciseSessionViewModel(private val healthConnectManager: HealthConnectMa
 
     fun toggleQueueInsertions() {
         startQueueInsertions = !startQueueInsertions
-        if(!startedAddSessions) {
+        if (!startedAddSessions) {
             viewModelScope.launch { insertExerciseSessionInToQueue() }
             startedAddSessions = true
         }
@@ -96,7 +96,7 @@ class ExerciseSessionViewModel(private val healthConnectManager: HealthConnectMa
 
     fun toggleHealthConnectInsertions() {
         startHealthConnectInsertions = !startHealthConnectInsertions
-        if(startHealthConnectInsertions) {
+        if (startHealthConnectInsertions) {
             viewModelScope.launch {
                 tryWithPermissionsCheck {
                     mutex.withLock {
@@ -105,8 +105,7 @@ class ExerciseSessionViewModel(private val healthConnectManager: HealthConnectMa
                 }
             }
             startedInsertHealthConnectSessions = true
-        }
-        else{
+        } else {
             healthConnectManager.stopRecurrentHealthConnectInsertion()
         }
     }

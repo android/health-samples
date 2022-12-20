@@ -169,7 +169,7 @@ fun ExerciseSessionScreen(
                     }
                 }
                 item {
-                    Text(text = stringResource(id = R.string.number_of_sessions_in_queue) +": "+ insertQueue.size)
+                    Text(text = stringResource(id = R.string.number_of_sessions_in_queue) + ": " + insertQueue.size)
                 }
 
                 items(sessionsList) { session ->
