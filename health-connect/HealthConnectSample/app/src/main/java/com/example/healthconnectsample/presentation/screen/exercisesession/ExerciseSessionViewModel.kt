@@ -114,7 +114,6 @@ class ExerciseSessionViewModel(private val healthConnectManager: HealthConnectMa
     fun refreshList() {
         viewModelScope.launch {
             tryWithPermissionsCheck {
-                println("READING SESSIONS")
                 readExerciseSessions()
             }
         }
@@ -126,7 +125,6 @@ class ExerciseSessionViewModel(private val healthConnectManager: HealthConnectMa
                 mutex.withLock {
                     sharedInsertQueue.add(createExerciseSessionRecord())
                 }
-                println("ADDED EXERCISE SESSION TO SHARED QUEUE")
             }
             delay(1000)
         }

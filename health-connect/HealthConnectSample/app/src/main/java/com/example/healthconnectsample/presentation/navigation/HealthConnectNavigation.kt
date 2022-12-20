@@ -84,10 +84,11 @@ fun HealthConnectNavigation(
             val permissionsGranted by viewModel.permissionsGranted
             val sessionsList by viewModel.sessionsList
             val permissions = viewModel.permissions
-            val onPermissionsResult = {viewModel.initialLoad()}
+            val onPermissionsResult = { viewModel.initialLoad() }
             val permissionsLauncher =
                 rememberLauncherForActivityResult(viewModel.permissionsLauncher) {
-                    onPermissionsResult()}
+                    onPermissionsResult()
+                }
             ExerciseSessionScreen(
                 permissionsGranted = permissionsGranted,
                 permissions = permissions,
@@ -121,7 +122,8 @@ fun HealthConnectNavigation(
                     viewModel.initialLoad()
                 },
                 onPermissionsLaunch = { values ->
-                    permissionsLauncher.launch(values)}
+                    permissionsLauncher.launch(values)
+                }
             )
         }
         composable(Screen.ExerciseSessionDetail.route + "/{$UID_NAV_ARGUMENT}") {
@@ -135,10 +137,11 @@ fun HealthConnectNavigation(
             val permissionsGranted by viewModel.permissionsGranted
             val sessionMetrics by viewModel.sessionMetrics
             val permissions = viewModel.permissions
-            val onPermissionsResult = {viewModel.initialLoad()}
+            val onPermissionsResult = { viewModel.initialLoad() }
             val permissionsLauncher =
                 rememberLauncherForActivityResult(viewModel.permissionsLauncher) {
-                    onPermissionsResult()}
+                    onPermissionsResult()
+                }
             ExerciseSessionDetailScreen(
                 permissions = permissions,
                 permissionsGranted = permissionsGranted,
@@ -151,7 +154,8 @@ fun HealthConnectNavigation(
                     viewModel.initialLoad()
                 },
                 onPermissionsLaunch = { values ->
-                    permissionsLauncher.launch(values)}
+                    permissionsLauncher.launch(values)
+                }
             )
         }
         composable(Screen.SleepSessions.route) {
@@ -163,10 +167,11 @@ fun HealthConnectNavigation(
             val permissionsGranted by viewModel.permissionsGranted
             val sessionsList by viewModel.sessionsList
             val permissions = viewModel.permissions
-            val onPermissionsResult = {viewModel.initialLoad()}
+            val onPermissionsResult = { viewModel.initialLoad() }
             val permissionsLauncher =
                 rememberLauncherForActivityResult(viewModel.permissionsLauncher) {
-                    onPermissionsResult()}
+                    onPermissionsResult()
+                }
             SleepSessionScreen(
                 permissionsGranted = permissionsGranted,
                 permissions = permissions,
@@ -182,7 +187,8 @@ fun HealthConnectNavigation(
                     viewModel.initialLoad()
                 },
                 onPermissionsLaunch = { values ->
-                    permissionsLauncher.launch(values)}
+                    permissionsLauncher.launch(values)
+                }
             )
         }
         composable(Screen.InputReadings.route) {
@@ -195,10 +201,11 @@ fun HealthConnectNavigation(
             val readingsList by viewModel.readingsList
             val permissions = viewModel.permissions
             val weeklyAvg by viewModel.weeklyAvg
-            val onPermissionsResult = {viewModel.initialLoad()}
+            val onPermissionsResult = { viewModel.initialLoad() }
             val permissionsLauncher =
                 rememberLauncherForActivityResult(viewModel.permissionsLauncher) {
-                    onPermissionsResult()}
+                    onPermissionsResult()
+                }
             InputReadingsScreen(
                 permissionsGranted = permissionsGranted,
                 permissions = permissions,
@@ -219,7 +226,8 @@ fun HealthConnectNavigation(
                     viewModel.initialLoad()
                 },
                 onPermissionsLaunch = { values ->
-                    permissionsLauncher.launch(values)}
+                    permissionsLauncher.launch(values)
+                }
             )
         }
         composable(Screen.DifferentialChanges.route) {
@@ -231,10 +239,11 @@ fun HealthConnectNavigation(
             val changesToken by viewModel.changesToken
             val permissionsGranted by viewModel.permissionsGranted
             val permissions = viewModel.permissions
-            val onPermissionsResult = {viewModel.initialLoad()}
+            val onPermissionsResult = { viewModel.initialLoad() }
             val permissionsLauncher =
                 rememberLauncherForActivityResult(viewModel.permissionsLauncher) {
-                    onPermissionsResult()}
+                    onPermissionsResult()
+                }
             DifferentialChangesScreen(
                 permissionsGranted = permissionsGranted,
                 permissions = permissions,
@@ -255,7 +264,8 @@ fun HealthConnectNavigation(
                     viewModel.initialLoad()
                 },
                 onPermissionsLaunch = { values ->
-                    permissionsLauncher.launch(values)}
+                    permissionsLauncher.launch(values)
+                }
             )
         }
     }
