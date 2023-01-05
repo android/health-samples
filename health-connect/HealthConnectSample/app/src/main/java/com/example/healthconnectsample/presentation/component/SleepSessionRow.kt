@@ -132,7 +132,7 @@ fun SleepSessionRowPreview() {
                     duration = Duration.between(start, end),
                     stages = listOf(
                         SleepStageRecord(
-                            stage = SleepStageRecord.StageType.DEEP,
+                            stage = SleepStageRecord.STAGE_TYPE_DEEP,
                             startTime = start.toInstant(),
                             startZoneOffset = start.offset,
                             endTime = end.toInstant(),

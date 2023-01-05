@@ -99,7 +99,7 @@ class HealthConnectManager(private val context: Context) {
 
     fun checkAvailability() {
         availability.value = when {
-            HealthConnectClient.isAvailable(context) -> HealthConnectAvailability.INSTALLED
+            HealthConnectClient.isProviderAvailable(context) -> HealthConnectAvailability.INSTALLED
             isSupported() -> HealthConnectAvailability.NOT_INSTALLED
             else -> HealthConnectAvailability.NOT_SUPPORTED
         }
@@ -148,7 +148,7 @@ class HealthConnectManager(private val context: Context) {
                     startZoneOffset = start.offset,
                     endTime = end.toInstant(),
                     endZoneOffset = end.offset,
-                    exerciseType = ExerciseSessionRecord.ExerciseType.RUNNING,
+                    exerciseType = ExerciseSessionRecord.EXERCISE_TYPE_RUNNING,
                     title = "My Run #${Random.nextInt(0, 60)}"
                 ),
                 StepsRecord(
@@ -164,7 +164,7 @@ class HealthConnectManager(private val context: Context) {
                     startZoneOffset = start.offset,
                     endTime = start.toInstant().plus(15, ChronoUnit.MINUTES),
                     endZoneOffset = end.offset,
-                    eventType = ExerciseEventRecord.EventType.PAUSE
+                    eventType = ExerciseEventRecord.EVENT_TYPE_PAUSE
                 ),
                 DistanceRecord(
                     startTime = start.toInstant(),
@@ -224,7 +224,7 @@ class HealthConnectManager(private val context: Context) {
             endTime = exerciseSession.record.endTime
         )
         val aggregateDataTypes = setOf(
-            ExerciseSessionRecord.ACTIVE_TIME_TOTAL,
+            ExerciseSessionRecord.EXERCISE_DURATION_TOTAL,
             StepsRecord.COUNT_TOTAL,
             DistanceRecord.DISTANCE_TOTAL,
             TotalCaloriesBurnedRecord.ENERGY_TOTAL,
@@ -250,7 +250,7 @@ class HealthConnectManager(private val context: Context) {
 
         return ExerciseSessionData(
             uid = uid,
-            totalActiveTime = aggregateData[ExerciseSessionRecord.ACTIVE_TIME_TOTAL],
+            totalActiveTime = aggregateData[ExerciseSessionRecord.EXERCISE_DURATION_TOTAL],
             totalSteps = aggregateData[StepsRecord.COUNT_TOTAL],
             totalDistance = aggregateData[DistanceRecord.DISTANCE_TOTAL],
             totalEnergyBurned = aggregateData[TotalCaloriesBurnedRecord.ENERGY_TOTAL],

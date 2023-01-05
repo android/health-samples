@@ -138,7 +138,7 @@ fun SleepSessionScreenPreview() {
                     duration = Duration.between(start1, end1),
                     stages = listOf(
                         SleepStageRecord(
-                            stage = SleepStageRecord.StageType.DEEP,
+                            stage = SleepStageRecord.STAGE_TYPE_DEEP,
                             startTime = start1.toInstant(),
                             startZoneOffset = start1.offset,
                             endTime = end1.toInstant(),
@@ -157,7 +157,7 @@ fun SleepSessionScreenPreview() {
                     duration = Duration.between(start2, end2),
                     stages = listOf(
                         SleepStageRecord(
-                            stage = SleepStageRecord.StageType.DEEP,
+                            stage = SleepStageRecord.STAGE_TYPE_DEEP,
                             startTime = start2.toInstant(),
                             startZoneOffset = start2.offset,
                             endTime = end2.toInstant(),
