@@ -53,12 +53,12 @@ fun Duration.formatHoursMinutes() = String.format(
  * Generates a random sleep stage for the purpose of populating data. Excludes UNKNOWN sleep stage.
  */
 fun randomSleepStage() = listOf(
-    SleepStageRecord.StageType.AWAKE,
-    SleepStageRecord.StageType.DEEP,
-    SleepStageRecord.StageType.LIGHT,
-    SleepStageRecord.StageType.OUT_OF_BED,
-    SleepStageRecord.StageType.REM,
-    SleepStageRecord.StageType.SLEEPING
+    SleepStageRecord.STAGE_TYPE_AWAKE,
+    SleepStageRecord.STAGE_TYPE_DEEP,
+    SleepStageRecord.STAGE_TYPE_LIGHT,
+    SleepStageRecord.STAGE_TYPE_OUT_OF_BED,
+    SleepStageRecord.STAGE_TYPE_REM,
+    SleepStageRecord.STAGE_TYPE_SLEEPING
 ).let { stages ->
     stages[Random.nextInt(stages.size)]
 }

@@ -51,7 +51,7 @@ fun SleepStagesDetail(sleepStages: List<SleepStageRecord>) {
             Text(
                 modifier = Modifier
                     .weight(0.4f),
-                text = stage.stage,
+                text = SleepStageRecord.STAGE_TYPE_INT_TO_STRING_MAP[stage.stage] ?: "unknown",
                 textAlign = TextAlign.Start
             )
         }
@@ -69,14 +69,14 @@ fun SleepStagesDetailPreview() {
             SleepStagesDetail(
                 sleepStages = listOf(
                     SleepStageRecord(
-                        stage = SleepStageRecord.StageType.DEEP,
+                        stage = SleepStageRecord.STAGE_TYPE_DEEP,
                         startTime = start2.toInstant(),
                         startZoneOffset = start2.offset,
                         endTime = end2.toInstant(),
                         endZoneOffset = end2.offset
                     ),
                     SleepStageRecord(
-                        stage = SleepStageRecord.StageType.LIGHT,
+                        stage = SleepStageRecord.STAGE_TYPE_LIGHT,
                         startTime = start1.toInstant(),
                         startZoneOffset = start1.offset,
                         endTime = start2.toInstant(),
