@@ -55,7 +55,7 @@ fun PassiveDataScreen(
             onCheckedChange = onEnableClick,
             permissionState = permissionState
         )
-        HeartRateChip(
+        HeartRateCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 4.dp),

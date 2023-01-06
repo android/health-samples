@@ -38,7 +38,7 @@ com.google.android.wearable.healthservices
 
 To set the "user" walking:
 ```shell
-# running
+# walking
 adb shell am broadcast \
 -a "whs.synthetic.user.START_WALKING" \
 com.google.android.wearable.healthservices

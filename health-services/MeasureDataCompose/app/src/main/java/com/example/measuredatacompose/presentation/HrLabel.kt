@@ -53,7 +53,7 @@ fun HrLabel(
     val text = if (availability == DataTypeAvailability.AVAILABLE) {
         hr.toInt().toString()
     } else {
-        "--"
+        stringResource(id = R.string.no_hr_reading)
     }
     Row(
         modifier = Modifier.fillMaxWidth(),

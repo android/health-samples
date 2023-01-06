@@ -24,7 +24,6 @@ import com.example.passivegoalscompose.TAG
 import com.example.passivegoalscompose.service.PassiveGoalsService
 import dailyStepsGoal
 import floorsGoal
-import kotlinx.coroutines.flow.flow
 
 /**
  * Entry point for [HealthServicesClient] APIs. This also provides suspend functions around

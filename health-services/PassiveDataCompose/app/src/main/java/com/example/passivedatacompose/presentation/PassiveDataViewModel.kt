@@ -31,6 +31,9 @@ class PassiveDataViewModel(
     private val healthServicesRepository: HealthServicesRepository,
     private val passiveDataRepository: PassiveDataRepository
 ) : ViewModel() {
+    // Provides a hot flow of the latest HR value read from Data Store whilst there is an active
+    // UI subscription. HR values are written to the Data Store in the [PassiveDataService] each
+    // time an update is provided by Health Services.
     val hrValue = passiveDataRepository.latestHeartRate
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Double.NaN)
 

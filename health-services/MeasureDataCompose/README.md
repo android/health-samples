@@ -19,7 +19,7 @@ On devices where heart rate data is not available, you will see a screen like th
 
 ### Try it with synthetic data
 
-With the sample running, you can turn on the sythetic data provider by running the below command
+With the sample running, you can turn on the synthetic data provider by running the below command
 from a shell. This will mimic the user performing an activity and generating heart rate data. Check
 the app UI or logcat messages to see these data updates.
 
