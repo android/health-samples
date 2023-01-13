@@ -50,3 +50,26 @@ adb shell am broadcast -a \
 "whs.USE_SENSOR_PROVIDERS" \
 com.google.android.wearable.healthservices
 ```
+
+## Troubleshooting
+
+### App crashes with `java.lang.Exception: Not yet implemented`
+
+This crash has been seen when using the Wear Emulator, in the scenario where the Health Services version on the emulator is extremely old:
+
+```
+E/AndroidRuntime: FATAL EXCEPTION: main
+    Process: com.example.passivegoalscompose, PID: 30333
+        java.lang.Exception: Not yet implemented
+            at androidx.health.services.client.impl.internal.StatusCallback.onFailure(StatusCallback.kt:42)  
+```
+
+To resolve this issue, ensure you are using the [latest Wear image in your emulator](https://developer.android.com/studio/intro/update)
+
+You can verify the version of Health Services using:
+
+```
+adb shell dumpsys package com.google.android.wearable.healthservices | grep versionCode
+```
+
+Ensure that this value is at least `70695`.
