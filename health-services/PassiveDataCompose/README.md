@@ -67,7 +67,7 @@ E/AndroidRuntime: FATAL EXCEPTION: main
             at androidx.health.services.client.impl.internal.StatusCallback.onFailure(StatusCallback.kt:42)  
 ```
 
-To resolve this issue, ensure you are using the [latest Wear image in your emulator](https://developer.android.com/design-for-safety/privacy-sandbox/download#emulator)
+To resolve this issue, ensure you are using the [latest Wear image in your emulator](https://developer.android.com/studio/intro/update)
 
 You can verify the version of Health Services using:
 
