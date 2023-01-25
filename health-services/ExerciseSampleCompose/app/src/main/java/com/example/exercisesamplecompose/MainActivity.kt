@@ -49,7 +49,6 @@ class MainActivity : FragmentActivity() {
             setContent {
                 navController = rememberSwipeDismissableNavController()
                 ExerciseSampleApp(
-                    healthServicesManager,
                     navController = navController,
                     startDestination = destination
                 )

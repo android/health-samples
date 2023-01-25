@@ -35,8 +35,9 @@ import androidx.wear.compose.material.CircularProgressIndicator
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
+import androidx.wear.compose.material.TimeText
+import androidx.wear.compose.material.TimeTextDefaults
 import com.example.exercisesamplecompose.R
-import com.example.exercisesamplecompose.presentation.component.TopOfScreenTime
 import com.example.exercisesamplecompose.theme.ExerciseSampleTheme
 
 /**
@@ -55,7 +56,7 @@ fun StartingUp(
     }
 
     ExerciseSampleTheme {
-        Scaffold(timeText = { TopOfScreenTime() }) {
+        Scaffold(timeText = { TimeText(timeSource = TimeTextDefaults.timeSource(TimeTextDefaults.timeFormat())) }) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()

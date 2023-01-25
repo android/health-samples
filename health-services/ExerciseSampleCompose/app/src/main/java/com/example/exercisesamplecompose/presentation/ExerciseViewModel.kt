@@ -28,7 +28,6 @@ import androidx.health.services.client.data.DataPointContainer
 import androidx.health.services.client.data.ExerciseState
 import androidx.health.services.client.data.LocationAvailability
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.exercisesamplecompose.data.HealthServicesManager
 import com.example.exercisesamplecompose.service.ActiveDurationUpdate
@@ -55,10 +54,11 @@ class ExerciseViewModel @Inject constructor(
 
     var bound = mutableStateOf(false)
     var hasExerciseCapabilities = mutableStateOf(true)
+    var isTrackingAnotherExercise = mutableStateOf(false)
 
 
     private var exerciseService: ForegroundService? = null
-    val exerciseServiceState: MutableState<ServiceState> = mutableStateOf(ServiceState.Disconnected)
+    var exerciseServiceState: MutableState<ServiceState> = mutableStateOf(ServiceState.Disconnected)
 
     private val connection = object : android.content.ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
@@ -74,24 +74,24 @@ class ExerciseViewModel @Inject constructor(
                     exerciseState = it.exerciseState,
                     exerciseStateChange = it.exerciseStateChange
                 )
-
             }
             Log.i(TAG, "onServiceConnected")
             bound.value = true
         }
 
-
         override fun onServiceDisconnected(arg0: ComponentName) {
             bound.value = false
             exerciseService = null
-
+            Log.i(TAG, "onServiceDisconnected")
             exerciseServiceState.value = ServiceState.Disconnected
         }
+
     }
 
     init {
         viewModelScope.launch {
             hasExerciseCapabilities.value = healthServicesManager.hasExerciseCapability()
+            isTrackingAnotherExercise.value = healthServicesManager.isTrackingExerciseInAnotherApp()
         }
         if (!bound.value) {
             createService()
@@ -109,29 +109,16 @@ class ExerciseViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        if (bound.value) {
+        Intent(applicationContext, ForegroundService::class.java).also { intent ->
             applicationContext.unbindService(connection)
         }
     }
 
-    fun connectToService() = ForegroundService.bindService(context = applicationContext, connection)
-
-    fun prepareExercise() = exerciseService?.prepareExercise()
-    fun startExercise() {
-        exerciseService?.startExercise()
-    }
-
-    fun pauseExercise() = exerciseService?.pauseExercise()
-    fun endExercise() = exerciseService?.endExercise()
-    fun resumeExercise() = exerciseService?.resumeExercise()
-
-
-    suspend fun markLap() {
-        exerciseService?.markLap()
-    }
-
-    fun disconnectFromService() =
-        ForegroundService.unbindService(context = applicationContext, connection)
+    fun prepareExercise() = viewModelScope.launch { exerciseService?.prepareExercise() }
+    fun startExercise() = viewModelScope.launch { exerciseService?.startExercise() }
+    fun pauseExercise() = viewModelScope.launch { exerciseService?.pauseExercise() }
+    fun endExercise() = viewModelScope.launch { exerciseService?.endExercise() }
+    fun resumeExercise() = viewModelScope.launch { exerciseService?.resumeExercise() }
 
 }
 
@@ -150,17 +137,3 @@ sealed class ServiceState {
     ) : ServiceState()
 }
 
-class ExerciseViewModelFactory(
-    private val healthServicesManager: HealthServicesManager,
-    @ApplicationContext private val applicationContext: Context
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(ExerciseViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST") return ExerciseViewModel(
-                healthServicesManager = healthServicesManager,
-                applicationContext = applicationContext
-            ) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
-    }
-}

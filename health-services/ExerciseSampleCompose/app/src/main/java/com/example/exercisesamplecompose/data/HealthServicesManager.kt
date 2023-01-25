@@ -37,7 +37,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.shareIn
 
 
 /**
@@ -64,11 +63,7 @@ class HealthServicesManager @Inject constructor(
         return exerciseCapabilities
     }
 
-
-    suspend fun hasExerciseCapability(): Boolean {
-        return getExerciseCapabilities() != null
-
-    }
+    suspend fun hasExerciseCapability() = getExerciseCapabilities() != null
 
     suspend fun isExerciseInProgress(): Boolean {
         val exerciseInfo = exerciseClient.getCurrentExerciseInfoAsync().await()
@@ -85,7 +80,7 @@ class HealthServicesManager @Inject constructor(
      * when acquiring calories or distance.
      */
     suspend fun startExercise() {
-        Log.d("Output", "Starting exercise")
+        Log.d(OUTPUT, "Starting exercise")
         // Types for which we want to receive metrics. Only ask for ones that are supported.
         val capabilities = getExerciseCapabilities() ?: return
         val dataTypes = setOf(
@@ -147,7 +142,7 @@ class HealthServicesManager @Inject constructor(
      * when acquiring calories or distance.
      */
     suspend fun prepareExercise() {
-        Log.d("Output", "Preparing an exercise")
+        Log.d(OUTPUT, "Preparing an exercise")
         val warmUpConfig = WarmUpConfig(
             ExerciseType.RUNNING, setOf(
                 DataType.HEART_RATE_BPM, DataType.LOCATION
@@ -161,20 +156,22 @@ class HealthServicesManager @Inject constructor(
     }
 
     suspend fun endExercise() {
-        Log.d("Output", "Ending exercise")
+        Log.d(OUTPUT, "Ending exercise")
         exerciseClient.endExerciseAsync().await()
     }
 
     suspend fun pauseExercise() {
-        Log.d("Output", "Pausing exercise")
+        Log.d(OUTPUT, "Pausing exercise")
         exerciseClient.pauseExerciseAsync().await()
     }
 
     suspend fun resumeExercise() {
-        Log.d("Output", "Resuming exercise")
+        Log.d(OUTPUT, "Resuming exercise")
         exerciseClient.resumeExerciseAsync().await()
     }
 
+    /** Wear OS 3.0 reserves two buttons for the OS. For devices with more than 2 buttons,
+     * consider implementing a "press" to mark lap feature**/
     suspend fun markLap() {
         if (isExerciseInProgress()) {
             exerciseClient.markLapAsync().await()
@@ -182,16 +179,12 @@ class HealthServicesManager @Inject constructor(
     }
 
     /**
-     * A shared flow for [ExerciseUpdate]s.
-     *
      * When the flow starts, it will register an [ExerciseUpdateCallback] and start to emit
-     * messages. When there are no more subscribers, or when the coroutine scope of [shareIn] is
+     * messages. When there are no more subscribers, or when the coroutine scope is
      * cancelled, this flow will unregister the listener.
-     * A shared flow is used because only a single [ExerciseUpdateCallback] can be registered at a
-     * time, even if there are multiple consumers of the flow.
-     * [callbackFlow] is used to bridge between a callback-based API and Kotlin flows.
+     * [CallbackFlow] is used to bridge between a callback-based API and Kotlin flows.
      */
-    val exerciseUpdateFlow = callbackFlow<ExerciseMessage> {
+    val exerciseUpdateFlow = callbackFlow {
         val callback = object : ExerciseUpdateCallback {
             override fun onExerciseUpdateReceived(update: ExerciseUpdate) {
                 coroutineScope.runCatching {
@@ -231,6 +224,8 @@ class HealthServicesManager @Inject constructor(
     private companion object {
         const val CALORIES_THRESHOLD = 250.0
         const val DISTANCE_THRESHOLD = 1_000.0 // meters
+        const val OUTPUT = "Output"
+
     }
 }
 
@@ -240,3 +235,5 @@ sealed class ExerciseMessage {
     class LocationAvailabilityMessage(val locationAvailability: LocationAvailability) :
         ExerciseMessage()
 }
+
+

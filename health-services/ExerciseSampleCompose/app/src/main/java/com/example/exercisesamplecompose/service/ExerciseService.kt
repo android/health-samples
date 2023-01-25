@@ -22,9 +22,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.ContentValues.TAG
-import android.content.Context
 import android.content.Intent
-import android.content.ServiceConnection
 import android.os.Binder
 import android.os.IBinder
 import android.os.SystemClock
@@ -136,6 +134,8 @@ class ForegroundService : LifecycleService() {
         removeOngoingActivityNotification()
     }
 
+    /** Wear OS 3.0 reserves two buttons for the OS. For devices with more than 2 buttons,
+     * consider implementing a "press" to mark lap feature**/
     fun markLap() {
         lifecycleScope.launch {
             healthServicesManager.markLap()}
@@ -339,7 +339,7 @@ class ForegroundService : LifecycleService() {
         val notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL)
             .setContentTitle(NOTIFICATION_TITLE)
             .setContentText(NOTIFICATION_TEXT)
-            .setSmallIcon(R.drawable.ic_baseline_run_circle_24)
+            .setSmallIcon(R.drawable.ic_baseline_directions_run_24)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
             .setCategory(NotificationCompat.CATEGORY_WORKOUT)
@@ -361,17 +361,18 @@ class ForegroundService : LifecycleService() {
             .build()
         val ongoingActivity =
             OngoingActivity.Builder(applicationContext, NOTIFICATION_ID, notificationBuilder)
-                .setAnimatedIcon(R.drawable.ic_baseline_run_circle_24)
-                .setStaticIcon(R.drawable.ic_baseline_run_circle_24)
+                .setAnimatedIcon(R.drawable.ic_baseline_directions_run_24)
+                .setStaticIcon(R.drawable.ic_baseline_directions_run_24)
                 .setTouchIntent(pendingIntent)
                 .setStatus(ongoingActivityStatus)
                 .build()
-
 
         ongoingActivity.apply(applicationContext)
 
         return notificationBuilder.build()
     }
+
+
 
 
     /** Local clients will use this to access the service. */
@@ -390,25 +391,10 @@ class ForegroundService : LifecycleService() {
         private const val ONGOING_STATUS_TEMPLATE = "Ongoing Exercise #duration#"
         private const val UNBIND_DELAY_MILLIS = 3_000L
 
-        fun bindService(context: Context, serviceConnection: ServiceConnection) {
-            val serviceIntent = Intent(context, ForegroundService::class.java)
-            context.bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
-            Log.d("Bind Service", "Complete")
-            //Log.d("Service State", ExerciseServiceConnection().lifecycle.currentState.toString())
-        }
-
-        fun unbindService(context: Context, serviceConnection: ServiceConnection) {
-            context.unbindService(serviceConnection)
-        }
-
-
     }
 
 
-
 }
-
-
 
 
 /** Keeps track of the last time we received an update for active exercise duration. */
@@ -423,5 +409,7 @@ data class ActiveDurationUpdate(
 sealed class ExerciseStateChange(val exerciseState: ExerciseState) {
     data class ActiveStateChange(val durationCheckPoint: ExerciseUpdate.ActiveDurationCheckpoint) : ExerciseStateChange(
         ExerciseState.ACTIVE)
+    data class PausingStateChange(val durationCheckPoint: ExerciseUpdate.ActiveDurationCheckpoint) : ExerciseStateChange(
+        ExerciseState.USER_PAUSING)
     data class OtherStateChange(val state: ExerciseState): ExerciseStateChange(state)
 }

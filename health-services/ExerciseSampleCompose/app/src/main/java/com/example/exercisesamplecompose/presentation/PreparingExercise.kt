@@ -39,7 +39,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.health.services.client.data.LocationAvailability
-import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.ButtonDefaults
@@ -47,18 +46,19 @@ import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
+import androidx.wear.compose.material.TimeText
+import androidx.wear.compose.material.TimeTextDefaults
 import com.example.exercisesamplecompose.R
 import com.example.exercisesamplecompose.presentation.component.AcquiredCheck
+import com.example.exercisesamplecompose.presentation.component.ExerciseInProgressAlert
 import com.example.exercisesamplecompose.presentation.component.NotAcquired
 import com.example.exercisesamplecompose.presentation.component.ProgressBar
-import com.example.exercisesamplecompose.presentation.component.TopOfScreenTime
 import com.example.exercisesamplecompose.theme.ExerciseSampleTheme
 import kotlinx.coroutines.launch
 
 /**
  * Screen that appears while the device is preparing the exercise.
  */
-@OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 fun PreparingExercise(
     onStartClick: () -> Unit = {},
@@ -66,7 +66,11 @@ fun PreparingExercise(
     onStart: () -> Unit = {},
     serviceState: ServiceState,
     permissions: Array<String>,
+    isTrackingAnotherExercise: Boolean,
 ) {
+    if (isTrackingAnotherExercise) {
+        ExerciseInProgressAlert(true)
+    }
     /** Request permissions prior to launching exercise.**/
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -75,6 +79,7 @@ fun PreparingExercise(
             Log.d(TAG, "All required permissions granted")
         }
     }
+
     when (serviceState) {
         is ServiceState.Connected -> {
             LaunchedEffect(Unit) {
@@ -83,10 +88,13 @@ fun PreparingExercise(
                     prepareExercise()
                 }
             }
+
             val location by serviceState.locationAvailabilityState.collectAsStateWithLifecycle()
 
+
             ExerciseSampleTheme {
-                Scaffold(timeText = { TopOfScreenTime() }) {
+                Scaffold(timeText =
+                { TimeText(timeSource = TimeTextDefaults.timeSource(TimeTextDefaults.timeFormat())) }) {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -110,7 +118,7 @@ fun PreparingExercise(
                             modifier = Modifier.height(40.dp)
                         ) {
                             when (location) {
-                                LocationAvailability.ACQUIRING -> ProgressBar()
+                                LocationAvailability.ACQUIRING, LocationAvailability.UNKNOWN -> ProgressBar()
                                 LocationAvailability.ACQUIRED_TETHERED, LocationAvailability.ACQUIRED_UNTETHERED -> AcquiredCheck()
                                 else -> NotAcquired()
 
@@ -166,6 +174,7 @@ private fun updatePrepareLocationStatus(locationAvailability: LocationAvailabili
         LocationAvailability.ACQUIRED_TETHERED, LocationAvailability.ACQUIRED_UNTETHERED -> R.string.GPS_acquired
         LocationAvailability.NO_GNSS -> R.string.GPS_disabled // TODO Consider redirecting user to change device settings in this case
         LocationAvailability.ACQUIRING -> R.string.GPS_acquiring
+        LocationAvailability.UNKNOWN -> R.string.GPS_initializing
         else -> R.string.GPS_unavailable
     }
 

@@ -19,6 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.wear.compose.material.Text
 
 @Composable
-fun HRText(hr: Double?) {
+fun HRText(hr: Double) {
     Text(text = "$hr")
 }

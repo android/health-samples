@@ -26,6 +26,8 @@
     <string name="GPS_acquired">GPS Acquired!</string>
     <string name="GPS_disabled">GPS Disabled on Device</string>
     <string name="GPS_unavailable">GPS Unavailable</string>
+    <string name="GPS_initializing">GPS Initializing</string>
+
 
     <!-- Summary Screen -->
     <string name="workout_complete">Workout complete!</string>
@@ -33,7 +35,6 @@
     <string name="distance"> Distance </string>
     <string name="calories"> kCal </string>
     <string name="avgHR"> AvgHR </string>
-    <string name="end_workout">End</string>
     <string name="restart">Restart</string>
 
     <!-- Descriptions -->
@@ -41,6 +42,12 @@
     <string name="startOrEnd">Start or End</string>
     <string name="pauseOrResume">Pause or Resume</string>
     <string name="heart_rate">Heart Rate</string>
+
+    <!-- Exercise in Progress Dialog -->
+    <string name="confirm">Confirm</string>
+    <string name="deny">Deny</string>
+    <string name="exercise_in_progress">Exercise In Progress</string>
+    <string name="ending_continue">Ending other exercise. Continue?</string>
 
 
 </resources>

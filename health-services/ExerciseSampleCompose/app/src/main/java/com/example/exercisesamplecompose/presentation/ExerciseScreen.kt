@@ -23,6 +23,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material.icons.filled.WatchLater
+import androidx.compose.material.icons.filled._360
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -34,7 +41,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.health.services.client.data.DataPoint
 import androidx.health.services.client.data.DataType
@@ -42,7 +48,6 @@ import androidx.health.services.client.data.ExerciseState
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.wear.compose.material.Button
@@ -50,12 +55,13 @@ import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
+import androidx.wear.compose.material.TimeText
+import androidx.wear.compose.material.TimeTextDefaults
 import com.example.exercisesamplecompose.R
 import com.example.exercisesamplecompose.Screens
 import com.example.exercisesamplecompose.presentation.component.CaloriesText
 import com.example.exercisesamplecompose.presentation.component.DistanceText
 import com.example.exercisesamplecompose.presentation.component.HRText
-import com.example.exercisesamplecompose.presentation.component.TopOfScreenTime
 import com.example.exercisesamplecompose.presentation.component.formatCalories
 import com.example.exercisesamplecompose.presentation.component.formatDistanceKm
 import com.example.exercisesamplecompose.presentation.component.formatElapsedTime
@@ -69,11 +75,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-
 /**
  * Shows while an exercise is in progress
  */
-@OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 fun ExerciseScreen(
     onPauseClick: () -> Unit = {},
@@ -82,7 +86,7 @@ fun ExerciseScreen(
     onStartClick: () -> Unit = {},
     serviceState: ServiceState,
     navController: NavHostController,
-    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
 ) {
     val chronoTickJob = remember { mutableStateOf<Job?>(null) }
     /** Only collect metrics while we are connected to the Foreground Service. **/
@@ -121,16 +125,15 @@ fun ExerciseScreen(
 
             val laps by serviceState.exerciseLaps.collectAsStateWithLifecycle()
 
-
             /** Update the Pause and End buttons according to [ExerciseState].**/
             val pauseOrResume = when (exerciseStateChange.exerciseState.isPaused) {
-                true -> painterResource(id = R.drawable.ic_baseline_play_arrow_24)
-                false -> painterResource(id = R.drawable.ic_baseline_pause_24)
+                true -> Icons.Default.PlayArrow
+                false -> Icons.Default.Pause
             }
             val startOrEnd =
                 when (exerciseStateChange.exerciseState.isEnded || exerciseStateChange.exerciseState.isEnding) {
-                    true -> painterResource(id = R.drawable.ic_baseline_play_arrow_24)
-                    false -> painterResource(id = R.drawable.ic_baseline_stop_24)
+                    true -> Icons.Default.PlayArrow
+                    false -> Icons.Default.Stop
 
                 }
 
@@ -150,7 +153,8 @@ fun ExerciseScreen(
             // events
             DisposableEffect(lifecycleOwner) {
                 val observer = LifecycleEventObserver { _, event ->
-                    if (event == Lifecycle.Event.ON_START && exerciseStateChange is ExerciseStateChange.ActiveStateChange) {
+                    if (event == Lifecycle.Event.ON_START && exerciseStateChange is ExerciseStateChange.ActiveStateChange ||
+                        exerciseStateChange is ExerciseStateChange.PausingStateChange) {
                         val activeStateChange =
                             exerciseStateChange as ExerciseStateChange.ActiveStateChange
                         val timeOffset =
@@ -185,7 +189,8 @@ fun ExerciseScreen(
             // and you want the ActiveDurationCheckpoint to be associated with exactly when the
             // state changed to active.
             LaunchedEffect(exerciseStateChange) {
-                if (exerciseStateChange is ExerciseStateChange.ActiveStateChange) {
+                if (exerciseStateChange is ExerciseStateChange.ActiveStateChange ||
+                    exerciseStateChange is ExerciseStateChange.PausingStateChange) {
                     val activeStateChange =
                         exerciseStateChange as ExerciseStateChange.ActiveStateChange
                     val timeOffset =
@@ -201,7 +206,13 @@ fun ExerciseScreen(
             }
 
             ExerciseSampleTheme {
-                Scaffold(timeText = { TopOfScreenTime() }) {
+                Scaffold(timeText = {
+                    TimeText(
+                        timeSource = TimeTextDefaults.timeSource(
+                            TimeTextDefaults.timeFormat()
+                        )
+                    )
+                }) {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -213,7 +224,7 @@ fun ExerciseScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(
-                                painter = painterResource(id = R.drawable.ic_outline_watch_later_24),
+                                imageVector = Icons.Default.WatchLater,
                                 contentDescription = stringResource(id = R.string.duration)
                             )
                             Text(elapsedTime.value)
@@ -230,7 +241,7 @@ fun ExerciseScreen(
                                 hr = tempHeartRate.value
                             )
                             Icon(
-                                painter = painterResource(id = R.drawable.ic_baseline_local_fire_department_24),
+                                imageVector = Icons.Default.LocalFireDepartment,
                                 contentDescription = stringResource(id = R.string.calories)
                             )
                             if (calories != null) {
@@ -250,7 +261,7 @@ fun ExerciseScreen(
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Icon(
-                                painter = painterResource(id = R.drawable.ic_baseline_trending_up_24),
+                                imageVector = Icons.Default.TrendingUp,
                                 contentDescription = stringResource(id = R.string.distance)
                             )
                             if (distance != null) {
@@ -264,7 +275,7 @@ fun ExerciseScreen(
                                 )
                             }
                             Icon(
-                                painter = painterResource(id = R.drawable.ic_baseline_360_24),
+                                imageVector = Icons.Default._360,
                                 contentDescription = stringResource(id = R.string.laps)
                             )
                             Text(text = laps.toString())
@@ -289,12 +300,13 @@ fun ExerciseScreen(
                                     }/${formatCalories(tempCalories.value)}/" + formatElapsedTime(
                                         activeDuration.toKotlinDuration(), true
                                     ).toString()
-                                )
+                                ) { popUpTo(Screens.ExerciseScreen.route) { inclusive = true } }
 
                                 Button(onClick = { onStartClick() }) {
                                     // Text(text = startOrEnd)
                                     Icon(
-                                        painter = startOrEnd, contentDescription = stringResource(
+                                        imageVector = startOrEnd,
+                                        contentDescription = stringResource(
                                             id = R.string.startOrEnd
                                         )
                                     )
@@ -303,7 +315,8 @@ fun ExerciseScreen(
                             } else {
                                 Button(onClick = { onEndClick() }) {
                                     Icon(
-                                        painter = startOrEnd, contentDescription = stringResource(
+                                        imageVector = startOrEnd,
+                                        contentDescription = stringResource(
                                             id = R.string.startOrEnd
                                         )
                                     )
@@ -315,7 +328,7 @@ fun ExerciseScreen(
                                     onResumeClick()
                                 }) {
                                     Icon(
-                                        painter = pauseOrResume,
+                                        imageVector = pauseOrResume,
                                         contentDescription = stringResource(id = R.string.pauseOrResume)
                                     )
                                 }
@@ -324,7 +337,7 @@ fun ExerciseScreen(
                                     onPauseClick()
                                 }) {
                                     Icon(
-                                        painter = pauseOrResume,
+                                        imageVector = pauseOrResume,
                                         contentDescription = stringResource(id = R.string.pauseOrResume)
                                     )
                                 }

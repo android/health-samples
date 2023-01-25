@@ -34,13 +34,14 @@ fun SummaryFormat(
     metric: String,
     modifier: Modifier = Modifier
 ) {
-    Column(verticalArrangement = Arrangement.SpaceEvenly) {
+    Column {
         Row(horizontalArrangement = Arrangement.Center, modifier = modifier) {
             Text(
                 textAlign = TextAlign.Center,
                 text = value,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colors.secondary
+                color = MaterialTheme.colors.secondary,
+                fontSize = 25.sp
             )
         }
         Row(horizontalArrangement = Arrangement.Center, modifier = modifier) {

@@ -18,18 +18,18 @@ package com.example.exercisesamplecompose.presentation.component
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircleOutline
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter.Companion.tint
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.wear.compose.material.MaterialTheme
 import com.example.exercisesamplecompose.R
 
 @Composable
 fun AcquiredCheck() {
-    Image(
-        painterResource(id = R.drawable.ic_baseline_check_circle_outline_24),
+    Image(Icons.Default.CheckCircleOutline,
         contentDescription = stringResource(
             id = R.string.GPS_acquired
         ), colorFilter = tint(MaterialTheme.colors.secondary), modifier = Modifier
