@@ -151,7 +151,7 @@ class HealthServicesManager @Inject constructor(
         try {
             exerciseClient.prepareExerciseAsync(warmUpConfig).await()
         } catch (e: Exception) {
-            Log.e("Output", "Prepare exercise failed - ${e.message}")
+            Log.e(OUTPUT, "Prepare exercise failed - ${e.message}")
         }
     }
 
@@ -182,7 +182,7 @@ class HealthServicesManager @Inject constructor(
      * When the flow starts, it will register an [ExerciseUpdateCallback] and start to emit
      * messages. When there are no more subscribers, or when the coroutine scope is
      * cancelled, this flow will unregister the listener.
-     * [CallbackFlow] is used to bridge between a callback-based API and Kotlin flows.
+     * [callbackFlow] is used to bridge between a callback-based API and Kotlin flows.
      */
     val exerciseUpdateFlow = callbackFlow {
         val callback = object : ExerciseUpdateCallback {

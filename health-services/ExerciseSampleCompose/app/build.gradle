@@ -69,6 +69,9 @@ dependencies {
 
   // Compose for Wear OS Dependencies
   implementation libs.wear.compose.material
+  implementation 'androidx.compose.material:material-icons-extended:1.3.1'
+  implementation "androidx.wear:wear:1.2.0"
+  implementation "androidx.compose.runtime:runtime:1.3.3"
 
   // Foundation is additive, so you can use the mobile version in your Wear OS app.
   implementation libs.wear.compose.foundation
@@ -78,12 +81,10 @@ dependencies {
 
   //Wear OS Compose Navigation
   implementation "androidx.wear.compose:compose-navigation:1.2.0-alpha02"
+  implementation "androidx.navigation:navigation-compose:2.5.3"
 
   //Wear Health Services
   implementation "androidx.health:health-services-client:1.0.0-beta02"
-
-  // To build applications that can read or write user's health and fitness records.
-  implementation "androidx.health.connect:connect-client:1.0.0-alpha09"
 
   // Lifecycle components
   implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1"
@@ -94,11 +95,8 @@ dependencies {
   implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
   implementation "androidx.lifecycle:lifecycle-service:2.5.1"
   implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.0-alpha04"
-  implementation 'androidx.compose.material:material-icons-core:1.4.0-alpha04'
-  implementation 'androidx.compose.material:material-icons-extended:1.3.1'
   implementation 'androidx.compose.runtime:runtime-livedata:1.4.0-alpha04'
   implementation "androidx.lifecycle:lifecycle-runtime-compose:2.6.0-alpha04"
-  implementation "androidx.wear:wear:1.2.0"
 
   // Ongoing Activity
   implementation "androidx.wear:wear-ongoing:1.0.0"
@@ -107,8 +105,6 @@ dependencies {
   implementation "com.google.dagger:hilt-android:2.43.2"
   implementation "androidx.hilt:hilt-navigation-compose:1.0.0"
   kapt "com.google.dagger:hilt-android-compiler:2.43.2"
-  implementation "androidx.compose.runtime:runtime:1.3.3"
-  implementation "androidx.navigation:navigation-compose:2.5.3"
 
 
   // Testing

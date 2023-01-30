@@ -33,7 +33,8 @@ import com.example.exercisesamplecompose.Screens
 
 @Composable
 fun ExerciseSampleApp(
-    navController: NavHostController, startDestination: String
+    navController: NavHostController,
+    startDestination: String
 ) {
     SwipeDismissableNavHost(
         navController = navController, startDestination = startDestination
@@ -68,6 +69,7 @@ fun ExerciseSampleApp(
                             inclusive = false
                         }
                     }
+
                 },
                 prepareExercise = { viewModel.prepareExercise() },
                 onStart = { viewModel.startExercise() },
@@ -86,7 +88,7 @@ fun ExerciseSampleApp(
                 onResumeClick = { viewModel.resumeExercise() },
                 onStartClick = { viewModel.startExercise() },
                 serviceState = serviceState,
-                navController = navController,
+                navController = navController
             )
         }
 
@@ -110,10 +112,12 @@ fun ExerciseSampleApp(
                             inclusive = true
                         }
                     }
-                })
+                }
+            )
         }
     }
 }
+
 
 
 

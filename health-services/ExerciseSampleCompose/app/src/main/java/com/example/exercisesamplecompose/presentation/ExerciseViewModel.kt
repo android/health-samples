@@ -17,11 +17,9 @@ package com.example.exercisesamplecompose.presentation
 
 import android.Manifest
 import android.content.ComponentName
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
-import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.health.services.client.data.DataPointContainer
@@ -75,14 +73,12 @@ class ExerciseViewModel @Inject constructor(
                     exerciseStateChange = it.exerciseStateChange
                 )
             }
-            Log.i(TAG, "onServiceConnected")
             bound.value = true
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
             bound.value = false
             exerciseService = null
-            Log.i(TAG, "onServiceDisconnected")
             exerciseServiceState.value = ServiceState.Disconnected
         }
 
@@ -109,7 +105,7 @@ class ExerciseViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        Intent(applicationContext, ForegroundService::class.java).also { intent ->
+        Intent(applicationContext, ForegroundService::class.java).also {
             applicationContext.unbindService(connection)
         }
     }
@@ -119,7 +115,6 @@ class ExerciseViewModel @Inject constructor(
     fun pauseExercise() = viewModelScope.launch { exerciseService?.pauseExercise() }
     fun endExercise() = viewModelScope.launch { exerciseService?.endExercise() }
     fun resumeExercise() = viewModelScope.launch { exerciseService?.resumeExercise() }
-
 }
 
 /** Store exercise values in the service state. While the service is connected,

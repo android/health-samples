@@ -85,7 +85,8 @@ class ForegroundService : LifecycleService() {
     private val _locationAvailabilityState = MutableStateFlow(LocationAvailability.UNKNOWN)
     val locationAvailabilityState: StateFlow<LocationAvailability> = _locationAvailabilityState
 
-    private var lastActiveDurationCheckpoint : ExerciseUpdate.ActiveDurationCheckpoint? = null
+    private var lastActiveDurationCheckpoint: ExerciseUpdate.ActiveDurationCheckpoint? = null
+
 
     /**
      * Prepare exercise in this service's coroutine context.
@@ -138,7 +139,8 @@ class ForegroundService : LifecycleService() {
      * consider implementing a "press" to mark lap feature**/
     fun markLap() {
         lifecycleScope.launch {
-            healthServicesManager.markLap()}
+            healthServicesManager.markLap()
+        }
     }
 
 
@@ -153,7 +155,6 @@ class ForegroundService : LifecycleService() {
                 // We may have been restarted by the system. Manage our lifetime accordingly.
                 stopSelfIfNotRunning()
             }
-
             // Start collecting exercise information. We might stop shortly (see above), in which
             // case launchWhenStarted takes care of canceling this coroutine.
             lifecycleScope.launch {
@@ -189,7 +190,6 @@ class ForegroundService : LifecycleService() {
                         healthServicesManager.endExercise()
                     }
                 }
-
                 // We have nothing to do, so we can stop.
                 stopSelf()
             }
@@ -256,7 +256,12 @@ class ForegroundService : LifecycleService() {
         _exerciseState.value = exerciseUpdate.exerciseStateInfo.state
         _exerciseMetrics.value = exerciseUpdate.latestMetrics
         _exerciseDurationUpdate.value =
-            exerciseUpdate.activeDurationCheckpoint?.let { ActiveDurationUpdate(it.activeDuration, Instant.now()) }
+            exerciseUpdate.activeDurationCheckpoint?.let {
+                ActiveDurationUpdate(
+                    it.activeDuration,
+                    Instant.now()
+                )
+            }
         lastActiveDurationCheckpoint = exerciseUpdate.activeDurationCheckpoint
 
     }
@@ -328,7 +333,6 @@ class ForegroundService : LifecycleService() {
     private fun buildNotification(): Notification {
         // Make an intent that will take the user straight to the exercise UI.
         val notificationIntent = Intent(this, MainActivity::class.java)
-
         val pendingIntent = PendingIntent.getActivity(
             this,
             0,
@@ -349,7 +353,10 @@ class ForegroundService : LifecycleService() {
         // Wear OS user interface, so that users can stay more engaged with long running tasks.
 
         val duration = if (lastActiveDurationCheckpoint != null) {
-            lastActiveDurationCheckpoint!!.activeDuration + Duration.between(lastActiveDurationCheckpoint!!.time, Instant.now())
+            lastActiveDurationCheckpoint!!.activeDuration + Duration.between(
+                lastActiveDurationCheckpoint!!.time,
+                Instant.now()
+            )
         } else {
             Duration.ZERO
         }
@@ -373,8 +380,6 @@ class ForegroundService : LifecycleService() {
     }
 
 
-
-
     /** Local clients will use this to access the service. */
     inner class LocalBinder : Binder() {
         fun getService() = this@ForegroundService
@@ -382,9 +387,7 @@ class ForegroundService : LifecycleService() {
 
     companion object {
         private const val NOTIFICATION_ID = 1
-
-        // TODO: Fix package name
-        private const val NOTIFICATION_CHANNEL = "com.example.exercise.ONGOING_EXERCISE"
+        private const val NOTIFICATION_CHANNEL = "com.example.exercisesamplecompose.ONGOING_EXERCISE"
         private const val NOTIFICATION_CHANNEL_DISPLAY = "Ongoing Exercise"
         private const val NOTIFICATION_TITLE = "Exercise Sample"
         private const val NOTIFICATION_TEXT = "Ongoing Exercise"
@@ -407,9 +410,15 @@ data class ActiveDurationUpdate(
 )
 
 sealed class ExerciseStateChange(val exerciseState: ExerciseState) {
-    data class ActiveStateChange(val durationCheckPoint: ExerciseUpdate.ActiveDurationCheckpoint) : ExerciseStateChange(
-        ExerciseState.ACTIVE)
-    data class PausingStateChange(val durationCheckPoint: ExerciseUpdate.ActiveDurationCheckpoint) : ExerciseStateChange(
-        ExerciseState.USER_PAUSING)
-    data class OtherStateChange(val state: ExerciseState): ExerciseStateChange(state)
+    data class ActiveStateChange(val durationCheckPoint: ExerciseUpdate.ActiveDurationCheckpoint) :
+        ExerciseStateChange(
+            ExerciseState.ACTIVE
+        )
+
+    data class PausingStateChange(val durationCheckPoint: ExerciseUpdate.ActiveDurationCheckpoint) :
+        ExerciseStateChange(
+            ExerciseState.USER_PAUSING
+        )
+
+    data class OtherStateChange(val state: ExerciseState) : ExerciseStateChange(state)
 }

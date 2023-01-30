@@ -31,23 +31,19 @@ import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.WatchLater
 import androidx.compose.material.icons.filled._360
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.health.services.client.data.DataPoint
 import androidx.health.services.client.data.DataType
 import androidx.health.services.client.data.ExerciseState
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.wear.compose.material.Button
@@ -86,9 +82,9 @@ fun ExerciseScreen(
     onStartClick: () -> Unit = {},
     serviceState: ServiceState,
     navController: NavHostController,
-    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
 ) {
     val chronoTickJob = remember { mutableStateOf<Job?>(null) }
+
     /** Only collect metrics while we are connected to the Foreground Service. **/
     when (serviceState) {
         is ServiceState.Connected -> {
@@ -109,15 +105,17 @@ fun ExerciseScreen(
             ) tempHeartRate.value =
                 getExerciseMetrics.collectAsStateWithLifecycle().value?.getData(DataType.HEART_RATE_BPM)
                     ?.last()?.value!!
-            else tempHeartRate.value = tempHeartRate.value
+                else tempHeartRate.value = tempHeartRate.value
 
+            /**Store previous calorie and distance values to avoid rendering null values from
+             * [getExerciseMetrics] flow**/
             val distance =
                 getExerciseMetrics.collectAsStateWithLifecycle().value?.getData(DataType.DISTANCE_TOTAL)?.total
-            val tempDistance = remember { mutableStateOf(0.0) }
+            val tempDistance = rememberSaveable { mutableStateOf(0.0) }
 
             val calories =
                 getExerciseMetrics.collectAsStateWithLifecycle().value?.getData(DataType.CALORIES_TOTAL)?.total
-            val tempCalories = remember { mutableStateOf(0.0) }
+            val tempCalories = rememberSaveable { mutableStateOf(0.0) }
 
             val averageHeartRate =
                 getExerciseMetrics.collectAsStateWithLifecycle().value?.getData(DataType.HEART_RATE_BPM_STATS)?.average
@@ -148,34 +146,6 @@ fun ExerciseScreen(
                     ).toString()
                 }
             }
-            // When the screen comes on, or goes off, then the ticker coroutine needs to either be
-            // started or stopped, if the exercise is ACTIVE. This is done by observing lifecycle
-            // events
-            DisposableEffect(lifecycleOwner) {
-                val observer = LifecycleEventObserver { _, event ->
-                    if (event == Lifecycle.Event.ON_START && exerciseStateChange is ExerciseStateChange.ActiveStateChange ||
-                        exerciseStateChange is ExerciseStateChange.PausingStateChange) {
-                        val activeStateChange =
-                            exerciseStateChange as ExerciseStateChange.ActiveStateChange
-                        val timeOffset =
-                            (System.currentTimeMillis() - activeStateChange.durationCheckPoint.time.toEpochMilli())
-                        baseActiveDuration.value =
-                            activeStateChange.durationCheckPoint.activeDuration.plusMillis(
-                                timeOffset
-                            )
-                        chronoTickJob.value = startTick(chronoTickJob.value, scope) { tickerTime ->
-                            activeDuration = baseActiveDuration.value.plusMillis(tickerTime)
-
-                        }
-                    } else if (event == Lifecycle.Event.ON_STOP) {
-                        chronoTickJob.value?.cancel()
-                    }
-                }
-                lifecycleOwner.lifecycle.addObserver(observer)
-                onDispose {
-                    lifecycleOwner.lifecycle.removeObserver(observer)
-                }
-            }
 
             // Instead of watching the ExerciseState state, or active duration, I've defined a
             // ExerciseStateChange object in the service (and exposed it in the view), which is only
@@ -190,7 +160,8 @@ fun ExerciseScreen(
             // state changed to active.
             LaunchedEffect(exerciseStateChange) {
                 if (exerciseStateChange is ExerciseStateChange.ActiveStateChange ||
-                    exerciseStateChange is ExerciseStateChange.PausingStateChange) {
+                    exerciseStateChange is ExerciseStateChange.PausingStateChange
+                ) {
                     val activeStateChange =
                         exerciseStateChange as ExerciseStateChange.ActiveStateChange
                     val timeOffset =
@@ -245,7 +216,6 @@ fun ExerciseScreen(
                                 contentDescription = stringResource(id = R.string.calories)
                             )
                             if (calories != null) {
-
                                 CaloriesText(
                                     calories
                                 )
@@ -303,7 +273,6 @@ fun ExerciseScreen(
                                 ) { popUpTo(Screens.ExerciseScreen.route) { inclusive = true } }
 
                                 Button(onClick = { onStartClick() }) {
-                                    // Text(text = startOrEnd)
                                     Icon(
                                         imageVector = startOrEnd,
                                         contentDescription = stringResource(

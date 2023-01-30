@@ -40,22 +40,25 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
 
         lifecycleScope.launch {
+
             /** Check if we have an active exercise. If true, set our destination as the Exercise Screen.
              *  If false, route to preparing a new exercise. **/
             val destination = when (healthServicesManager.isExerciseInProgress()) {
                 false -> Screens.StartingUp.route
                 true -> Screens.ExerciseScreen.route
             }
+
             setContent {
                 navController = rememberSwipeDismissableNavController()
                 ExerciseSampleApp(
-                    navController = navController,
+                    navController,
                     startDestination = destination
                 )
 
-            }
-        }
 
+            }
+
+        }
     }
 
 
