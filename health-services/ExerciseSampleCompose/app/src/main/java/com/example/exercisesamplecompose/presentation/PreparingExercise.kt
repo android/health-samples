@@ -49,6 +49,7 @@ import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.TimeText
 import androidx.wear.compose.material.TimeTextDefaults
 import com.example.exercisesamplecompose.R
+import com.example.exercisesamplecompose.data.ServiceState
 import com.example.exercisesamplecompose.presentation.component.AcquiredCheck
 import com.example.exercisesamplecompose.presentation.component.ExerciseInProgressAlert
 import com.example.exercisesamplecompose.presentation.component.NotAcquired

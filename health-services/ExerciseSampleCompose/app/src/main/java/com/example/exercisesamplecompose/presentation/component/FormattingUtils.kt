@@ -25,27 +25,28 @@ private const val UNITS_RELATIVE_SIZE = .6f
 private val MINUTES_PER_HOUR = TimeUnit.HOURS.toMinutes(1)
 private val SECONDS_PER_MINUTE = TimeUnit.MINUTES.toSeconds(1)
 
-fun formatElapsedTime(elapsedDuration: kotlin.time.Duration, includeSeconds: Boolean) = buildSpannedString {
-    val hours = elapsedDuration.inWholeHours
-    if (hours > 0) {
-        append(hours.toString())
+fun formatElapsedTime(elapsedDuration: kotlin.time.Duration, includeSeconds: Boolean) =
+    buildSpannedString {
+        val hours = elapsedDuration.inWholeHours
+        if (hours > 0) {
+            append(hours.toString())
+            inSpans(RelativeSizeSpan(UNITS_RELATIVE_SIZE)) {
+                append("h")
+            }
+        }
+        val minutes = elapsedDuration.inWholeMinutes % MINUTES_PER_HOUR
+        append("%02d".format(minutes))
         inSpans(RelativeSizeSpan(UNITS_RELATIVE_SIZE)) {
-            append("h")
+            append("m")
+        }
+        if (includeSeconds) {
+            val seconds = elapsedDuration.inWholeSeconds % SECONDS_PER_MINUTE
+            append("%02d".format(seconds))
+            inSpans(RelativeSizeSpan(UNITS_RELATIVE_SIZE)) {
+                append("s")
+            }
         }
     }
-    val minutes = elapsedDuration.inWholeMinutes % MINUTES_PER_HOUR
-    append("%02d".format(minutes))
-    inSpans(RelativeSizeSpan(UNITS_RELATIVE_SIZE)) {
-        append("m")
-    }
-    if (includeSeconds) {
-        val seconds = elapsedDuration.inWholeSeconds % SECONDS_PER_MINUTE
-        append("%02d".format(seconds))
-        inSpans(RelativeSizeSpan(UNITS_RELATIVE_SIZE)) {
-            append("s")
-        }
-    }
-}
 
 /** Format calories burned to an integer with a "cal" suffix. */
 fun formatCalories(calories: Double) = buildSpannedString {

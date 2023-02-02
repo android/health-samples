@@ -37,7 +37,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -55,6 +54,7 @@ import androidx.wear.compose.material.TimeText
 import androidx.wear.compose.material.TimeTextDefaults
 import com.example.exercisesamplecompose.R
 import com.example.exercisesamplecompose.Screens
+import com.example.exercisesamplecompose.data.ServiceState
 import com.example.exercisesamplecompose.presentation.component.CaloriesText
 import com.example.exercisesamplecompose.presentation.component.DistanceText
 import com.example.exercisesamplecompose.presentation.component.HRText
@@ -105,17 +105,17 @@ fun ExerciseScreen(
             ) tempHeartRate.value =
                 getExerciseMetrics.collectAsStateWithLifecycle().value?.getData(DataType.HEART_RATE_BPM)
                     ?.last()?.value!!
-                else tempHeartRate.value = tempHeartRate.value
+            else tempHeartRate.value = tempHeartRate.value
 
             /**Store previous calorie and distance values to avoid rendering null values from
              * [getExerciseMetrics] flow**/
             val distance =
                 getExerciseMetrics.collectAsStateWithLifecycle().value?.getData(DataType.DISTANCE_TOTAL)?.total
-            val tempDistance = rememberSaveable { mutableStateOf(0.0) }
+            val tempDistance = remember { mutableStateOf(0.0) }
 
             val calories =
                 getExerciseMetrics.collectAsStateWithLifecycle().value?.getData(DataType.CALORIES_TOTAL)?.total
-            val tempCalories = rememberSaveable { mutableStateOf(0.0) }
+            val tempCalories = remember { mutableStateOf(0.0) }
 
             val averageHeartRate =
                 getExerciseMetrics.collectAsStateWithLifecycle().value?.getData(DataType.HEART_RATE_BPM_STATS)?.average
@@ -139,12 +139,12 @@ fun ExerciseScreen(
             // once a second, so we use derivedStateOf to update the elapsedTime state only when
             // the string representing the time on the screen changes. Recomposition then only
             // happens when elapsedTime changes, so once a second.
-            val elapsedTime = remember {
-                derivedStateOf {
-                    formatElapsedTime(
-                        activeDuration.toKotlinDuration(), true
-                    ).toString()
-                }
+
+            val elapsedTime = derivedStateOf {
+                formatElapsedTime(
+                    activeDuration.toKotlinDuration(), true
+                ).toString()
+
             }
 
             // Instead of watching the ExerciseState state, or active duration, I've defined a
@@ -159,13 +159,13 @@ fun ExerciseScreen(
             // and you want the ActiveDurationCheckpoint to be associated with exactly when the
             // state changed to active.
             LaunchedEffect(exerciseStateChange) {
-                if (exerciseStateChange is ExerciseStateChange.ActiveStateChange ||
-                    exerciseStateChange is ExerciseStateChange.PausingStateChange
+                if (exerciseStateChange is ExerciseStateChange.ActiveStateChange
                 ) {
                     val activeStateChange =
                         exerciseStateChange as ExerciseStateChange.ActiveStateChange
                     val timeOffset =
-                        (System.currentTimeMillis() - activeStateChange.durationCheckPoint.time.toEpochMilli())
+                        (System.currentTimeMillis() -
+                            activeStateChange.durationCheckPoint.time.toEpochMilli())
                     baseActiveDuration.value =
                         activeStateChange.durationCheckPoint.activeDuration.plusMillis(timeOffset)
                     chronoTickJob.value = startTick(chronoTickJob.value, scope) { tickerTime ->

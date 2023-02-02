@@ -17,14 +17,14 @@ package com.example.exercisesamplecompose
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
-import com.example.exercisesamplecompose.data.HealthServicesManager
 import com.example.exercisesamplecompose.presentation.ExerciseSampleApp
+import com.example.exercisesamplecompose.presentation.ExerciseViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -32,18 +32,16 @@ class MainActivity : FragmentActivity() {
 
     private lateinit var navController: NavHostController
 
-    @Inject
-    lateinit var healthServicesManager: HealthServicesManager
-
+    private val exerciseViewModel by viewModels<ExerciseViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         lifecycleScope.launch {
 
-            /** Check if we have an active exercise. If true, set our destination as the Exercise Screen.
-             *  If false, route to preparing a new exercise. **/
-            val destination = when (healthServicesManager.isExerciseInProgress()) {
+            /** Check if we have an active exercise. If true, set our destination as the
+             * Exercise Screen. If false, route to preparing a new exercise. **/
+            val destination = when (exerciseViewModel.isExerciseInProgress()) {
                 false -> Screens.StartingUp.route
                 true -> Screens.ExerciseScreen.route
             }

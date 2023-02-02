@@ -88,10 +88,11 @@ fun ExerciseSampleApp(
                 onResumeClick = { viewModel.resumeExercise() },
                 onStartClick = { viewModel.startExercise() },
                 serviceState = serviceState,
-                navController = navController
+                navController = navController,
             )
-        }
 
+
+        }
         composable(Screens.ExerciseNotAvailable.route) {
             ExerciseNotAvailable()
         }

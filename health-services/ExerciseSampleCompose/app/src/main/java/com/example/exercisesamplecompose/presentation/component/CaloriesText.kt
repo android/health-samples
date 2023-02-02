@@ -17,10 +17,17 @@
 package com.example.exercisesamplecompose.presentation.component
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.wear.compose.material.Text
 
 @Composable
 fun CaloriesText(calories: Double) {
     Text(text = formatCalories(calories).toString())
 
+}
+
+@Preview
+@Composable
+fun CaloriesTextPreview() {
+    CaloriesText(calories = 75.0)
 }

@@ -19,12 +19,13 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.wear.compose.material.CircularProgressIndicator
 import androidx.wear.compose.material.MaterialTheme
 
 @Composable
-fun ProgressBar(){
+fun ProgressBar() {
     CircularProgressIndicator(
         indicatorColor = MaterialTheme.colors.secondary,
         trackColor = MaterialTheme.colors.onBackground.copy(alpha = 0.1f),
@@ -33,4 +34,10 @@ fun ProgressBar(){
             .fillMaxWidth()
             .fillMaxHeight()
     )
+}
+
+@Preview
+@Composable
+fun ProgressBarPreview() {
+    ProgressBar()
 }

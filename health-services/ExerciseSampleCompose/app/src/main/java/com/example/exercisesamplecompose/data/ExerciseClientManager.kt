@@ -38,21 +38,19 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.callbackFlow
 
-
 /**
  * Entry point for [HealthServicesClient] APIs, wrapping them in coroutine-friendly APIs.
  */
 
-class HealthServicesManager @Inject constructor(
-    healthServicesClient: HealthServicesClient, coroutineScope: CoroutineScope
+class ExerciseClientManager @Inject constructor(
+    healthServicesClient: HealthServicesClient,
+    coroutineScope: CoroutineScope
 ) {
     private val exerciseClient = healthServicesClient.exerciseClient
-
-
-    private var exerciseCapabilities: ExerciseTypeCapabilities? = null
+    var exerciseCapabilities: ExerciseTypeCapabilities? = null
     private var capabilitiesLoaded = false
 
-    private suspend fun getExerciseCapabilities(): ExerciseTypeCapabilities? {
+    suspend fun getExerciseCapabilities(): ExerciseTypeCapabilities? {
         val capabilities = exerciseClient.getCapabilitiesAsync().await()
         if (!capabilitiesLoaded) {
             if (ExerciseType.RUNNING in capabilities.supportedExerciseTypes) {
@@ -62,8 +60,6 @@ class HealthServicesManager @Inject constructor(
         }
         return exerciseCapabilities
     }
-
-    suspend fun hasExerciseCapability() = getExerciseCapabilities() != null
 
     suspend fun isExerciseInProgress(): Boolean {
         val exerciseInfo = exerciseClient.getCurrentExerciseInfoAsync().await()
@@ -75,10 +71,16 @@ class HealthServicesManager @Inject constructor(
         return exerciseInfo.exerciseTrackedStatus == ExerciseTrackedStatus.OTHER_APP_IN_PROGRESS
     }
 
-    /***
-     * Note: don't call this method from outside of foreground service (ie. ExerciseService.kt)
-     * when acquiring calories or distance.
-     */
+    private fun supportsCalorieGoal(capabilities: ExerciseTypeCapabilities): Boolean {
+        val supported = capabilities.supportedGoals[DataType.CALORIES_TOTAL]
+        return supported != null && ComparisonType.GREATER_THAN_OR_EQUAL in supported
+    }
+
+    private fun supportsDistanceMilestone(capabilities: ExerciseTypeCapabilities): Boolean {
+        val supported = capabilities.supportedMilestones[DataType.DISTANCE_TOTAL]
+        return supported != null && ComparisonType.GREATER_THAN_OR_EQUAL in supported
+    }
+
     suspend fun startExercise() {
         Log.d(OUTPUT, "Starting exercise")
         // Types for which we want to receive metrics. Only ask for ones that are supported.
@@ -125,16 +127,6 @@ class HealthServicesManager @Inject constructor(
             exerciseGoals = exerciseGoals
         )
         exerciseClient.startExerciseAsync(config).await()
-    }
-
-    private fun supportsCalorieGoal(capabilities: ExerciseTypeCapabilities): Boolean {
-        val supported = capabilities.supportedGoals[DataType.CALORIES_TOTAL]
-        return supported != null && ComparisonType.GREATER_THAN_OR_EQUAL in supported
-    }
-
-    private fun supportsDistanceMilestone(capabilities: ExerciseTypeCapabilities): Boolean {
-        val supported = capabilities.supportedMilestones[DataType.DISTANCE_TOTAL]
-        return supported != null && ComparisonType.GREATER_THAN_OR_EQUAL in supported
     }
 
     /***
@@ -221,7 +213,8 @@ class HealthServicesManager @Inject constructor(
         }
     }
 
-    private companion object {
+
+   private companion object {
         const val CALORIES_THRESHOLD = 250.0
         const val DISTANCE_THRESHOLD = 1_000.0 // meters
         const val OUTPUT = "Output"
@@ -229,11 +222,13 @@ class HealthServicesManager @Inject constructor(
     }
 }
 
+
 sealed class ExerciseMessage {
     class ExerciseUpdateMessage(val exerciseUpdate: ExerciseUpdate) : ExerciseMessage()
     class LapSummaryMessage(val lapSummary: ExerciseLapSummary) : ExerciseMessage()
     class LocationAvailabilityMessage(val locationAvailability: LocationAvailability) :
         ExerciseMessage()
 }
+
 
 

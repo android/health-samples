@@ -13,7 +13,7 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <string name="app_name">Exercise Sample</string>
     <!-- Screens -->
     <string name="preparing_exercise">Preparing exercise</string>

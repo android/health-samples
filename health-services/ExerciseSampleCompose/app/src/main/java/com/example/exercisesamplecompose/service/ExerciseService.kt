@@ -41,8 +41,9 @@ import androidx.wear.ongoing.OngoingActivity
 import androidx.wear.ongoing.Status
 import com.example.exercisesamplecompose.MainActivity
 import com.example.exercisesamplecompose.R
+import com.example.exercisesamplecompose.data.ExerciseClientManager
 import com.example.exercisesamplecompose.data.ExerciseMessage
-import com.example.exercisesamplecompose.data.HealthServicesManager
+import com.example.exercisesamplecompose.data.HealthServicesRepository
 import dagger.hilt.android.AndroidEntryPoint
 import java.time.Duration
 import java.time.Instant
@@ -55,8 +56,9 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class ForegroundService : LifecycleService() {
-    @Inject
-    lateinit var healthServicesManager: HealthServicesManager
+
+    @Inject lateinit var exerciseClientManager: ExerciseClientManager
+    @Inject lateinit var healthServicesRepository: HealthServicesRepository
 
     private var isBound = false
     private var isStarted = false
@@ -93,7 +95,7 @@ class ForegroundService : LifecycleService() {
      */
     fun prepareExercise() {
         lifecycleScope.launch {
-            healthServicesManager.prepareExercise()
+            exerciseClientManager.prepareExercise()
         }
     }
 
@@ -102,7 +104,7 @@ class ForegroundService : LifecycleService() {
      */
     fun startExercise() {
         lifecycleScope.launch {
-            healthServicesManager.startExercise()
+            exerciseClientManager.startExercise()
         }
         postOngoingActivityNotification()
     }
@@ -112,7 +114,7 @@ class ForegroundService : LifecycleService() {
      */
     fun pauseExercise() {
         lifecycleScope.launch {
-            healthServicesManager.pauseExercise()
+            exerciseClientManager.pauseExercise()
         }
     }
 
@@ -121,7 +123,7 @@ class ForegroundService : LifecycleService() {
      */
     fun resumeExercise() {
         lifecycleScope.launch {
-            healthServicesManager.resumeExercise()
+           exerciseClientManager.resumeExercise()
         }
     }
 
@@ -130,7 +132,7 @@ class ForegroundService : LifecycleService() {
      */
     fun endExercise() {
         lifecycleScope.launch {
-            healthServicesManager.endExercise()
+            exerciseClientManager.endExercise()
         }
         removeOngoingActivityNotification()
     }
@@ -139,7 +141,7 @@ class ForegroundService : LifecycleService() {
      * consider implementing a "press" to mark lap feature**/
     fun markLap() {
         lifecycleScope.launch {
-            healthServicesManager.markLap()
+            exerciseClientManager.markLap()
         }
     }
 
@@ -160,7 +162,7 @@ class ForegroundService : LifecycleService() {
             lifecycleScope.launch {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
                     launch {
-                        healthServicesManager.exerciseUpdateFlow.collect {
+                        exerciseClientManager.exerciseUpdateFlow.collect {
                             when (it) {
                                 is ExerciseMessage.ExerciseUpdateMessage ->
                                     processExerciseUpdate(it.exerciseUpdate)
@@ -183,11 +185,11 @@ class ForegroundService : LifecycleService() {
     private fun stopSelfIfNotRunning() {
         lifecycleScope.launch {
             // We may have been restarted by the system. Check for an ongoing exercise.
-            if (!healthServicesManager.isExerciseInProgress()) {
+            if (!healthServicesRepository.isExerciseInProgress()) {
                 // Need to cancel [prepareExercise()] to prevent battery drain.
                 if (_exerciseState.value == ExerciseState.PREPARING) {
                     lifecycleScope.launch {
-                        healthServicesManager.endExercise()
+                        healthServicesRepository.endExercise()
                     }
                 }
                 // We have nothing to do, so we can stop.
@@ -361,6 +363,7 @@ class ForegroundService : LifecycleService() {
             Duration.ZERO
         }
 
+
         val startMillis = SystemClock.elapsedRealtime() - duration.toMillis()
         val ongoingActivityStatus = Status.Builder()
             .addTemplate(ONGOING_STATUS_TEMPLATE)
@@ -387,7 +390,8 @@ class ForegroundService : LifecycleService() {
 
     companion object {
         private const val NOTIFICATION_ID = 1
-        private const val NOTIFICATION_CHANNEL = "com.example.exercisesamplecompose.ONGOING_EXERCISE"
+        private const val NOTIFICATION_CHANNEL =
+            "com.example.exercisesamplecompose.ONGOING_EXERCISE"
         private const val NOTIFICATION_CHANNEL_DISPLAY = "Ongoing Exercise"
         private const val NOTIFICATION_TITLE = "Exercise Sample"
         private const val NOTIFICATION_TEXT = "Ongoing Exercise"
@@ -414,11 +418,5 @@ sealed class ExerciseStateChange(val exerciseState: ExerciseState) {
         ExerciseStateChange(
             ExerciseState.ACTIVE
         )
-
-    data class PausingStateChange(val durationCheckPoint: ExerciseUpdate.ActiveDurationCheckpoint) :
-        ExerciseStateChange(
-            ExerciseState.USER_PAUSING
-        )
-
     data class OtherStateChange(val state: ExerciseState) : ExerciseStateChange(state)
 }
