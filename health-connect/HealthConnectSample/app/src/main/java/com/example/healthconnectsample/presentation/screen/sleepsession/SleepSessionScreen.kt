@@ -33,7 +33,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.SleepStageRecord
 import com.example.healthconnectsample.R
 import com.example.healthconnectsample.data.SleepSessionData
@@ -48,14 +47,14 @@ import java.util.UUID
  */
 @Composable
 fun SleepSessionScreen(
-    permissions: Set<HealthPermission>,
+    permissions: Set<String>,
     permissionsGranted: Boolean,
     sessionsList: List<SleepSessionData>,
     uiState: SleepSessionViewModel.UiState,
     onInsertClick: () -> Unit = {},
     onError: (Throwable?) -> Unit = {},
     onPermissionsResult: () -> Unit = {},
-    onPermissionsLaunch: (Set<HealthPermission>) -> Unit = {}
+    onPermissionsLaunch: (Set<String>) -> Unit = {}
 ) {
 
     // Remember the last error ID, such that it is possible to avoid re-launching the error

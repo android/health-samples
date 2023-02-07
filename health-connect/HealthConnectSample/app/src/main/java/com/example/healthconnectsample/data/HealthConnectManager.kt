@@ -25,9 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.changes.Change
-import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.DistanceRecord
-import androidx.health.connect.client.records.ExerciseEventRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.Record
@@ -111,14 +109,16 @@ class HealthConnectManager(private val context: Context) {
      * permissions are already granted then there is no need to request permissions via
      * [PermissionController.createRequestPermissionResultContract].
      */
-    suspend fun hasAllPermissions(permissions: Set<HealthPermission>): Boolean {
-        return permissions == healthConnectClient.permissionController.getGrantedPermissions(
-            permissions
-        )
+    suspend fun hasAllPermissions(permissions: Set<String>): Boolean {
+        return healthConnectClient.permissionController.getGrantedPermissions().containsAll(permissions)
     }
 
-    fun requestPermissionsActivityContract(): ActivityResultContract<Set<HealthPermission>, Set<HealthPermission>> {
+    fun requestPermissionsActivityContract(): ActivityResultContract<Set<String>, Set<String>> {
         return PermissionController.createRequestPermissionResultContract()
+    }
+
+    suspend fun revokeAllPermissions(){
+        healthConnectClient.permissionController.revokeAllPermissions()
     }
 
     /**
@@ -158,14 +158,6 @@ class HealthConnectManager(private val context: Context) {
                     endZoneOffset = end.offset,
                     count = (1000 + 1000 * Random.nextInt(3)).toLong()
                 ),
-                // Mark a 5 minute pause during the workout
-                ExerciseEventRecord(
-                    startTime = start.toInstant().plus(10, ChronoUnit.MINUTES),
-                    startZoneOffset = start.offset,
-                    endTime = start.toInstant().plus(15, ChronoUnit.MINUTES),
-                    endZoneOffset = end.offset,
-                    eventType = ExerciseEventRecord.EVENT_TYPE_PAUSE
-                ),
                 DistanceRecord(
                     startTime = start.toInstant(),
                     startZoneOffset = start.offset,
@@ -203,8 +195,7 @@ class HealthConnectManager(private val context: Context) {
             SpeedRecord::class,
             DistanceRecord::class,
             StepsRecord::class,
-            TotalCaloriesBurnedRecord::class,
-            ExerciseEventRecord::class
+            TotalCaloriesBurnedRecord::class
         )
         rawDataTypes.forEach { rawType ->
             healthConnectClient.deleteRecords(rawType, timeRangeFilter)

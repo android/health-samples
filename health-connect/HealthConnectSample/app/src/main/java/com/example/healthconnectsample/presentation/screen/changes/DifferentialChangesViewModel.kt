@@ -26,7 +26,6 @@ import androidx.compose.runtime.setValue
 import androidx.health.connect.client.changes.Change
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.DistanceRecord
-import androidx.health.connect.client.records.ExerciseEventRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
@@ -48,7 +47,6 @@ class DifferentialChangesViewModel(private val healthConnectManager: HealthConne
 
     private val changesDataTypes = setOf(
         ExerciseSessionRecord::class,
-        ExerciseEventRecord::class,
         StepsRecord::class,
         SpeedRecord::class,
         DistanceRecord::class,
@@ -59,7 +57,7 @@ class DifferentialChangesViewModel(private val healthConnectManager: HealthConne
         WeightRecord::class
     )
 
-    val permissions = changesDataTypes.map { HealthPermission.createReadPermission(it) }.toSet()
+    val permissions = changesDataTypes.map { HealthPermission.getReadPermission(it) }.toSet()
 
     var permissionsGranted = mutableStateOf(false)
         private set

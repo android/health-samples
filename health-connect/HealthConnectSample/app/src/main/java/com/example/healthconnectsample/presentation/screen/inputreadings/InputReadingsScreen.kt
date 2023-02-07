@@ -51,7 +51,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.units.Mass
 import com.example.healthconnectsample.R
 import com.example.healthconnectsample.data.HealthConnectAppInfo
@@ -65,7 +64,7 @@ import java.util.UUID
 
 @Composable
 fun InputReadingsScreen(
-    permissions: Set<HealthPermission>,
+    permissions: Set<String>,
     permissionsGranted: Boolean,
     readingsList: List<WeightData>,
     uiState: InputReadingsViewModel.UiState,
@@ -74,7 +73,7 @@ fun InputReadingsScreen(
     onError: (Throwable?) -> Unit = {},
     onPermissionsResult: () -> Unit = {},
     weeklyAvg: Mass?,
-    onPermissionsLaunch: (Set<HealthPermission>) -> Unit = {}
+    onPermissionsLaunch: (Set<String>) -> Unit = {}
 ) {
 
     // Remember the last error ID, such that it is possible to avoid re-launching the error

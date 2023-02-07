@@ -120,7 +120,6 @@
     <string name="differential_changes_deleted">Deleted:</string>
 
     <string name="differential_changes_type_exercise_session">Exercise session</string>
-    <string name="differential_changes_type_exercise_event">Exercise event</string>
     <string name="differential_changes_type_speed_series">Speed series</string>
     <string name="differential_changes_type_heart_rate_series">Heart rate series</string>
     <string name="differential_changes_type_total_calories">Total calories</string>
@@ -132,4 +131,6 @@
 
     <!-- Health Connect settings -->
     <string name="settings">Settings</string>
+    <string name="manage">Manage Health Connect</string>
+    <string name="disconnect">Disconnect Health Connect</string>
 </resources>

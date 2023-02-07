@@ -26,6 +26,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navDeepLink
 import com.example.healthconnectsample.data.HealthConnectManager
+import com.example.healthconnectsample.presentation.screen.SettingsScreen
 import com.example.healthconnectsample.presentation.screen.WelcomeScreen
 import com.example.healthconnectsample.presentation.screen.changes.DifferentialChangesScreen
 import com.example.healthconnectsample.presentation.screen.changes.DifferentialChangesViewModel
@@ -44,6 +45,9 @@ import com.example.healthconnectsample.presentation.screen.sleepsession.SleepSes
 import com.example.healthconnectsample.presentation.screen.sleepsession.SleepSessionViewModel
 import com.example.healthconnectsample.presentation.screen.sleepsession.SleepSessionViewModelFactory
 import com.example.healthconnectsample.showExceptionSnackbar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 /**
  * Provides the navigation in the app.
@@ -74,6 +78,9 @@ fun HealthConnectNavigation(
             )
         ) {
             PrivacyPolicyScreen()
+        }
+        composable(Screen.SettingsScreen.route){
+            SettingsScreen { scope.launch { healthConnectManager.revokeAllPermissions() } }
         }
         composable(Screen.ExerciseSessions.route) {
             val viewModel: ExerciseSessionViewModel = viewModel(
@@ -241,10 +248,10 @@ fun HealthConnectNavigation(
                 },
                 onPermissionsResult = {
                     viewModel.initialLoad()
-                },
-                onPermissionsLaunch = { values ->
-                    permissionsLauncher.launch(values)}
-            )
+                }
+            ) { values ->
+                permissionsLauncher.launch(values)
+            }
         }
     }
 }

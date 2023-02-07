@@ -36,10 +36,10 @@ class SleepSessionViewModel(private val healthConnectManager: HealthConnectManag
     ViewModel() {
 
     val permissions = setOf(
-        HealthPermission.createReadPermission(SleepSessionRecord::class),
-        HealthPermission.createWritePermission(SleepSessionRecord::class),
-        HealthPermission.createReadPermission(SleepStageRecord::class),
-        HealthPermission.createWritePermission(SleepStageRecord::class)
+        HealthPermission.getReadPermission(SleepSessionRecord::class),
+        HealthPermission.getWritePermission(SleepSessionRecord::class),
+        HealthPermission.getReadPermission(SleepStageRecord::class),
+        HealthPermission.getWritePermission(SleepStageRecord::class)
     )
 
     var permissionsGranted = mutableStateOf(false)

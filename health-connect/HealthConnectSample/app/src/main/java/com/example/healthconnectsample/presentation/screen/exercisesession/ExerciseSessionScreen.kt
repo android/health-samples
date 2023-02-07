@@ -34,7 +34,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import com.example.healthconnectsample.R
 import com.example.healthconnectsample.data.ExerciseSession
@@ -49,7 +48,7 @@ import java.util.UUID
  */
 @Composable
 fun ExerciseSessionScreen(
-    permissions: Set<HealthPermission>,
+    permissions: Set<String>,
     permissionsGranted: Boolean,
     sessionsList: List<ExerciseSession>,
     uiState: ExerciseSessionViewModel.UiState,
@@ -58,7 +57,7 @@ fun ExerciseSessionScreen(
     onDeleteClick: (String) -> Unit = {},
     onError: (Throwable?) -> Unit = {},
     onPermissionsResult: () -> Unit = {},
-    onPermissionsLaunch: (Set<HealthPermission>) -> Unit = {}
+    onPermissionsLaunch: (Set<String>) -> Unit = {}
 ) {
 
     // Remember the last error ID, such that it is possible to avoid re-launching the error
