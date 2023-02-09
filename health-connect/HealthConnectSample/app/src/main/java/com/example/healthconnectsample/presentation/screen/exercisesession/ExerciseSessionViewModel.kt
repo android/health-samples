@@ -22,7 +22,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.DistanceRecord
-import androidx.health.connect.client.records.ExerciseEventRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.SpeedRecord
@@ -48,14 +47,13 @@ class ExerciseSessionViewModel(private val healthConnectManager: HealthConnectMa
     private val healthConnectCompatibleApps = healthConnectManager.healthConnectCompatibleApps
 
     val permissions = setOf(
-        HealthPermission.createWritePermission(ExerciseSessionRecord::class),
-        HealthPermission.createReadPermission(ExerciseSessionRecord::class),
-        HealthPermission.createWritePermission(ExerciseEventRecord::class),
-        HealthPermission.createWritePermission(StepsRecord::class),
-        HealthPermission.createWritePermission(SpeedRecord::class),
-        HealthPermission.createWritePermission(DistanceRecord::class),
-        HealthPermission.createWritePermission(TotalCaloriesBurnedRecord::class),
-        HealthPermission.createWritePermission(HeartRateRecord::class)
+        HealthPermission.getWritePermission(ExerciseSessionRecord::class),
+        HealthPermission.getReadPermission(ExerciseSessionRecord::class),
+        HealthPermission.getWritePermission(StepsRecord::class),
+        HealthPermission.getWritePermission(SpeedRecord::class),
+        HealthPermission.getWritePermission(DistanceRecord::class),
+        HealthPermission.getWritePermission(TotalCaloriesBurnedRecord::class),
+        HealthPermission.getWritePermission(HeartRateRecord::class)
     )
 
     var permissionsGranted = mutableStateOf(false)

@@ -28,7 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.SpeedRecord
@@ -53,13 +52,13 @@ import kotlin.random.Random
  */
 @Composable
 fun ExerciseSessionDetailScreen(
-    permissions: Set<HealthPermission>,
+    permissions: Set<String>,
     permissionsGranted: Boolean,
     sessionMetrics: ExerciseSessionData,
     uiState: ExerciseSessionDetailViewModel.UiState,
     onError: (Throwable?) -> Unit = {},
     onPermissionsResult: () -> Unit = {},
-    onPermissionsLaunch: (Set<HealthPermission>) -> Unit = {}
+    onPermissionsLaunch: (Set<String>) -> Unit = {}
 ) {
 
     // Remember the last error ID, such that it is possible to avoid re-launching the error

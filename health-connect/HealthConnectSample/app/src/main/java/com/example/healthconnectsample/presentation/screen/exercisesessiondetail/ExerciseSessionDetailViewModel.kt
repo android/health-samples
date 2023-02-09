@@ -40,11 +40,11 @@ class ExerciseSessionDetailViewModel(
     private val healthConnectManager: HealthConnectManager
 ) : ViewModel() {
     val permissions = setOf(
-        HealthPermission.createReadPermission(StepsRecord::class),
-        HealthPermission.createReadPermission(DistanceRecord::class),
-        HealthPermission.createReadPermission(SpeedRecord::class),
-        HealthPermission.createReadPermission(TotalCaloriesBurnedRecord::class),
-        HealthPermission.createReadPermission(HeartRateRecord::class)
+        HealthPermission.getReadPermission(StepsRecord::class),
+        HealthPermission.getReadPermission(DistanceRecord::class),
+        HealthPermission.getReadPermission(SpeedRecord::class),
+        HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
+        HealthPermission.getReadPermission(HeartRateRecord::class)
     )
 
     var permissionsGranted = mutableStateOf(false)

@@ -19,7 +19,6 @@ import androidx.health.connect.client.changes.Change
 import androidx.health.connect.client.changes.DeletionChange
 import androidx.health.connect.client.changes.UpsertionChange
 import androidx.health.connect.client.records.DistanceRecord
-import androidx.health.connect.client.records.ExerciseEventRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
@@ -56,14 +55,6 @@ fun FormattedUpsertionChange(change: UpsertionChange) {
                     activity.startZoneOffset
                 ),
                 recordType = stringResource(R.string.differential_changes_type_exercise_session),
-                dataSource = change.record.metadata.dataOrigin.packageName
-            )
-        }
-        is ExerciseEventRecord -> {
-            val event = change.record as ExerciseEventRecord
-            FormattedChangeRow(
-                startTime = dateTimeWithOffsetOrDefault(event.startTime, event.startZoneOffset),
-                recordType = stringResource(R.string.differential_changes_type_exercise_event),
                 dataSource = change.record.metadata.dataOrigin.packageName
             )
         }
