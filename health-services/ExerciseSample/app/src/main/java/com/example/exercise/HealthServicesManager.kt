@@ -17,15 +17,15 @@
 package com.example.exercise
 
 import android.util.Log
-import androidx.concurrent.futures.await
-import androidx.health.services.client.ExerciseUpdateCallback
-import androidx.health.services.client.HealthServicesClient
+import androidx.health.services.client.*
 import androidx.health.services.client.data.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 /**
@@ -42,7 +42,7 @@ class HealthServicesManager @Inject constructor(
 
     suspend fun getExerciseCapabilities(): ExerciseTypeCapabilities? {
         if (!capabilitiesLoaded) {
-            val capabilities = exerciseClient.getCapabilitiesAsync().await()
+            val capabilities = exerciseClient.getCapabilities()
             if (ExerciseType.RUNNING in capabilities.supportedExerciseTypes) {
                 exerciseCapabilities =
                     capabilities.getExerciseTypeCapabilities(ExerciseType.RUNNING)
@@ -57,12 +57,12 @@ class HealthServicesManager @Inject constructor(
     }
 
     suspend fun isExerciseInProgress(): Boolean {
-        val exerciseInfo = exerciseClient.getCurrentExerciseInfoAsync().await()
+        val exerciseInfo = exerciseClient.getCurrentExerciseInfo()
         return exerciseInfo.exerciseTrackedStatus == ExerciseTrackedStatus.OWNED_EXERCISE_IN_PROGRESS
     }
 
     suspend fun isTrackingExerciseInAnotherApp(): Boolean {
-        val exerciseInfo = exerciseClient.getCurrentExerciseInfoAsync().await()
+        val exerciseInfo = exerciseClient.getCurrentExerciseInfo()
         return exerciseInfo.exerciseTrackedStatus == ExerciseTrackedStatus.OTHER_APP_IN_PROGRESS
     }
 
@@ -116,7 +116,7 @@ class HealthServicesManager @Inject constructor(
             isGpsEnabled = true,
             exerciseGoals = exerciseGoals
         )
-        exerciseClient.startExerciseAsync(config).await()
+        exerciseClient.startExercise(config)
     }
 
     private fun supportsCalorieGoal(capabilities: ExerciseTypeCapabilities): Boolean {
@@ -148,7 +148,7 @@ class HealthServicesManager @Inject constructor(
         )
 
         try {
-            exerciseClient.prepareExerciseAsync(warmUpConfig).await()
+            exerciseClient.prepareExercise(warmUpConfig)
         } catch (e: Exception) {
             Log.e(TAG, "Prepare exercise failed - ${e.message}")
         }
@@ -156,22 +156,22 @@ class HealthServicesManager @Inject constructor(
 
     suspend fun endExercise() {
         Log.d(TAG, "Ending exercise")
-        exerciseClient.endExerciseAsync().await()
+        exerciseClient.endExercise()
     }
 
     suspend fun pauseExercise() {
         Log.d(TAG, "Pausing exercise")
-        exerciseClient.pauseExerciseAsync().await()
+        exerciseClient.pauseExercise()
     }
 
     suspend fun resumeExercise() {
         Log.d(TAG, "Resuming exercise")
-        exerciseClient.resumeExerciseAsync().await()
+        exerciseClient.resumeExercise()
     }
 
     suspend fun markLap() {
         if (isExerciseInProgress()) {
-            exerciseClient.markLapAsync().await()
+            exerciseClient.markLap()
         }
     }
 
@@ -218,7 +218,11 @@ class HealthServicesManager @Inject constructor(
         }
         exerciseClient.setUpdateCallback(callback)
         awaitClose {
-            exerciseClient.clearUpdateCallbackAsync(callback)
+            runBlocking {
+                launch {
+                    exerciseClient.clearUpdateCallback(callback)
+                }
+            }
         }
     }
 
