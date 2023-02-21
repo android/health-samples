@@ -270,7 +270,7 @@ class ExerciseService : LifecycleService() {
         if (isForeground) {
             Log.d(TAG, "Removing ongoing activity notification")
             isForeground = false
-            stopForeground(true)
+            stopForeground(STOP_FOREGROUND_REMOVE)
         }
     }
 

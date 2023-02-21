@@ -34,21 +34,17 @@ class ExerciseServiceConnection : ServiceConnection, LifecycleOwner {
 
     var exerciseService: ExerciseService? = null
 
-    private val lifecycleRegistry = LifecycleRegistry(this).apply {
+    override val lifecycle = LifecycleRegistry(this).apply {
         currentState = Lifecycle.State.INITIALIZED
-    }
-
-    override fun getLifecycle(): Lifecycle {
-        return lifecycleRegistry
     }
 
     override fun onServiceConnected(name: ComponentName, service: IBinder) {
         exerciseService = (service as ExerciseService.LocalBinder).getService()
-        lifecycleRegistry.currentState = Lifecycle.State.STARTED
+        lifecycle.currentState = Lifecycle.State.STARTED
     }
 
     override fun onServiceDisconnected(name: ComponentName) {
-        lifecycleRegistry.currentState = Lifecycle.State.INITIALIZED
+        lifecycle.currentState = Lifecycle.State.INITIALIZED
     }
 
     /**
