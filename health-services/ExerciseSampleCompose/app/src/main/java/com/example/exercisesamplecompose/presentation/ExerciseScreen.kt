@@ -88,40 +88,38 @@ fun ExerciseScreen(
     /** Only collect metrics while we are connected to the Foreground Service. **/
     when (serviceState) {
         is ServiceState.Connected -> {
-            val getExerciseMetrics by remember {
-                mutableStateOf(serviceState.exerciseMetrics)
-            }
+            val scope = rememberCoroutineScope()
+            val getExerciseServiceState by serviceState.exerciseServiceState.collectAsStateWithLifecycle()
+            val exerciseMetrics by mutableStateOf(getExerciseServiceState.exerciseMetrics)
+            val laps by mutableStateOf(getExerciseServiceState.exerciseLaps)
             val baseActiveDuration = remember { mutableStateOf(Duration.ZERO) }
             var activeDuration by remember { mutableStateOf(Duration.ZERO) }
-            val exerciseStateChange by serviceState.exerciseStateChange.collectAsStateWithLifecycle()
-            val scope = rememberCoroutineScope()
+            val exerciseStateChange by mutableStateOf(getExerciseServiceState.exerciseStateChange)
 
             /** Collect [DataPoint]s from the aggregate and exercise metric flows. Because
              * collectAsStateWithLifecycle() is asynchronous, store the last known value from each flow,
              * and update the value on screen only when the flow re-connects. **/
             val tempHeartRate = remember { mutableStateOf(0.0) }
-            if (getExerciseMetrics.collectAsStateWithLifecycle().value?.getData(DataType.HEART_RATE_BPM)
+            if (exerciseMetrics?.getData(DataType.HEART_RATE_BPM)
                     ?.isNotEmpty() == true
             ) tempHeartRate.value =
-                getExerciseMetrics.collectAsStateWithLifecycle().value?.getData(DataType.HEART_RATE_BPM)
+                exerciseMetrics?.getData(DataType.HEART_RATE_BPM)
                     ?.last()?.value!!
             else tempHeartRate.value = tempHeartRate.value
 
             /**Store previous calorie and distance values to avoid rendering null values from
-             * [getExerciseMetrics] flow**/
+             * [getExerciseServiceState] flow**/
             val distance =
-                getExerciseMetrics.collectAsStateWithLifecycle().value?.getData(DataType.DISTANCE_TOTAL)?.total
+                exerciseMetrics?.getData(DataType.DISTANCE_TOTAL)?.total
             val tempDistance = remember { mutableStateOf(0.0) }
 
             val calories =
-                getExerciseMetrics.collectAsStateWithLifecycle().value?.getData(DataType.CALORIES_TOTAL)?.total
+                exerciseMetrics?.getData(DataType.CALORIES_TOTAL)?.total
             val tempCalories = remember { mutableStateOf(0.0) }
 
             val averageHeartRate =
-                getExerciseMetrics.collectAsStateWithLifecycle().value?.getData(DataType.HEART_RATE_BPM_STATS)?.average
+                exerciseMetrics?.getData(DataType.HEART_RATE_BPM_STATS)?.average
             val tempAverageHeartRate = remember { mutableStateOf(0.0) }
-
-            val laps by serviceState.exerciseLaps.collectAsStateWithLifecycle()
 
             /** Update the Pause and End buttons according to [ExerciseState].**/
             val pauseOrResume = when (exerciseStateChange.exerciseState.isPaused) {
@@ -144,7 +142,6 @@ fun ExerciseScreen(
                 formatElapsedTime(
                     activeDuration.toKotlinDuration(), true
                 ).toString()
-
             }
 
             // Instead of watching the ExerciseState state, or active duration, I've defined a
@@ -225,6 +222,7 @@ fun ExerciseScreen(
                                     tempCalories.value
                                 )
                             }
+
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),

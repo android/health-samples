@@ -21,12 +21,10 @@ import android.content.Intent
 import android.os.IBinder
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.health.services.client.data.DataPointContainer
-import androidx.health.services.client.data.ExerciseState
 import androidx.health.services.client.data.LocationAvailability
 import com.example.exercisesamplecompose.service.ActiveDurationUpdate
-import com.example.exercisesamplecompose.service.ExerciseStateChange
 import com.example.exercisesamplecompose.service.ForegroundService
+import com.example.exercisesamplecompose.service.ForegroundService.ExerciseServiceState
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.flow.StateFlow
@@ -41,14 +39,16 @@ class HealthServicesRepository @Inject constructor(
 
     private var exerciseService: ForegroundService? = null
 
-    suspend fun hasExerciseCapability() = getExerciseCapabilities() != null
+    suspend fun hasExerciseCapability(): Boolean = getExerciseCapabilities() != null
 
     private suspend fun getExerciseCapabilities() = exerciseClientManager.getExerciseCapabilities()
 
-    suspend fun isExerciseInProgress() = exerciseClientManager.isExerciseInProgress()
+    suspend fun isExerciseInProgress(): Boolean = exerciseClientManager.isExerciseInProgress()
+
 
     suspend fun isTrackingExerciseInAnotherApp() =
         exerciseClientManager.isTrackingExerciseInAnotherApp()
+
 
     fun prepareExercise() = exerciseService?.prepareExercise()
     fun startExercise() = exerciseService?.startExercise()
@@ -58,21 +58,17 @@ class HealthServicesRepository @Inject constructor(
 
     var bound = mutableStateOf(false)
 
-    var exerciseServiceState: MutableState<ServiceState> = mutableStateOf(ServiceState.Disconnected)
+    var serviceState: MutableState<ServiceState> = mutableStateOf(ServiceState.Disconnected)
 
     private val connection = object : android.content.ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
             val binder = service as ForegroundService.LocalBinder
             binder.getService().let {
                 exerciseService = it
-                exerciseServiceState.value = ServiceState.Connected(
-                    exerciseMetrics = it.exerciseMetrics,
-                    exerciseLaps = it.exerciseLaps,
-                    exerciseDurationUpdate = it.exerciseDurationUpdate,
+                serviceState.value = ServiceState.Connected(
+                    exerciseServiceState = it.exerciseServiceState,
                     locationAvailabilityState = it.locationAvailabilityState,
-                    activeDurationUpdate = it.exerciseDurationUpdate.value,
-                    exerciseState = it.exerciseState,
-                    exerciseStateChange = it.exerciseStateChange,
+                    activeDurationUpdate = it.exerciseServiceState.value.exerciseDurationUpdate,
                 )
             }
             bound.value = true
@@ -81,7 +77,7 @@ class HealthServicesRepository @Inject constructor(
         override fun onServiceDisconnected(arg0: ComponentName) {
             bound.value = false
             exerciseService = null
-            exerciseServiceState.value = ServiceState.Disconnected
+            serviceState.value = ServiceState.Disconnected
         }
 
     }
@@ -100,13 +96,9 @@ class HealthServicesRepository @Inject constructor(
 sealed class ServiceState {
     object Disconnected : ServiceState()
     data class Connected(
-        val exerciseMetrics: StateFlow<DataPointContainer?>,
-        val exerciseLaps: StateFlow<Int>,
-        val exerciseDurationUpdate: StateFlow<ActiveDurationUpdate?>,
+        val exerciseServiceState: StateFlow<ExerciseServiceState>,
         val locationAvailabilityState: StateFlow<LocationAvailability>,
         val activeDurationUpdate: ActiveDurationUpdate?,
-        val exerciseState: StateFlow<ExerciseState>,
-        val exerciseStateChange: StateFlow<ExerciseStateChange>,
     ) : ServiceState()
 }
 

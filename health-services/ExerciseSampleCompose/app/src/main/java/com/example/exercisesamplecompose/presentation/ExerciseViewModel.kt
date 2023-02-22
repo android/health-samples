@@ -17,15 +17,23 @@ package com.example.exercisesamplecompose.presentation
 
 import android.Manifest
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.exercisesamplecompose.data.HealthServicesRepository
 import com.example.exercisesamplecompose.data.ServiceState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+/** Data class for the initial values we need to check before a user starts an exercise **/
+data class ExerciseUiState(
+    val hasExerciseCapabilities: Boolean = true,
+    val isTrackingAnotherExercise: Boolean = false,
+)
 
 @HiltViewModel
 class ExerciseViewModel @Inject constructor(
@@ -38,22 +46,28 @@ class ExerciseViewModel @Inject constructor(
         Manifest.permission.ACTIVITY_RECOGNITION
     )
 
-    var hasExerciseCapabilities = mutableStateOf(true)
-    var isTrackingAnotherExercise = mutableStateOf(false)
+    val uiState: StateFlow<ExerciseUiState> = flow {
+        emit(
+            ExerciseUiState(
+                hasExerciseCapabilities = healthServicesRepository.hasExerciseCapability(),
+                isTrackingAnotherExercise = healthServicesRepository.isTrackingExerciseInAnotherApp(),
+            )
+        )
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(3_000),
+        ExerciseUiState()
+    )
+
 
     private var _exerciseServiceState: MutableState<ServiceState> =
-        healthServicesRepository.exerciseServiceState
+        healthServicesRepository.serviceState
     val exerciseServiceState = _exerciseServiceState
 
     init {
         viewModelScope.launch {
-            hasExerciseCapabilities.value = healthServicesRepository.hasExerciseCapability()
-            isTrackingAnotherExercise.value =
-                healthServicesRepository.isTrackingExerciseInAnotherApp()
-
             healthServicesRepository.createService()
         }
-
     }
 
     suspend fun isExerciseInProgress(): Boolean {

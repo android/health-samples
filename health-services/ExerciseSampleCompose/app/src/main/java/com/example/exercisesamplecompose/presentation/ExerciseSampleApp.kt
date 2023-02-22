@@ -16,11 +16,11 @@
 package com.example.exercisesamplecompose.presentation
 
 
-import android.content.ContentValues.TAG
-import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
@@ -41,6 +41,7 @@ fun ExerciseSampleApp(
     ) {
         composable(Screens.StartingUp.route) {
             val viewModel = hiltViewModel<ExerciseViewModel>()
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
             StartingUp(onAvailable = {
                 navController.navigate(Screens.PreparingExercise.route) {
                     popUpTo(navController.graph.id) {
@@ -53,15 +54,15 @@ fun ExerciseSampleApp(
                         inclusive = false
                     }
                 }
-            }, hasCapabilities = viewModel.hasExerciseCapabilities.value
+            }, hasCapabilities = uiState.hasExerciseCapabilities
 
             )
-            Log.d(TAG, viewModel.hasExerciseCapabilities.value.toString())
         }
         composable(Screens.PreparingExercise.route) {
             val viewModel = hiltViewModel<ExerciseViewModel>()
             val serviceState by viewModel.exerciseServiceState
             val permissions = viewModel.permissions
+            val uiState by viewModel.uiState.collectAsState()
             PreparingExercise(
                 onStartClick = {
                     navController.navigate(Screens.ExerciseScreen.route) {
@@ -75,9 +76,8 @@ fun ExerciseSampleApp(
                 onStart = { viewModel.startExercise() },
                 serviceState = serviceState,
                 permissions = permissions,
-                isTrackingAnotherExercise = viewModel.isTrackingAnotherExercise.value,
-
-                )
+                isTrackingAnotherExercise = uiState.isTrackingAnotherExercise,
+            )
         }
         composable(Screens.ExerciseScreen.route) {
             val viewModel = hiltViewModel<ExerciseViewModel>()

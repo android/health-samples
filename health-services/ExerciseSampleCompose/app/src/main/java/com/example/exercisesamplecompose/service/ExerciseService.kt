@@ -43,7 +43,6 @@ import com.example.exercisesamplecompose.MainActivity
 import com.example.exercisesamplecompose.R
 import com.example.exercisesamplecompose.data.ExerciseClientManager
 import com.example.exercisesamplecompose.data.ExerciseMessage
-import com.example.exercisesamplecompose.data.HealthServicesRepository
 import dagger.hilt.android.AndroidEntryPoint
 import java.time.Duration
 import java.time.Instant
@@ -51,44 +50,43 @@ import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 
 @AndroidEntryPoint
 class ForegroundService : LifecycleService() {
 
-    @Inject lateinit var exerciseClientManager: ExerciseClientManager
-    @Inject lateinit var healthServicesRepository: HealthServicesRepository
+    @Inject
+    lateinit var exerciseClientManager: ExerciseClientManager
 
     private var isBound = false
     private var isStarted = false
     private val localBinder = LocalBinder()
     private var serviceRunningInForeground = false
 
-    private val _exerciseState = MutableStateFlow(ExerciseState.ENDED)
-    val exerciseState: StateFlow<ExerciseState> = _exerciseState
-
-    private val _exerciseMetrics = MutableStateFlow<DataPointContainer?>(null)
-    val exerciseMetrics: StateFlow<DataPointContainer?> = _exerciseMetrics
-
-    private val _exerciseLaps = MutableStateFlow(0)
-    val exerciseLaps: StateFlow<Int> = _exerciseLaps
-
-    private val _exerciseDurationUpdate = MutableStateFlow<ActiveDurationUpdate?>(null)
-    val exerciseDurationUpdate: StateFlow<ActiveDurationUpdate?> = _exerciseDurationUpdate
-
-    private val _exerciseStateChange = MutableStateFlow<ExerciseStateChange>(
-        ExerciseStateChange.OtherStateChange(
-            ExerciseState.ENDED
-        )
-    )
-    val exerciseStateChange: StateFlow<ExerciseStateChange> = _exerciseStateChange
-
     private val _locationAvailabilityState = MutableStateFlow(LocationAvailability.UNKNOWN)
     val locationAvailabilityState: StateFlow<LocationAvailability> = _locationAvailabilityState
 
     private var lastActiveDurationCheckpoint: ExerciseUpdate.ActiveDurationCheckpoint? = null
 
+    //Capturing most of the values associated with our exercise in a data class
+    data class ExerciseServiceState(
+        val exerciseState: ExerciseState = ExerciseState.ENDED,
+        val exerciseMetrics: DataPointContainer? = null,
+        val exerciseLaps: Int = 0,
+        val exerciseDurationUpdate: ActiveDurationUpdate? = null,
+        val exerciseStateChange: ExerciseStateChange = ExerciseStateChange.OtherStateChange(
+            ExerciseState.ENDED
+        )
+    )
+
+    private val _exerciseServiceState = MutableStateFlow(ExerciseServiceState())
+    val exerciseServiceState: StateFlow<ExerciseServiceState> = _exerciseServiceState.asStateFlow()
+
+
+    private suspend fun isExerciseInProgress() = exerciseClientManager.isExerciseInProgress()
 
     /**
      * Prepare exercise in this service's coroutine context.
@@ -123,7 +121,7 @@ class ForegroundService : LifecycleService() {
      */
     fun resumeExercise() {
         lifecycleScope.launch {
-           exerciseClientManager.resumeExercise()
+            exerciseClientManager.resumeExercise()
         }
     }
 
@@ -167,7 +165,11 @@ class ForegroundService : LifecycleService() {
                                 is ExerciseMessage.ExerciseUpdateMessage ->
                                     processExerciseUpdate(it.exerciseUpdate)
                                 is ExerciseMessage.LapSummaryMessage ->
-                                    _exerciseLaps.value = it.lapSummary.lapCount
+                                    _exerciseServiceState.update { oldState ->
+                                        oldState.copy(
+                                            exerciseLaps = it.lapSummary.lapCount
+                                        )
+                                    }
                                 is ExerciseMessage.LocationAvailabilityMessage ->
                                     _locationAvailabilityState.value = it.locationAvailability
 
@@ -185,11 +187,11 @@ class ForegroundService : LifecycleService() {
     private fun stopSelfIfNotRunning() {
         lifecycleScope.launch {
             // We may have been restarted by the system. Check for an ongoing exercise.
-            if (!healthServicesRepository.isExerciseInProgress()) {
+            if (!isExerciseInProgress()) {
                 // Need to cancel [prepareExercise()] to prevent battery drain.
-                if (_exerciseState.value == ExerciseState.PREPARING) {
+                if (exerciseServiceState.value.exerciseState == ExerciseState.PREPARING) {
                     lifecycleScope.launch {
-                        healthServicesRepository.endExercise()
+                        endExercise()
                     }
                 }
                 // We have nothing to do, so we can stop.
@@ -199,7 +201,7 @@ class ForegroundService : LifecycleService() {
     }
 
     private fun processExerciseUpdate(exerciseUpdate: ExerciseUpdate) {
-        val oldState = _exerciseState.value
+        val oldState = exerciseServiceState.value.exerciseState
         if (!oldState.isEnded && exerciseUpdate.exerciseStateInfo.state.isEnded) {
             // Our exercise ended. Gracefully handle this termination be doing the following:
             // TODO Save partial workout state, show workout summary, and let the user know why the exercise was ended.
@@ -239,31 +241,36 @@ class ForegroundService : LifecycleService() {
             }
         } else if (oldState.isEnded && exerciseUpdate.exerciseStateInfo.state == ExerciseState.ACTIVE) {
             // Reset laps.
-            _exerciseLaps.value = 0
+            _exerciseServiceState.update { it.copy(exerciseLaps = 0) }
         }
 
         // If the state of the exercise changes, then update the ExerciseStateChange object. Change
         // in this state then causes recomposition, which can be used to start or stop a coroutine
         // in the screen for updating the timer.
         if (oldState != exerciseUpdate.exerciseStateInfo.state) {
-            _exerciseStateChange.value = when (exerciseUpdate.exerciseStateInfo.state) {
-                // ActiveStateChange also takes an ActiveDurationCheckpoint, so that when the ticker
-                // is started in the screen, the base Duration can be set correctly.
-                ExerciseState.ACTIVE -> ExerciseStateChange.ActiveStateChange(
-                    exerciseUpdate.activeDurationCheckpoint!!
+            _exerciseServiceState.update {
+                it.copy(
+                    exerciseStateChange = when (exerciseUpdate.exerciseStateInfo.state) {
+                        // ActiveStateChange also takes an ActiveDurationCheckpoint, so that when the ticker
+                        // is started in the screen, the base Duration can be set correctly.
+                        ExerciseState.ACTIVE -> ExerciseStateChange.ActiveStateChange(
+                            exerciseUpdate.activeDurationCheckpoint!!
+                        )
+                        else -> ExerciseStateChange.OtherStateChange(exerciseUpdate.exerciseStateInfo.state)
+                    }
                 )
-                else -> ExerciseStateChange.OtherStateChange(exerciseUpdate.exerciseStateInfo.state)
             }
         }
-        _exerciseState.value = exerciseUpdate.exerciseStateInfo.state
-        _exerciseMetrics.value = exerciseUpdate.latestMetrics
-        _exerciseDurationUpdate.value =
-            exerciseUpdate.activeDurationCheckpoint?.let {
-                ActiveDurationUpdate(
-                    it.activeDuration,
-                    Instant.now()
-                )
-            }
+        _exerciseServiceState.update { it ->
+            it.copy(exerciseState = exerciseUpdate.exerciseStateInfo.state,
+                exerciseMetrics = exerciseUpdate.latestMetrics,
+                exerciseDurationUpdate = exerciseUpdate.activeDurationCheckpoint?.let {
+                    ActiveDurationUpdate(
+                        it.activeDuration,
+                        Instant.now()
+                    )
+                })
+        }
         lastActiveDurationCheckpoint = exerciseUpdate.activeDurationCheckpoint
 
     }
@@ -418,5 +425,6 @@ sealed class ExerciseStateChange(val exerciseState: ExerciseState) {
         ExerciseStateChange(
             ExerciseState.ACTIVE
         )
+
     data class OtherStateChange(val state: ExerciseState) : ExerciseStateChange(state)
 }

@@ -47,7 +47,7 @@ class ExerciseClientManager @Inject constructor(
     coroutineScope: CoroutineScope
 ) {
     private val exerciseClient = healthServicesClient.exerciseClient
-    var exerciseCapabilities: ExerciseTypeCapabilities? = null
+    private var exerciseCapabilities: ExerciseTypeCapabilities? = null
     private var capabilitiesLoaded = false
 
     suspend fun getExerciseCapabilities(): ExerciseTypeCapabilities? {
@@ -69,6 +69,7 @@ class ExerciseClientManager @Inject constructor(
     suspend fun isTrackingExerciseInAnotherApp(): Boolean {
         val exerciseInfo = exerciseClient.getCurrentExerciseInfoAsync().await()
         return exerciseInfo.exerciseTrackedStatus == ExerciseTrackedStatus.OTHER_APP_IN_PROGRESS
+
     }
 
     private fun supportsCalorieGoal(capabilities: ExerciseTypeCapabilities): Boolean {
@@ -214,7 +215,7 @@ class ExerciseClientManager @Inject constructor(
     }
 
 
-   private companion object {
+    private companion object {
         const val CALORIES_THRESHOLD = 250.0
         const val DISTANCE_THRESHOLD = 1_000.0 // meters
         const val OUTPUT = "Output"
