@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright 2022 The Android Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      https://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<resources>
+    <string name="app_name">Exercise Sample</string>
+    <!-- Screens -->
+    <string name="preparing_exercise">Preparing exercise</string>
+    <string name="start">Start</string>
+    <string name="starting_up">Starting up</string>
+    <string name="not_avail">Exercise not available on this device</string>
+
+    <!-- GPS -->
+    <string name="GPS_acquiring">GPS Acquiring</string>
+    <string name="GPS_acquired">GPS Acquired!</string>
+    <string name="GPS_disabled">GPS Disabled on Device</string>
+    <string name="GPS_unavailable">GPS Unavailable</string>
+    <string name="GPS_initializing">GPS Initializing</string>
+
+
+    <!-- Summary Screen -->
+    <string name="workout_complete">Workout complete!</string>
+    <string name="duration"> Duration </string>
+    <string name="distance"> Distance </string>
+    <string name="calories"> kCal </string>
+    <string name="avgHR"> AvgHR </string>
+    <string name="restart">Restart</string>
+
+    <!-- Descriptions -->
+    <string name="laps">Laps</string>
+    <string name="startOrEnd">Start or End</string>
+    <string name="pauseOrResume">Pause or Resume</string>
+    <string name="heart_rate">Heart Rate</string>
+
+    <!-- Exercise in Progress Dialog -->
+    <string name="confirm">Confirm</string>
+    <string name="deny">Deny</string>
+    <string name="exercise_in_progress">Exercise In Progress</string>
+    <string name="ending_continue">Ending other exercise. Continue?</string>
+
+
+</resources>
