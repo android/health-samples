@@ -24,7 +24,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
@@ -219,9 +218,7 @@ class HealthServicesManager @Inject constructor(
         exerciseClient.setUpdateCallback(callback)
         awaitClose {
             runBlocking {
-                launch {
-                    exerciseClient.clearUpdateCallback(callback)
-                }
+                exerciseClient.clearUpdateCallback(callback)
             }
         }
     }
