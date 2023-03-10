@@ -57,7 +57,7 @@ android {
 dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.core:core-ktx:1.9.0'
-    implementation "androidx.fragment:fragment-ktx:1.5.3"
+    implementation "androidx.fragment:fragment-ktx:1.5.5"
 
     // Hilt dependency injection
     implementation "com.google.dagger:hilt-android:$hilt_version"
@@ -68,7 +68,7 @@ dependencies {
     // Wear
     implementation 'androidx.wear:wear:1.2.0'
     // Health Services
-    implementation 'androidx.health:health-services-client:1.0.0-beta01'
+    implementation 'androidx.health:health-services-client:1.0.0-beta02'
     // Used to bridge between Futures and coroutines
     implementation 'com.google.guava:guava:30.1.1-android'
     implementation "androidx.concurrent:concurrent-futures-ktx:1.1.0"
@@ -78,11 +78,11 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-service:$lifecycle_version"
 
     // Material
-    implementation 'com.google.android.material:material:1.6.1'
+    implementation 'com.google.android.material:material:1.8.0'
 
     // Navigation
-    implementation "androidx.navigation:navigation-fragment-ktx:2.5.2"
-    implementation "androidx.navigation:navigation-ui-ktx:2.5.2"
+    implementation "androidx.navigation:navigation-fragment-ktx:2.5.3"
+    implementation "androidx.navigation:navigation-ui-ktx:2.5.3"
 
     // Ongoing Activity.
     implementation "androidx.wear:wear-ongoing:1.0.0"
