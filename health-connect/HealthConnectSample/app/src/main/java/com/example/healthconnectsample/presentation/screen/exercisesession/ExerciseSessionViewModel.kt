@@ -16,7 +16,6 @@
 package com.example.healthconnectsample.presentation.screen.exercisesession
 
 import android.os.RemoteException
-import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf

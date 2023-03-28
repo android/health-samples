@@ -20,12 +20,10 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources.NotFoundException
 import android.os.Build
-import android.util.Log
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.compose.runtime.mutableStateOf
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.HealthConnectClient.Companion.SDK_UNAVAILABLE
-import androidx.health.connect.client.HealthConnectClient.Companion.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.changes.Change
 import androidx.health.connect.client.records.DistanceRecord
