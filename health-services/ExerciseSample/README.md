@@ -31,26 +31,6 @@ On devices where the exercise capability is not available, you will see a screen
 
 ### Using synthetic data
 
-To make Health Services use a synthetic data provider instead of real sensors, run the following
-command:
-
-```shell
-adb shell am broadcast \
--a "whs.USE_SYNTHETIC_PROVIDERS" \
-com.google.android.wearable.healthservices
-```
-
-Then, to simulate the user is running:
-
-```git exclude
-adb shell am broadcast \
--a "whs.synthetic.user.START_RUNNING" \
-com.google.android.wearable.healthservices
-```
-
-To stop using the synthetic provider, run this command:
-```shell
-adb shell am broadcast -a \
-"whs.USE_SENSOR_PROVIDERS" \
-com.google.android.wearable.healthservices
-```
+On some devices, you can get Health Services to generate "fake" activity for testing purposes via
+the synthetic data provider. See [Use synthetic data with Health Services](https://developer.android.com/training/wearables/health-services/synthetic-data)
+for more information.
