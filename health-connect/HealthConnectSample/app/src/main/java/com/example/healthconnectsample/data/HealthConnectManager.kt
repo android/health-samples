@@ -20,9 +20,12 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources.NotFoundException
 import android.os.Build
+import android.util.Log
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.compose.runtime.mutableStateOf
 import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.HealthConnectClient.Companion.SDK_UNAVAILABLE
+import androidx.health.connect.client.HealthConnectClient.Companion.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.changes.Change
 import androidx.health.connect.client.records.DistanceRecord
@@ -39,6 +42,7 @@ import androidx.health.connect.client.records.metadata.DataOrigin
 import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.request.ChangesTokenRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
+import androidx.health.connect.client.response.InsertRecordsResponse
 import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.health.connect.client.units.Energy
 import androidx.health.connect.client.units.Length
@@ -88,7 +92,7 @@ class HealthConnectManager(private val context: Context) {
         }
     }
 
-    var availability = mutableStateOf(HealthConnectAvailability.NOT_SUPPORTED)
+    var availability = mutableStateOf(SDK_UNAVAILABLE)
         private set
 
     init {
@@ -96,11 +100,7 @@ class HealthConnectManager(private val context: Context) {
     }
 
     fun checkAvailability() {
-        availability.value = when {
-            HealthConnectClient.isProviderAvailable(context) -> HealthConnectAvailability.INSTALLED
-            isSupported() -> HealthConnectAvailability.NOT_INSTALLED
-            else -> HealthConnectAvailability.NOT_SUPPORTED
-        }
+        availability.value = HealthConnectClient.sdkStatus(context)
     }
 
     /**
@@ -140,8 +140,8 @@ class HealthConnectManager(private val context: Context) {
      * Writes an [ExerciseSessionRecord] to Health Connect, and additionally writes underlying data for
      * the session too, such as [StepsRecord], [DistanceRecord] etc.
      */
-    suspend fun writeExerciseSession(start: ZonedDateTime, end: ZonedDateTime) {
-        healthConnectClient.insertRecords(
+    suspend fun writeExerciseSession(start: ZonedDateTime, end: ZonedDateTime): InsertRecordsResponse {
+        return healthConnectClient.insertRecords(
             listOf(
                 ExerciseSessionRecord(
                     startTime = start.toInstant(),
@@ -510,23 +510,9 @@ class HealthConnectManager(private val context: Context) {
         )
     )
 
-    private fun isSupported() = Build.VERSION.SDK_INT >= MIN_SUPPORTED_SDK
-
     // Represents the two types of messages that can be sent in a Changes flow.
     sealed class ChangesMessage {
         data class NoMoreChanges(val nextChangesToken: String) : ChangesMessage()
         data class ChangeList(val changes: List<Change>) : ChangesMessage()
     }
-}
-
-/**
- * Health Connect requires that the underlying Healthcore APK is installed on the device.
- * [HealthConnectAvailability] represents whether this APK is indeed installed, whether it is not
- * installed but supported on the device, or whether the device is not supported (based on Android
- * version).
- */
-enum class HealthConnectAvailability {
-    INSTALLED,
-    NOT_INSTALLED,
-    NOT_SUPPORTED
 }
