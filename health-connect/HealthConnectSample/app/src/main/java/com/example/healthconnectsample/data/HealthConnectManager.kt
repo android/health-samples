@@ -68,11 +68,18 @@ class HealthConnectManager(private val context: Context) {
     val healthConnectCompatibleApps by lazy {
         val intent = Intent("androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE")
 
-        // This call is deprecated in API level 33, however, this app targets a lower level.
-        @Suppress("DEPRECATION")
-        val packages = context.packageManager.queryIntentActivities(intent,
-            PackageManager.MATCH_ALL
-        )
+        val packages = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            context.packageManager.queryIntentActivities(
+                intent,
+                PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_ALL.toLong())
+            )
+        } else {
+            context.packageManager.queryIntentActivities(
+                intent,
+                PackageManager.MATCH_ALL
+            )
+        }
+
         packages.associate {
             val icon = try {
                 context.packageManager.getApplicationIcon(it.activityInfo.packageName)
@@ -93,12 +100,12 @@ class HealthConnectManager(private val context: Context) {
     var availability = mutableStateOf(SDK_UNAVAILABLE)
         private set
 
-    init {
-        checkAvailability()
-    }
-
     fun checkAvailability() {
         availability.value = HealthConnectClient.sdkStatus(context)
+    }
+
+    init {
+        checkAvailability()
     }
 
     /**
