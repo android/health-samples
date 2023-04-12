@@ -28,9 +28,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.health.connect.client.HealthConnectClient
 import com.example.healthconnectsample.R
-
-const val HEALTH_CONNECT_SETTINGS_ACTION = "androidx.health.ACTION_HEALTH_CONNECT_SETTINGS"
 
 /**
  * Settings screen for managing Health Connect preferences.
@@ -51,7 +50,7 @@ fun SettingsScreen(
         Button(onClick = {
             val settingsIntent = Intent()
             settingsIntent.action =
-                HEALTH_CONNECT_SETTINGS_ACTION
+                HealthConnectClient.ACTION_HEALTH_CONNECT_SETTINGS
             activity.startActivity(settingsIntent) }
         ) {
             Text(text = stringResource(id = R.string.manage))

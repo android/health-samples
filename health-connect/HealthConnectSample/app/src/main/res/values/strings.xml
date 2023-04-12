@@ -44,11 +44,10 @@
     <string name="health_connect_package">com.google.android.apps.healthdata</string>
     <string name="onboarding_url">healthconnect://onboarding</string>
     <string name="not_installed_description">
-        Health Connect is supported on this device, but is not currently installed.
+        Health Connect is supported on this device, but is either not installed, or requires an update.
     </string>
     <string name="not_installed_link_text">
-        To use this sample, and other apps using Health Connect, please install the Health Connect
-        package from Google Play.
+        To use this sample, please install or update the Health Connect package via Google Play.
     </string>
 
     <!-- Not supported on device -->

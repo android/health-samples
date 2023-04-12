@@ -32,7 +32,7 @@ import com.example.healthconnectsample.R
 import com.example.healthconnectsample.presentation.theme.HealthConnectTheme
 
 /**
- * Welcome text shown when the Healthcore APK is not yet installed on the device, prompting the user
+ * Welcome text shown when the Health Connect APK is not yet installed on the device, prompting the user
  * to install it.
  */
 @Composable

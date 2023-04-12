@@ -30,10 +30,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.stringResource
+import androidx.health.connect.client.HealthConnectClient.Companion.SDK_AVAILABLE
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.healthconnectsample.R
-import com.example.healthconnectsample.data.HealthConnectAvailability
 import com.example.healthconnectsample.data.HealthConnectManager
 import com.example.healthconnectsample.presentation.navigation.Drawer
 import com.example.healthconnectsample.presentation.navigation.HealthConnectNavigation
@@ -72,7 +72,7 @@ fun HealthConnectApp(healthConnectManager: HealthConnectManager) {
                     navigationIcon = {
                         IconButton(
                             onClick = {
-                                if (availability == HealthConnectAvailability.INSTALLED) {
+                                if (availability == SDK_AVAILABLE) {
                                     scope.launch {
                                         scaffoldState.drawerState.open()
                                     }
@@ -88,7 +88,7 @@ fun HealthConnectApp(healthConnectManager: HealthConnectManager) {
                 )
             },
             drawerContent = {
-                if (availability == HealthConnectAvailability.INSTALLED) {
+                if (availability == SDK_AVAILABLE) {
                     Drawer(
                         scope = scope,
                         scaffoldState = scaffoldState,
