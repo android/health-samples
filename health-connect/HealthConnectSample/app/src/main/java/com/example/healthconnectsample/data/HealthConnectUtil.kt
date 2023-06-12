@@ -15,7 +15,7 @@
  */
 package com.example.healthconnectsample.data
 
-import androidx.health.connect.client.records.SleepStageRecord
+import androidx.health.connect.client.records.SleepSessionRecord
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
@@ -53,12 +53,12 @@ fun Duration.formatHoursMinutes() = String.format(
  * Generates a random sleep stage for the purpose of populating data. Excludes UNKNOWN sleep stage.
  */
 fun randomSleepStage() = listOf(
-    SleepStageRecord.STAGE_TYPE_AWAKE,
-    SleepStageRecord.STAGE_TYPE_DEEP,
-    SleepStageRecord.STAGE_TYPE_LIGHT,
-    SleepStageRecord.STAGE_TYPE_OUT_OF_BED,
-    SleepStageRecord.STAGE_TYPE_REM,
-    SleepStageRecord.STAGE_TYPE_SLEEPING
+    SleepSessionRecord.STAGE_TYPE_AWAKE,
+    SleepSessionRecord.STAGE_TYPE_DEEP,
+    SleepSessionRecord.STAGE_TYPE_LIGHT,
+    SleepSessionRecord.STAGE_TYPE_OUT_OF_BED,
+    SleepSessionRecord.STAGE_TYPE_REM,
+    SleepSessionRecord.STAGE_TYPE_SLEEPING
 ).let { stages ->
     stages[Random.nextInt(stages.size)]
 }

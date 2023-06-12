@@ -33,7 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.health.connect.client.records.SleepStageRecord
+import androidx.health.connect.client.records.SleepSessionRecord
 import com.example.healthconnectsample.R
 import com.example.healthconnectsample.data.SleepSessionData
 import com.example.healthconnectsample.presentation.component.SleepSessionRow
@@ -136,12 +136,10 @@ fun SleepSessionScreenPreview() {
                     endZoneOffset = end1.offset,
                     duration = Duration.between(start1, end1),
                     stages = listOf(
-                        SleepStageRecord(
-                            stage = SleepStageRecord.STAGE_TYPE_DEEP,
+                        SleepSessionRecord.Stage(
+                            stage = SleepSessionRecord.STAGE_TYPE_DEEP,
                             startTime = start1.toInstant(),
-                            startZoneOffset = start1.offset,
-                            endTime = end1.toInstant(),
-                            endZoneOffset = end1.offset
+                            endTime = end1.toInstant()
                         )
                     )
                 ),
@@ -155,12 +153,10 @@ fun SleepSessionScreenPreview() {
                     endZoneOffset = end2.offset,
                     duration = Duration.between(start2, end2),
                     stages = listOf(
-                        SleepStageRecord(
-                            stage = SleepStageRecord.STAGE_TYPE_DEEP,
+                        SleepSessionRecord.Stage(
+                            stage = SleepSessionRecord.STAGE_TYPE_DEEP,
                             startTime = start2.toInstant(),
-                            startZoneOffset = start2.offset,
-                            endTime = end2.toInstant(),
-                            endZoneOffset = end2.offset
+                            endTime = end2.toInstant()
                         )
                     )
                 )

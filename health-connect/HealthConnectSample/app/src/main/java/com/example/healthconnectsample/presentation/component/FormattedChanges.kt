@@ -22,7 +22,6 @@ import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
-import androidx.health.connect.client.records.SleepStageRecord
 import androidx.health.connect.client.records.SpeedRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
@@ -98,14 +97,6 @@ fun FormattedUpsertionChange(change: UpsertionChange) {
             FormattedChangeRow(
                 startTime = dateTimeWithOffsetOrDefault(sleep.startTime, sleep.startZoneOffset),
                 recordType = stringResource(R.string.differential_changes_type_sleep_session),
-                dataSource = change.record.metadata.dataOrigin.packageName
-            )
-        }
-        is SleepStageRecord -> {
-            val sleep = change.record as SleepStageRecord
-            FormattedChangeRow(
-                startTime = dateTimeWithOffsetOrDefault(sleep.startTime, sleep.startZoneOffset),
-                recordType = stringResource(R.string.differential_changes_type_sleep_stage),
                 dataSource = change.record.metadata.dataOrigin.packageName
             )
         }
