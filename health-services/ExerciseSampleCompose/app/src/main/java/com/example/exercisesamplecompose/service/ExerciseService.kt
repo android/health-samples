@@ -16,6 +16,7 @@
 
 package com.example.exercisesamplecompose.service
 
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -200,6 +201,7 @@ class ForegroundService : LifecycleService() {
         }
     }
 
+    @SuppressLint("RestrictedApi")
     private fun processExerciseUpdate(exerciseUpdate: ExerciseUpdate) {
         val oldState = exerciseServiceState.value.exerciseState
         if (!oldState.isEnded && exerciseUpdate.exerciseStateInfo.state.isEnded) {
