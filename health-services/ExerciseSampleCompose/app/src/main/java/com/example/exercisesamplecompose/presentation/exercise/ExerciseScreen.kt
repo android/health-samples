@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.exercisesamplecompose.presentation
+package com.example.exercisesamplecompose.presentation.exercise
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -34,6 +34,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -53,7 +55,7 @@ import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.TimeText
 import androidx.wear.compose.material.TimeTextDefaults
 import com.example.exercisesamplecompose.R
-import com.example.exercisesamplecompose.Screens
+import com.example.exercisesamplecompose.app.Screens
 import com.example.exercisesamplecompose.data.ServiceState
 import com.example.exercisesamplecompose.presentation.component.CaloriesText
 import com.example.exercisesamplecompose.presentation.component.DistanceText
@@ -62,7 +64,7 @@ import com.example.exercisesamplecompose.presentation.component.formatCalories
 import com.example.exercisesamplecompose.presentation.component.formatDistanceKm
 import com.example.exercisesamplecompose.presentation.component.formatElapsedTime
 import com.example.exercisesamplecompose.service.ExerciseStateChange
-import com.example.exercisesamplecompose.theme.ExerciseSampleTheme
+import com.example.exercisesamplecompose.presentation.theme.ExerciseSampleTheme
 import java.time.Duration
 import kotlin.time.toKotlinDuration
 import kotlinx.coroutines.CoroutineScope
@@ -90,16 +92,16 @@ fun ExerciseScreen(
         is ServiceState.Connected -> {
             val scope = rememberCoroutineScope()
             val getExerciseServiceState by serviceState.exerciseServiceState.collectAsStateWithLifecycle()
-            val exerciseMetrics by mutableStateOf(getExerciseServiceState.exerciseMetrics)
-            val laps by mutableStateOf(getExerciseServiceState.exerciseLaps)
+            val exerciseMetrics by remember { mutableStateOf(getExerciseServiceState.exerciseMetrics) }
+            val laps by remember { mutableIntStateOf(getExerciseServiceState.exerciseLaps) }
             val baseActiveDuration = remember { mutableStateOf(Duration.ZERO) }
             var activeDuration by remember { mutableStateOf(Duration.ZERO) }
-            val exerciseStateChange by mutableStateOf(getExerciseServiceState.exerciseStateChange)
+            val exerciseStateChange by remember { mutableStateOf(getExerciseServiceState.exerciseStateChange) }
 
             /** Collect [DataPoint]s from the aggregate and exercise metric flows. Because
              * collectAsStateWithLifecycle() is asynchronous, store the last known value from each flow,
              * and update the value on screen only when the flow re-connects. **/
-            val tempHeartRate = remember { mutableStateOf(0.0) }
+            val tempHeartRate = remember { mutableDoubleStateOf(0.0) }
             if (exerciseMetrics?.getData(DataType.HEART_RATE_BPM)
                     ?.isNotEmpty() == true
             ) tempHeartRate.value =
@@ -111,15 +113,15 @@ fun ExerciseScreen(
              * [getExerciseServiceState] flow**/
             val distance =
                 exerciseMetrics?.getData(DataType.DISTANCE_TOTAL)?.total
-            val tempDistance = remember { mutableStateOf(0.0) }
+            val tempDistance = remember { mutableDoubleStateOf(0.0) }
 
             val calories =
                 exerciseMetrics?.getData(DataType.CALORIES_TOTAL)?.total
-            val tempCalories = remember { mutableStateOf(0.0) }
+            val tempCalories = remember { mutableDoubleStateOf(0.0) }
 
             val averageHeartRate =
                 exerciseMetrics?.getData(DataType.HEART_RATE_BPM_STATS)?.average
-            val tempAverageHeartRate = remember { mutableStateOf(0.0) }
+            val tempAverageHeartRate = remember { mutableDoubleStateOf(0.0) }
 
             /** Update the Pause and End buttons according to [ExerciseState].**/
             val pauseOrResume = when (exerciseStateChange.exerciseState.isPaused) {
@@ -138,10 +140,12 @@ fun ExerciseScreen(
             // the string representing the time on the screen changes. Recomposition then only
             // happens when elapsedTime changes, so once a second.
 
-            val elapsedTime = derivedStateOf {
-                formatElapsedTime(
-                    activeDuration.toKotlinDuration(), true
-                ).toString()
+            val elapsedTime = remember {
+                derivedStateOf {
+                    formatElapsedTime(
+                        activeDuration.toKotlinDuration(), true
+                    ).toString()
+                }
             }
 
             // Instead of watching the ExerciseState state, or active duration, I've defined a

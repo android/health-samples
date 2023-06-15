@@ -15,6 +15,7 @@
  */
 package com.example.exercisesamplecompose.data
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.concurrent.futures.await
 import androidx.health.services.client.ExerciseUpdateCallback
@@ -41,6 +42,7 @@ import kotlinx.coroutines.flow.callbackFlow
 /**
  * Entry point for [HealthServicesClient] APIs, wrapping them in coroutine-friendly APIs.
  */
+@SuppressLint("RestrictedApi")
 
 class ExerciseClientManager @Inject constructor(
     healthServicesClient: HealthServicesClient,

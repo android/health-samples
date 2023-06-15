@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.exercisesamplecompose
+package com.example.exercisesamplecompose.app
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.runtime.LaunchedEffect
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
 import com.example.exercisesamplecompose.presentation.ExerciseSampleApp
 import com.example.exercisesamplecompose.presentation.ExerciseViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : FragmentActivity() {
@@ -35,30 +35,30 @@ class MainActivity : FragmentActivity() {
     private val exerciseViewModel by viewModels<ExerciseViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splash = installSplashScreen()
+        var pendingNavigation = true
+
+        splash.setKeepOnScreenCondition { pendingNavigation }
+
         super.onCreate(savedInstanceState)
 
-        lifecycleScope.launch {
+        setContent {
+            navController = rememberSwipeDismissableNavController()
 
-            /** Check if we have an active exercise. If true, set our destination as the
-             * Exercise Screen. If false, route to preparing a new exercise. **/
-            val destination = when (exerciseViewModel.isExerciseInProgress()) {
-                false -> Screens.StartingUp.route
-                true -> Screens.ExerciseScreen.route
+            ExerciseSampleApp(
+                navController,
+                onFinishActivity = { this.finish() }
+            )
+
+            LaunchedEffect(Unit) {
+                /** Check if we have an active exercise. If true, set our destination as the
+                 * Exercise Screen. If false, route to preparing a new exercise. **/
+                if (navController.currentDestination?.route == Screens.ExerciseScreen.route && !exerciseViewModel.isExerciseInProgress()) {
+                    navController.navigate(Screens.PreparingExercise.route)
+                }
+                pendingNavigation = false
             }
-
-            setContent {
-                navController = rememberSwipeDismissableNavController()
-                ExerciseSampleApp(
-                    navController,
-                    startDestination = destination
-                )
-
-
-            }
-
         }
     }
-
-
 }
 

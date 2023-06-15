@@ -39,7 +39,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.wear.ongoing.OngoingActivity
 import androidx.wear.ongoing.Status
-import com.example.exercisesamplecompose.MainActivity
+import com.example.exercisesamplecompose.app.MainActivity
 import com.example.exercisesamplecompose.R
 import com.example.exercisesamplecompose.data.ExerciseClientManager
 import com.example.exercisesamplecompose.data.ExerciseMessage

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.exercisesamplecompose.presentation
+package com.example.exercisesamplecompose.presentation.preparing
 
 import android.content.ContentValues.TAG
 import android.util.Log
@@ -44,17 +44,18 @@ import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.ButtonDefaults
 import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.MaterialTheme
-import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
-import androidx.wear.compose.material.TimeText
-import androidx.wear.compose.material.TimeTextDefaults
+import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import com.example.exercisesamplecompose.R
 import com.example.exercisesamplecompose.data.ServiceState
 import com.example.exercisesamplecompose.presentation.component.AcquiredCheck
 import com.example.exercisesamplecompose.presentation.component.ExerciseInProgressAlert
 import com.example.exercisesamplecompose.presentation.component.NotAcquired
 import com.example.exercisesamplecompose.presentation.component.ProgressBar
-import com.example.exercisesamplecompose.theme.ExerciseSampleTheme
+import com.example.exercisesamplecompose.service.ActiveDurationUpdate
+import com.example.exercisesamplecompose.service.ForegroundService
+import com.example.exercisesamplecompose.presentation.theme.ThemePreview
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 /**
@@ -65,12 +66,13 @@ fun PreparingExercise(
     onStartClick: () -> Unit = {},
     prepareExercise: () -> Unit,
     onStart: () -> Unit = {},
+    onFinishActivity: () -> Unit,
     serviceState: ServiceState,
     permissions: Array<String>,
     isTrackingAnotherExercise: Boolean,
 ) {
     if (isTrackingAnotherExercise) {
-        ExerciseInProgressAlert(true)
+        ExerciseInProgressAlert(onNegative = onFinishActivity, onPositive = {})
     }
     /** Request permissions prior to launching exercise.**/
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -81,89 +83,80 @@ fun PreparingExercise(
         }
     }
 
-    when (serviceState) {
-        is ServiceState.Connected -> {
-            LaunchedEffect(Unit) {
-                launch {
-                    permissionLauncher.launch(permissions)
-                    prepareExercise()
-                }
-            }
-
-            val location by serviceState.locationAvailabilityState.collectAsStateWithLifecycle()
-
-
-            ExerciseSampleTheme {
-                Scaffold(timeText =
-                { TimeText(timeSource = TimeTextDefaults.timeSource(TimeTextDefaults.timeFormat())) }) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(MaterialTheme.colors.background),
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Row(
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.Top,
-                            modifier = Modifier.height(25.dp)
-                        ) {
-
-                            Text(
-                                textAlign = TextAlign.Center,
-                                text = stringResource(id = R.string.preparing_exercise),
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                        Row(
-                            horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier.height(40.dp)
-                        ) {
-                            when (location) {
-                                LocationAvailability.ACQUIRING, LocationAvailability.UNKNOWN -> ProgressBar()
-                                LocationAvailability.ACQUIRED_TETHERED, LocationAvailability.ACQUIRED_UNTETHERED -> AcquiredCheck()
-                                else -> NotAcquired()
-
-                            }
-
-                        }
-
-                        Row(
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.Top
-                        ) {
-                            Text(
-                                textAlign = TextAlign.Center,
-                                text = updatePrepareLocationStatus(locationAvailability = location),
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                        Row(
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(6.dp),
-                        ) {
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                            ) {
-                                Button(
-                                    onClick = { onStartClick(); onStart() },
-                                    modifier = Modifier.size(ButtonDefaults.SmallButtonSize)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.PlayArrow,
-                                        contentDescription = stringResource(id = R.string.start)
-                                    )
-                                }
-                            }
-
-                        }
-                    }
-                }
+    if (serviceState is ServiceState.Connected) {
+        LaunchedEffect(Unit) {
+            launch {
+                permissionLauncher.launch(permissions)
+                prepareExercise()
             }
         }
-        else -> {}
+
+        val location by serviceState.locationAvailabilityState.collectAsStateWithLifecycle()
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colors.background),
+            verticalArrangement = Arrangement.Center
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.Top,
+                modifier = Modifier.height(25.dp)
+            ) {
+
+                Text(
+                    textAlign = TextAlign.Center,
+                    text = stringResource(id = R.string.preparing_exercise),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.height(40.dp)
+            ) {
+                when (location) {
+                    LocationAvailability.ACQUIRING, LocationAvailability.UNKNOWN -> ProgressBar()
+                    LocationAvailability.ACQUIRED_TETHERED, LocationAvailability.ACQUIRED_UNTETHERED -> AcquiredCheck()
+                    else -> NotAcquired()
+
+                }
+
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.Top
+            ) {
+                Text(
+                    textAlign = TextAlign.Center,
+                    text = updatePrepareLocationStatus(locationAvailability = location),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(6.dp),
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Button(
+                        onClick = { onStartClick(); onStart() },
+                        modifier = Modifier.size(ButtonDefaults.SmallButtonSize)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = stringResource(id = R.string.start)
+                        )
+                    }
+                }
+
+            }
+        }
     }
 }
 
@@ -180,4 +173,24 @@ private fun updatePrepareLocationStatus(locationAvailability: LocationAvailabili
     }
 
     return stringResource(id = gpsText)
+}
+
+@WearPreviewDevices
+@Composable
+fun PreparingExerciseScreenPreview() {
+    ThemePreview {
+        PreparingExercise(
+            onStartClick = {},
+            prepareExercise = {},
+            onStart = {},
+            onFinishActivity = {},
+            serviceState = ServiceState.Connected(
+                MutableStateFlow(ForegroundService.ExerciseServiceState()),
+                MutableStateFlow(LocationAvailability.ACQUIRED_TETHERED),
+                ActiveDurationUpdate()
+            ),
+            permissions = arrayOf(),
+            isTrackingAnotherExercise = false,
+        )
+    }
 }

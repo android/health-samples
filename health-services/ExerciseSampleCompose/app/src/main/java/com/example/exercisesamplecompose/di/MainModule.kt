@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.exercisesamplecompose
+package com.example.exercisesamplecompose.di
 
 import android.content.Context
 import androidx.health.services.client.HealthServices

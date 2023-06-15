@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.exercisesamplecompose
+package com.example.exercisesamplecompose.app
 
 sealed class Screens(
     val route: String
 ) {
     object ExerciseScreen : Screens("exercise")
-    object ExerciseNotAvailable : Screens("exerciseNotAvail")
-    object StartingUp : Screens("startingUp")
+    object ExerciseNotAvailable : Screens("exerciseNotAvailable")
     object PreparingExercise : Screens("preparingExercise")
     object SummaryScreen : Screens("summaryScreen")
 }
