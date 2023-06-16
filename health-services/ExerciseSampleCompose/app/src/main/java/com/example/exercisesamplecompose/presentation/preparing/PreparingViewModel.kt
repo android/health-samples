@@ -30,7 +30,6 @@ class PreparingViewModel @Inject constructor(
         PreparingScreenState(
             serviceState = it,
             isTrackingAnotherExercise = healthServicesRepository.isTrackingExerciseInAnotherApp(),
-            // TODO filter
             requiredPermissions = permissions,
             hasExerciseCapabilities = healthServicesRepository.hasExerciseCapability(),
         )

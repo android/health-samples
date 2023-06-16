@@ -56,7 +56,6 @@ import com.example.exercisesamplecompose.presentation.component.NotAcquired
 import com.example.exercisesamplecompose.presentation.component.ProgressBar
 import com.example.exercisesamplecompose.presentation.dialogs.ExerciseInProgressAlert
 import com.example.exercisesamplecompose.presentation.theme.ThemePreview
-import com.example.exercisesamplecompose.service.ActiveDurationUpdate
 import com.example.exercisesamplecompose.service.ExerciseServiceState
 
 @Composable
@@ -86,11 +85,8 @@ fun PreparingExerciseRoute(
     if (uiState.serviceState is ServiceState.Connected) {
         val requiredPermissions = uiState.requiredPermissions
         LaunchedEffect(requiredPermissions) {
-            if (requiredPermissions.isEmpty()) {
-                viewModel.prepareExercise()
-            } else {
-                permissionLauncher.launch(requiredPermissions.toTypedArray())
-            }
+            permissionLauncher.launch(requiredPermissions.toTypedArray())
+            viewModel.prepareExercise()
         }
     }
 

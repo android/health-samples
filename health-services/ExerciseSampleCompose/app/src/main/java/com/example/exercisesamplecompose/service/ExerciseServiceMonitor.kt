@@ -26,7 +26,6 @@ class ExerciseServiceMonitor @Inject constructor(
     val exerciseServiceState = MutableStateFlow(ExerciseServiceState())
 
     suspend fun monitor() {
-        println("monitor")
         exerciseClientManager.exerciseUpdateFlow.collect {
             println(it)
             when (it) {
