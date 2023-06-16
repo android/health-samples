@@ -17,8 +17,13 @@ import kotlin.time.Duration.Companion.seconds
 class PreparingViewModel @Inject constructor(
     private val healthServicesRepository: HealthServicesRepository
 ) : ViewModel() {
+
+    init {
+        healthServicesRepository.createService()
+    }
+    
     fun prepareExercise() {
-        viewModelScope.launch { healthServicesRepository.prepareExercise() }
+        healthServicesRepository.prepareExercise()
     }
 
     val uiState = healthServicesRepository.serviceState.map {
