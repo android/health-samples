@@ -1,19 +1,14 @@
 [versions]
-android-gradle-plugin = "8.0.2"
+android-gradle-plugin = "7.4.2"
 androidx-activity = "1.7.2"
 androidx-compose = "1.5.0-beta02"
 androidx-lifecycle = "2.6.1"
-androidx-test = "1.4.0"
 androidx-wear-compose = "1.2.0-beta02"
-androidx-wear-tiles = "1.1.1"
-androidx-wear-watchface = "1.1.1"
 core-splashscreen = "1.0.1"
 dagger = "2.46.1"
 health-services = "1.0.0-beta03"
 horologist = "0.4.9"
-ktlint = "0.41.0"
 org-jetbrains-kotlin = "1.8.21"
-org-jetbrains-kotlinx = "1.7.1"
 
 [libraries]
 android-lint-gradle = "com.android.tools.lint:lint-gradle:31.0.2"

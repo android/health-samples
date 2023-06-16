@@ -1,6 +1,7 @@
 package com.example.exercisesamplecompose.presentation.summary
 
-import kotlin.time.Duration
+import java.time.Duration
+
 
 data class SummaryScreenState(
     val averageHeartRate: Double,

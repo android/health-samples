@@ -7,14 +7,14 @@ import androidx.health.services.client.data.DataType.Companion.HEART_RATE_BPM_ST
 import com.example.exercisesamplecompose.data.ServiceState
 import com.example.exercisesamplecompose.presentation.summary.SummaryScreenState
 import com.example.exercisesamplecompose.service.ActiveDurationUpdate
-import com.example.exercisesamplecompose.service.ForegroundService
-import kotlin.time.Duration.Companion.seconds
+import com.example.exercisesamplecompose.service.ExerciseServiceState
+import java.time.Duration
 
 data class ExerciseScreenState(
     val hasExerciseCapabilities: Boolean = true,
     val isTrackingAnotherExercise: Boolean = false,
     val serviceState: ServiceState,
-    val exerciseState: ForegroundService.ExerciseServiceState? = null
+    val exerciseState: ExerciseServiceState? = null
 ) {
     fun toSummary(): SummaryScreenState {
         // TODO implement
@@ -31,7 +31,7 @@ data class ExerciseScreenState(
 //        ) {
 //            popUpTo(Screen.Exercise.route) { inclusive = true }
 //        }
-        return SummaryScreenState(0.0, 0.0, 0.0, 0.seconds)
+        return SummaryScreenState(0.0, 0.0, 0.0, Duration.ofSeconds(0))
     }
 
     val exerciseLaps: Int?

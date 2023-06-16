@@ -10,7 +10,9 @@ import androidx.wear.compose.material.MaterialTheme
 @Composable
 fun ThemePreview(content: @Composable () -> Unit) {
     ExerciseSampleTheme {
-        Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colors.background)) {
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colors.background)) {
             content()
         }
     }

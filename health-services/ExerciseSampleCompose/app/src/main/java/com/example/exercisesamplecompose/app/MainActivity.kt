@@ -51,15 +51,19 @@ class MainActivity : FragmentActivity() {
             )
 
             LaunchedEffect(Unit) {
-                /** Check if we have an active exercise. If true, set our destination as the
-                 * Exercise Screen. If false, route to preparing a new exercise. **/
-                val isRegularLaunch =
-                    navController.currentDestination?.route == Screen.Exercise.route
-                if (isRegularLaunch && !exerciseViewModel.isExerciseInProgress()) {
-                    navController.navigate(Screen.PreparingExercise.route)
-                }
+                prepareIfNoExercise()
                 pendingNavigation = false
             }
+        }
+    }
+
+    private suspend fun prepareIfNoExercise() {
+        /** Check if we have an active exercise. If true, set our destination as the
+         * Exercise Screen. If false, route to preparing a new exercise. **/
+        val isRegularLaunch =
+            navController.currentDestination?.route == Screen.Exercise.route
+        if (isRegularLaunch && !exerciseViewModel.isExerciseInProgress()) {
+            navController.navigate(Screen.PreparingExercise.route)
         }
     }
 }

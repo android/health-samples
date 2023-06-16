@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModel
 import com.example.exercisesamplecompose.app.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import java.time.Duration
 import javax.inject.Inject
-import kotlin.time.Duration
 
 @HiltViewModel
 class SummaryViewModel @Inject constructor(

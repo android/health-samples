@@ -55,7 +55,7 @@
         </activity>
         <!-- Add foreground service location permission for exercise tracking -->
         <service
-            android:name=".service.ForegroundService"
+            android:name=".service.ExerciseService"
             android:exported="false"
             android:foregroundServiceType="location" />
     </application>

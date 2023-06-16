@@ -44,6 +44,7 @@ import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.google.android.horologist.compose.layout.ScalingLazyColumn
 import com.google.android.horologist.compose.layout.ScalingLazyColumnDefaults
 import com.google.android.horologist.compose.layout.ScalingLazyColumnState
+import java.time.Duration
 import kotlin.time.toKotlinDuration
 
 /**End-of-workout summary screen**/
@@ -125,7 +126,7 @@ fun SummaryScreenPreview() {
                 averageHeartRate = 75.0,
                 totalDistance = 2000.0,
                 totalCalories = 100.0,
-                elapsedTime = java.time.Duration.ofMinutes(17).plusSeconds(1).toKotlinDuration()
+                elapsedTime = Duration.ofMinutes(17).plusSeconds(1)
             ),
             onRestartClick = {},
             columnState = ScalingLazyColumnDefaults.belowTimeText().create()

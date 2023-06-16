@@ -52,12 +52,12 @@ import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import com.example.exercisesamplecompose.R
 import com.example.exercisesamplecompose.data.ServiceState
 import com.example.exercisesamplecompose.presentation.component.AcquiredCheck
-import com.example.exercisesamplecompose.presentation.dialogs.ExerciseInProgressAlert
 import com.example.exercisesamplecompose.presentation.component.NotAcquired
 import com.example.exercisesamplecompose.presentation.component.ProgressBar
+import com.example.exercisesamplecompose.presentation.dialogs.ExerciseInProgressAlert
 import com.example.exercisesamplecompose.presentation.theme.ThemePreview
 import com.example.exercisesamplecompose.service.ActiveDurationUpdate
-import com.example.exercisesamplecompose.service.ForegroundService
+import com.example.exercisesamplecompose.service.ExerciseServiceState
 
 @Composable
 fun PreparingExerciseRoute(
@@ -199,9 +199,7 @@ fun PreparingExerciseScreenPreview() {
             onStart = {},
             uiState = PreparingScreenState(
                 serviceState = ServiceState.Connected(
-                    ForegroundService.ExerciseServiceState(),
-                    LocationAvailability.ACQUIRED_TETHERED,
-                    ActiveDurationUpdate()
+                    ExerciseServiceState()
                 ),
                 isTrackingAnotherExercise = false,
                 requiredPermissions = PreparingViewModel.permissions,

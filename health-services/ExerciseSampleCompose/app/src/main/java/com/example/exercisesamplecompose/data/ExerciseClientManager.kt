@@ -16,8 +16,7 @@
 package com.example.exercisesamplecompose.data
 
 import android.annotation.SuppressLint
-import android.util.Log
-import androidx.concurrent.futures.await
+import androidx.health.services.client.ExerciseClient
 import androidx.health.services.client.ExerciseUpdateCallback
 import androidx.health.services.client.HealthServicesClient
 import androidx.health.services.client.data.Availability
@@ -27,65 +26,49 @@ import androidx.health.services.client.data.DataTypeCondition
 import androidx.health.services.client.data.ExerciseConfig
 import androidx.health.services.client.data.ExerciseGoal
 import androidx.health.services.client.data.ExerciseLapSummary
-import androidx.health.services.client.data.ExerciseTrackedStatus
 import androidx.health.services.client.data.ExerciseType
 import androidx.health.services.client.data.ExerciseTypeCapabilities
 import androidx.health.services.client.data.ExerciseUpdate
 import androidx.health.services.client.data.LocationAvailability
 import androidx.health.services.client.data.WarmUpConfig
-import javax.inject.Inject
+import androidx.health.services.client.endExercise
+import androidx.health.services.client.getCapabilities
+import androidx.health.services.client.markLap
+import androidx.health.services.client.pauseExercise
+import androidx.health.services.client.prepareExercise
+import androidx.health.services.client.resumeExercise
+import androidx.health.services.client.startExercise
+import com.example.exercisesamplecompose.service.ExerciseLogger
+import dagger.hilt.android.scopes.ServiceScoped
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.callbackFlow
+import javax.inject.Inject
 
 /**
  * Entry point for [HealthServicesClient] APIs, wrapping them in coroutine-friendly APIs.
  */
 @SuppressLint("RestrictedApi")
-
 class ExerciseClientManager @Inject constructor(
-    healthServicesClient: HealthServicesClient,
-    coroutineScope: CoroutineScope
+    val healthServicesClient: HealthServicesClient,
+    val logger: ExerciseLogger
 ) {
-    private val exerciseClient = healthServicesClient.exerciseClient
-    private var exerciseCapabilities: ExerciseTypeCapabilities? = null
-    private var capabilitiesLoaded = false
+    val exerciseClient: ExerciseClient
+        get() = healthServicesClient.exerciseClient
 
     suspend fun getExerciseCapabilities(): ExerciseTypeCapabilities? {
-        val capabilities = exerciseClient.getCapabilitiesAsync().await()
-        if (!capabilitiesLoaded) {
-            if (ExerciseType.RUNNING in capabilities.supportedExerciseTypes) {
-                exerciseCapabilities =
-                    capabilities.getExerciseTypeCapabilities(ExerciseType.RUNNING)
-            }
+        val capabilities = exerciseClient.getCapabilities()
+
+        return if (ExerciseType.RUNNING in capabilities.supportedExerciseTypes) {
+            capabilities.getExerciseTypeCapabilities(ExerciseType.RUNNING)
+        } else {
+            null
         }
-        return exerciseCapabilities
-    }
-
-    suspend fun isExerciseInProgress(): Boolean {
-        val exerciseInfo = exerciseClient.getCurrentExerciseInfoAsync().await()
-        return exerciseInfo.exerciseTrackedStatus == ExerciseTrackedStatus.OWNED_EXERCISE_IN_PROGRESS
-    }
-
-    suspend fun isTrackingExerciseInAnotherApp(): Boolean {
-        val exerciseInfo = exerciseClient.getCurrentExerciseInfoAsync().await()
-        return exerciseInfo.exerciseTrackedStatus == ExerciseTrackedStatus.OTHER_APP_IN_PROGRESS
-
-    }
-
-    private fun supportsCalorieGoal(capabilities: ExerciseTypeCapabilities): Boolean {
-        val supported = capabilities.supportedGoals[DataType.CALORIES_TOTAL]
-        return supported != null && ComparisonType.GREATER_THAN_OR_EQUAL in supported
-    }
-
-    private fun supportsDistanceMilestone(capabilities: ExerciseTypeCapabilities): Boolean {
-        val supported = capabilities.supportedMilestones[DataType.DISTANCE_TOTAL]
-        return supported != null && ComparisonType.GREATER_THAN_OR_EQUAL in supported
     }
 
     suspend fun startExercise() {
-        Log.d(OUTPUT, "Starting exercise")
+        logger.log("Starting exercise")
         // Types for which we want to receive metrics. Only ask for ones that are supported.
         val capabilities = getExerciseCapabilities() ?: return
         val dataTypes = setOf(
@@ -129,7 +112,7 @@ class ExerciseClientManager @Inject constructor(
             isGpsEnabled = true,
             exerciseGoals = exerciseGoals
         )
-        exerciseClient.startExerciseAsync(config).await()
+        exerciseClient.startExercise(config)
     }
 
     /***
@@ -137,39 +120,38 @@ class ExerciseClientManager @Inject constructor(
      * when acquiring calories or distance.
      */
     suspend fun prepareExercise() {
-        Log.d(OUTPUT, "Preparing an exercise")
+        logger.log("Preparing an exercise")
         val warmUpConfig = WarmUpConfig(
-            ExerciseType.RUNNING, setOf(
-                DataType.HEART_RATE_BPM, DataType.LOCATION
-            )
+            exerciseType = ExerciseType.RUNNING,
+            dataTypes = setOf(DataType.HEART_RATE_BPM, DataType.LOCATION)
         )
         try {
-            exerciseClient.prepareExerciseAsync(warmUpConfig).await()
+            exerciseClient.prepareExercise(warmUpConfig)
         } catch (e: Exception) {
-            Log.e(OUTPUT, "Prepare exercise failed - ${e.message}")
+            logger.log("Prepare exercise failed - ${e.message}")
         }
     }
 
     suspend fun endExercise() {
-        Log.d(OUTPUT, "Ending exercise")
-        exerciseClient.endExerciseAsync().await()
+        logger.log("Ending exercise")
+        exerciseClient.endExercise()
     }
 
     suspend fun pauseExercise() {
-        Log.d(OUTPUT, "Pausing exercise")
-        exerciseClient.pauseExerciseAsync().await()
+        logger.log("Pausing exercise")
+        exerciseClient.pauseExercise()
     }
 
     suspend fun resumeExercise() {
-        Log.d(OUTPUT, "Resuming exercise")
-        exerciseClient.resumeExerciseAsync().await()
+        logger.log("Resuming exercise")
+        exerciseClient.resumeExercise()
     }
 
     /** Wear OS 3.0 reserves two buttons for the OS. For devices with more than 2 buttons,
      * consider implementing a "press" to mark lap feature**/
     suspend fun markLap() {
-        if (isExerciseInProgress()) {
-            exerciseClient.markLapAsync().await()
+        if (exerciseClient.isExerciseInProgress()) {
+            exerciseClient.markLap()
         }
     }
 
@@ -182,15 +164,11 @@ class ExerciseClientManager @Inject constructor(
     val exerciseUpdateFlow = callbackFlow {
         val callback = object : ExerciseUpdateCallback {
             override fun onExerciseUpdateReceived(update: ExerciseUpdate) {
-                coroutineScope.runCatching {
-                    trySendBlocking(ExerciseMessage.ExerciseUpdateMessage(update))
-                }
+                trySendBlocking(ExerciseMessage.ExerciseUpdateMessage(update))
             }
 
             override fun onLapSummaryReceived(lapSummary: ExerciseLapSummary) {
-                coroutineScope.runCatching {
-                    trySendBlocking(ExerciseMessage.LapSummaryMessage(lapSummary))
-                }
+                trySendBlocking(ExerciseMessage.LapSummaryMessage(lapSummary))
             }
 
             override fun onRegistered() {
@@ -204,24 +182,21 @@ class ExerciseClientManager @Inject constructor(
                 dataType: DataType<*, *>, availability: Availability
             ) {
                 if (availability is LocationAvailability) {
-                    coroutineScope.runCatching {
-                        trySendBlocking(ExerciseMessage.LocationAvailabilityMessage(availability))
-                    }
+                    trySendBlocking(ExerciseMessage.LocationAvailabilityMessage(availability))
                 }
             }
         }
+
         exerciseClient.setUpdateCallback(callback)
         awaitClose {
+            // Ignore async result
             exerciseClient.clearUpdateCallbackAsync(callback)
         }
     }
 
-
     private companion object {
         const val CALORIES_THRESHOLD = 250.0
         const val DISTANCE_THRESHOLD = 1_000.0 // meters
-        const val OUTPUT = "Output"
-
     }
 }
 

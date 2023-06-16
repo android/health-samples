@@ -28,7 +28,8 @@ class PreparingViewModel @Inject constructor(
             requiredPermissions = permissions,
             hasExerciseCapabilities = healthServicesRepository.hasExerciseCapability(),
         )
-    }.stateIn(viewModelScope,
+    }.stateIn(
+        viewModelScope,
         started = SharingStarted.WhileSubscribed(5.seconds),
         initialValue = PreparingScreenState(
             healthServicesRepository.serviceState.value,

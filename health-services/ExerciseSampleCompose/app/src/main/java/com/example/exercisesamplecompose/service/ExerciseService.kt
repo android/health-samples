@@ -16,80 +16,48 @@
 
 package com.example.exercisesamplecompose.service
 
-import android.annotation.SuppressLint
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.ContentValues.TAG
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Binder
 import android.os.IBinder
-import android.os.SystemClock
 import android.util.Log
-import androidx.core.app.NotificationCompat
-import androidx.health.services.client.data.DataPointContainer
-import androidx.health.services.client.data.ExerciseEndReason
 import androidx.health.services.client.data.ExerciseState
-import androidx.health.services.client.data.ExerciseUpdate
-import androidx.health.services.client.data.LocationAvailability
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.wear.ongoing.OngoingActivity
-import androidx.wear.ongoing.Status
-import com.example.exercisesamplecompose.R
-import com.example.exercisesamplecompose.app.MainActivity
 import com.example.exercisesamplecompose.data.ExerciseClientManager
-import com.example.exercisesamplecompose.data.ExerciseMessage
+import com.example.exercisesamplecompose.data.isExerciseInProgress
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Duration
-import java.time.Instant
 import javax.inject.Inject
-import kotlin.time.toKotlinDuration
+import kotlin.time.Duration.Companion.seconds
 
 
 @AndroidEntryPoint
-class ForegroundService : LifecycleService() {
+class ExerciseService : LifecycleService() {
 
     @Inject
     lateinit var exerciseClientManager: ExerciseClientManager
 
+    @Inject
+    lateinit var exerciseNotificationManager: ExerciseNotificationManager
+
+    @Inject
+    lateinit var exerciseServiceMonitor: ExerciseServiceMonitor
+
     private var isBound = false
     private var isStarted = false
     private val localBinder = LocalBinder()
+
     private val serviceRunningInForeground: Boolean
         get() = this.foregroundServiceType != ServiceInfo.FOREGROUND_SERVICE_TYPE_NONE
 
-    private val _locationAvailabilityState = MutableStateFlow(LocationAvailability.UNKNOWN)
-    val locationAvailabilityState: StateFlow<LocationAvailability> = _locationAvailabilityState
-
-    private var lastActiveDurationCheckpoint: ExerciseUpdate.ActiveDurationCheckpoint? = null
-
-    //Capturing most of the values associated with our exercise in a data class
-    data class ExerciseServiceState(
-        val exerciseState: ExerciseState = ExerciseState.ENDED,
-        val exerciseMetrics: DataPointContainer? = null,
-        val exerciseLaps: Int = 0,
-        val exerciseDurationUpdate: ActiveDurationUpdate? = null,
-        val exerciseStateChange: ExerciseStateChange = ExerciseStateChange.OtherStateChange(
-            ExerciseState.ENDED
-        )
-    )
-
-    private val _exerciseServiceState = MutableStateFlow(ExerciseServiceState())
-    val exerciseServiceState: StateFlow<ExerciseServiceState> = _exerciseServiceState.asStateFlow()
-
-
-    private suspend fun isExerciseInProgress() = exerciseClientManager.isExerciseInProgress()
+    private suspend fun isExerciseInProgress() =
+        exerciseClientManager.exerciseClient.isExerciseInProgress()
 
     /**
      * Prepare exercise in this service's coroutine context.
@@ -146,7 +114,6 @@ class ForegroundService : LifecycleService() {
         }
     }
 
-
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
         Log.d(TAG, "onStartCommand")
@@ -162,23 +129,7 @@ class ForegroundService : LifecycleService() {
             // case launchWhenStarted takes care of canceling this coroutine.
             lifecycleScope.launch {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    launch {
-                        exerciseClientManager.exerciseUpdateFlow.collect {
-                            when (it) {
-                                is ExerciseMessage.ExerciseUpdateMessage ->
-                                    processExerciseUpdate(it.exerciseUpdate)
-                                is ExerciseMessage.LapSummaryMessage ->
-                                    _exerciseServiceState.update { oldState ->
-                                        oldState.copy(
-                                            exerciseLaps = it.lapSummary.lapCount
-                                        )
-                                    }
-                                is ExerciseMessage.LocationAvailabilityMessage ->
-                                    _locationAvailabilityState.value = it.locationAvailability
-
-                            }
-                        }
-                    }
+                    exerciseServiceMonitor.monitor()
                 }
             }
         }
@@ -192,7 +143,7 @@ class ForegroundService : LifecycleService() {
             // We may have been restarted by the system. Check for an ongoing exercise.
             if (!isExerciseInProgress()) {
                 // Need to cancel [prepareExercise()] to prevent battery drain.
-                if (exerciseServiceState.value.exerciseState == ExerciseState.PREPARING) {
+                if (exerciseServiceMonitor.exerciseServiceState.value.exerciseState == ExerciseState.PREPARING) {
                     lifecycleScope.launch {
                         endExercise()
                     }
@@ -202,83 +153,6 @@ class ForegroundService : LifecycleService() {
             }
         }
     }
-
-    @SuppressLint("RestrictedApi")
-    private fun processExerciseUpdate(exerciseUpdate: ExerciseUpdate) {
-        val oldState = exerciseServiceState.value.exerciseState
-        if (!oldState.isEnded && exerciseUpdate.exerciseStateInfo.state.isEnded) {
-            // Our exercise ended. Gracefully handle this termination be doing the following:
-            // TODO Save partial workout state, show workout summary, and let the user know why the exercise was ended.
-
-            // Dismiss any ongoing activity notification.
-            removeOngoingActivityNotification()
-
-            // Custom flow for the possible states captured by the isEnded boolean
-            when (exerciseUpdate.exerciseStateInfo.endReason) {
-                ExerciseEndReason.AUTO_END_SUPERSEDED -> {
-                    // TODO Send the user a notification (another app ended their workout)
-                    Log.i(
-                        TAG,
-                        "Your exercise was terminated because another app started tracking an exercise"
-                    )
-                }
-
-                ExerciseEndReason.AUTO_END_MISSING_LISTENER -> {
-
-                    // TODO Send the user a notification
-                    Log.i(
-                        TAG,
-                        "Your exercise was auto ended because there were no registered listeners"
-                    )
-                }
-
-                ExerciseEndReason.AUTO_END_PERMISSION_LOST -> {
-
-                    // TODO Send the user a notification
-                    Log.w(
-                        TAG,
-                        "Your exercise was auto ended because it lost the required permissions"
-                    )
-                }
-                else -> {
-                }
-            }
-        } else if (oldState.isEnded && exerciseUpdate.exerciseStateInfo.state == ExerciseState.ACTIVE) {
-            // Reset laps.
-            _exerciseServiceState.update { it.copy(exerciseLaps = 0) }
-        }
-
-        // If the state of the exercise changes, then update the ExerciseStateChange object. Change
-        // in this state then causes recomposition, which can be used to start or stop a coroutine
-        // in the screen for updating the timer.
-        if (oldState != exerciseUpdate.exerciseStateInfo.state) {
-            _exerciseServiceState.update {
-                it.copy(
-                    exerciseStateChange = when (exerciseUpdate.exerciseStateInfo.state) {
-                        // ActiveStateChange also takes an ActiveDurationCheckpoint, so that when the ticker
-                        // is started in the screen, the base Duration can be set correctly.
-                        ExerciseState.ACTIVE -> ExerciseStateChange.ActiveStateChange(
-                            exerciseUpdate.activeDurationCheckpoint!!
-                        )
-                        else -> ExerciseStateChange.OtherStateChange(exerciseUpdate.exerciseStateInfo.state)
-                    }
-                )
-            }
-        }
-        _exerciseServiceState.update { it ->
-            it.copy(exerciseState = exerciseUpdate.exerciseStateInfo.state,
-                exerciseMetrics = exerciseUpdate.latestMetrics,
-                exerciseDurationUpdate = exerciseUpdate.activeDurationCheckpoint?.let {
-                    ActiveDurationUpdate(
-                        it.activeDuration.toKotlinDuration(),
-                        Instant.now()
-                    )
-                })
-        }
-        lastActiveDurationCheckpoint = exerciseUpdate.activeDurationCheckpoint
-
-    }
-
 
     override fun onBind(intent: Intent): IBinder {
         super.onBind(intent)
@@ -305,7 +179,7 @@ class ForegroundService : LifecycleService() {
             // Client can unbind because it went through a configuration change, in which case it
             // will be recreated and bind again shortly. Wait a few seconds, and if still not bound,
             // manage our lifetime accordingly.
-            delay(UNBIND_DELAY_MILLIS)
+            delay(UNBIND_DELAY)
             if (!isBound) {
                 stopSelfIfNotRunning()
             }
@@ -314,7 +188,7 @@ class ForegroundService : LifecycleService() {
         return true
     }
 
-    private fun removeOngoingActivityNotification() {
+    fun removeOngoingActivityNotification() {
         if (serviceRunningInForeground) {
             Log.d(TAG, "Removing ongoing activity notification")
             stopForeground(STOP_FOREGROUND_REMOVE)
@@ -325,107 +199,23 @@ class ForegroundService : LifecycleService() {
         if (!serviceRunningInForeground) {
             Log.d(TAG, "Posting ongoing activity notification")
 
-            createNotificationChannel()
-            startForeground(NOTIFICATION_ID, buildNotification())
-        }
-    }
-
-    private fun createNotificationChannel() {
-        val notificationChannel = NotificationChannel(
-            NOTIFICATION_CHANNEL,
-            NOTIFICATION_CHANNEL_DISPLAY,
-            NotificationManager.IMPORTANCE_DEFAULT
-        )
-        val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        manager.createNotificationChannel(notificationChannel)
-    }
-
-    private fun buildNotification(): Notification {
-        // Make an intent that will take the user straight to the exercise UI.
-        val notificationIntent = Intent(this, MainActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(
-            this,
-            0,
-            notificationIntent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
-        // Build the notification.
-        val notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL)
-            .setContentTitle(NOTIFICATION_TITLE)
-            .setContentText(NOTIFICATION_TEXT)
-            .setSmallIcon(R.drawable.ic_baseline_directions_run_24)
-            .setContentIntent(pendingIntent)
-            .setOngoing(true)
-            .setCategory(NotificationCompat.CATEGORY_WORKOUT)
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-
-        // Ongoing Activity allows an ongoing Notification to appear on additional surfaces in the
-        // Wear OS user interface, so that users can stay more engaged with long running tasks.
-
-        val duration = if (lastActiveDurationCheckpoint != null) {
-            lastActiveDurationCheckpoint!!.activeDuration + Duration.between(
-                lastActiveDurationCheckpoint!!.time,
-                Instant.now()
+            exerciseNotificationManager.createNotificationChannel()
+            val serviceState = exerciseServiceMonitor.exerciseServiceState.value
+            startForeground(
+                ExerciseNotificationManager.NOTIFICATION_ID,
+                exerciseNotificationManager.buildNotification(
+                    serviceState.exerciseDurationUpdate?.duration ?: Duration.ZERO
+                )
             )
-        } else {
-            Duration.ZERO
         }
-
-
-        val startMillis = SystemClock.elapsedRealtime() - duration.toMillis()
-        val ongoingActivityStatus = Status.Builder()
-            .addTemplate(ONGOING_STATUS_TEMPLATE)
-            .addPart("duration", Status.StopwatchPart(startMillis))
-            .build()
-        val ongoingActivity =
-            OngoingActivity.Builder(applicationContext, NOTIFICATION_ID, notificationBuilder)
-                .setAnimatedIcon(R.drawable.ic_baseline_directions_run_24)
-                .setStaticIcon(R.drawable.ic_baseline_directions_run_24)
-                .setTouchIntent(pendingIntent)
-                .setStatus(ongoingActivityStatus)
-                .build()
-
-        ongoingActivity.apply(applicationContext)
-
-        return notificationBuilder.build()
     }
-
 
     /** Local clients will use this to access the service. */
     inner class LocalBinder : Binder() {
-        fun getService() = this@ForegroundService
+        fun getService() = this@ExerciseService
     }
 
     companion object {
-        private const val NOTIFICATION_ID = 1
-        private const val NOTIFICATION_CHANNEL =
-            "com.example.exercisesamplecompose.ONGOING_EXERCISE"
-        private const val NOTIFICATION_CHANNEL_DISPLAY = "Ongoing Exercise"
-        private const val NOTIFICATION_TITLE = "Exercise Sample"
-        private const val NOTIFICATION_TEXT = "Ongoing Exercise"
-        private const val ONGOING_STATUS_TEMPLATE = "Ongoing Exercise #duration#"
-        private const val UNBIND_DELAY_MILLIS = 3_000L
-
+        private val UNBIND_DELAY = 3.seconds
     }
-
-
-}
-
-
-/** Keeps track of the last time we received an update for active exercise duration. */
-data class ActiveDurationUpdate(
-    /** The last active duration reported. */
-    val duration: kotlin.time.Duration = kotlin.time.Duration.ZERO,
-    /** The instant at which the last duration was reported. */
-    val timestamp: Instant = Instant.now()
-
-)
-
-sealed class ExerciseStateChange(val exerciseState: ExerciseState) {
-    data class ActiveStateChange(val durationCheckPoint: ExerciseUpdate.ActiveDurationCheckpoint) :
-        ExerciseStateChange(
-            ExerciseState.ACTIVE
-        )
-
-    data class OtherStateChange(val state: ExerciseState) : ExerciseStateChange(state)
 }

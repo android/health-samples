@@ -23,8 +23,8 @@ import android.content.Intent
 import android.os.IBinder
 import androidx.health.services.client.data.LocationAvailability
 import com.example.exercisesamplecompose.service.ActiveDurationUpdate
-import com.example.exercisesamplecompose.service.ForegroundService
-import com.example.exercisesamplecompose.service.ForegroundService.ExerciseServiceState
+import com.example.exercisesamplecompose.service.ExerciseService
+import com.example.exercisesamplecompose.service.ExerciseServiceState
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -33,6 +33,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
@@ -42,24 +43,30 @@ class HealthServicesRepository @Inject constructor(
     val exerciseClientManager: ExerciseClientManager,
     coroutineScope: CoroutineScope
 ) {
-    private val exerciseService: MutableStateFlow<ForegroundService?> = MutableStateFlow(null)
+    private val exerciseService: MutableStateFlow<ExerciseService?> = MutableStateFlow(null)
 
     val serviceState: StateFlow<ServiceState> = exerciseService.flatMapLatest {
         if (it == null) {
             flowOf(ServiceState.Disconnected)
         } else {
-            flowOf(ServiceState.Disconnected)
+            it.exerciseServiceMonitor.exerciseServiceState.map {
+                ServiceState.Connected(it)
+            }
         }
-    }.stateIn(coroutineScope, started = SharingStarted.Eagerly, initialValue = ServiceState.Disconnected)
+    }.stateIn(
+        coroutineScope,
+        started = SharingStarted.Eagerly,
+        initialValue = ServiceState.Disconnected
+    )
 
     suspend fun hasExerciseCapability(): Boolean = getExerciseCapabilities() != null
 
     private suspend fun getExerciseCapabilities() = exerciseClientManager.getExerciseCapabilities()
 
-    suspend fun isExerciseInProgress(): Boolean = exerciseClientManager.isExerciseInProgress()
+    suspend fun isExerciseInProgress(): Boolean = exerciseClientManager.exerciseClient.isExerciseInProgress()
 
     suspend fun isTrackingExerciseInAnotherApp() =
-        exerciseClientManager.isTrackingExerciseInAnotherApp()
+        exerciseClientManager.exerciseClient.isTrackingExerciseInAnotherApp()
 
     fun prepareExercise() = exerciseService.value!!.prepareExercise()
     fun startExercise() = exerciseService.value!!.startExercise()
@@ -69,7 +76,7 @@ class HealthServicesRepository @Inject constructor(
 
     private val connection = object : android.content.ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
-            val binder = service as ForegroundService.LocalBinder
+            val binder = service as ExerciseService.LocalBinder
             binder.getService().let {
                 exerciseService.value = it
             }
@@ -82,7 +89,7 @@ class HealthServicesRepository @Inject constructor(
     }
 
     fun createService() {
-        Intent(applicationContext, ForegroundService::class.java).also { intent ->
+        Intent(applicationContext, ExerciseService::class.java).also { intent ->
             applicationContext.startService(intent)
             applicationContext.bindService(intent, connection, Context.BIND_AUTO_CREATE)
         }
@@ -96,9 +103,10 @@ sealed class ServiceState {
     object Disconnected : ServiceState()
     data class Connected(
         val exerciseServiceState: ExerciseServiceState,
-        val locationAvailabilityState: LocationAvailability,
-        val activeDurationUpdate: ActiveDurationUpdate?,
-    ) : ServiceState()
+    ) : ServiceState() {
+        val locationAvailabilityState: LocationAvailability = exerciseServiceState.locationAvailability
+        val activeDurationUpdate: ActiveDurationUpdate? = exerciseServiceState.exerciseDurationUpdate
+    }
 }
 
 
