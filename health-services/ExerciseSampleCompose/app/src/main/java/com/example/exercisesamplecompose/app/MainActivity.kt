@@ -24,7 +24,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavHostController
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
 import com.example.exercisesamplecompose.presentation.ExerciseSampleApp
-import com.example.exercisesamplecompose.presentation.ExerciseViewModel
+import com.example.exercisesamplecompose.presentation.exercise.ExerciseViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -53,8 +53,10 @@ class MainActivity : FragmentActivity() {
             LaunchedEffect(Unit) {
                 /** Check if we have an active exercise. If true, set our destination as the
                  * Exercise Screen. If false, route to preparing a new exercise. **/
-                if (navController.currentDestination?.route == Screens.ExerciseScreen.route && !exerciseViewModel.isExerciseInProgress()) {
-                    navController.navigate(Screens.PreparingExercise.route)
+                val isRegularLaunch =
+                    navController.currentDestination?.route == Screen.Exercise.route
+                if (isRegularLaunch && !exerciseViewModel.isExerciseInProgress()) {
+                    navController.navigate(Screen.PreparingExercise.route)
                 }
                 pendingNavigation = false
             }

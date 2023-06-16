@@ -23,29 +23,45 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.ListHeader
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import com.example.exercisesamplecompose.R
 import com.example.exercisesamplecompose.presentation.component.SummaryFormat
+import com.example.exercisesamplecompose.presentation.component.formatCalories
+import com.example.exercisesamplecompose.presentation.component.formatDistanceKm
+import com.example.exercisesamplecompose.presentation.component.formatElapsedTime
+import com.example.exercisesamplecompose.presentation.component.formatHeartRate
 import com.example.exercisesamplecompose.presentation.theme.ThemePreview
 import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.google.android.horologist.compose.layout.ScalingLazyColumn
 import com.google.android.horologist.compose.layout.ScalingLazyColumnDefaults
 import com.google.android.horologist.compose.layout.ScalingLazyColumnState
+import kotlin.time.toKotlinDuration
 
 /**End-of-workout summary screen**/
+@Composable
+fun SummaryRoute(
+    onRestartClick: () -> Unit,
+    columnState: ScalingLazyColumnState,
+) {
+    val viewModel = hiltViewModel<SummaryViewModel>()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    SummaryScreen(uiState = uiState, onRestartClick = onRestartClick, columnState = columnState)
+}
+
 
 @Composable
 fun SummaryScreen(
-    averageHeartRate: String,
-    totalDistance: String,
-    totalCalories: String,
-    elapsedTime: String,
+    uiState: SummaryScreenState,
     onRestartClick: () -> Unit,
     columnState: ScalingLazyColumnState,
 ) {
@@ -56,28 +72,28 @@ fun SummaryScreen(
         item { ListHeader { Text(stringResource(id = R.string.workout_complete)) } }
         item {
             SummaryFormat(
-                value = elapsedTime,
+                value = formatElapsedTime(uiState.elapsedTime, includeSeconds = true),
                 metric = stringResource(id = R.string.duration),
                 modifier = Modifier.fillMaxWidth()
             )
         }
         item {
             SummaryFormat(
-                value = averageHeartRate,
+                value = formatHeartRate(uiState.averageHeartRate),
                 metric = stringResource(id = R.string.avgHR),
                 modifier = Modifier.fillMaxWidth()
             )
         }
         item {
             SummaryFormat(
-                value = totalDistance,
+                value = formatDistanceKm(uiState.totalDistance),
                 metric = stringResource(id = R.string.distance),
                 modifier = Modifier.fillMaxWidth()
             )
         }
         item {
             SummaryFormat(
-                value = totalCalories,
+                value = formatCalories(uiState.totalCalories),
                 metric = stringResource(id = R.string.calories),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -90,9 +106,8 @@ fun SummaryScreen(
                     .padding(6.dp)
             ) {
                 Button(
-                    onClick = {
-                        onRestartClick()
-                    }, modifier = Modifier.fillMaxWidth()
+                    onClick = { onRestartClick() },
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(text = stringResource(id = R.string.restart))
                 }
@@ -106,10 +121,12 @@ fun SummaryScreen(
 fun SummaryScreenPreview() {
     ThemePreview {
         SummaryScreen(
-            averageHeartRate = "75.0",
-            totalDistance = "2 km",
-            totalCalories = "100",
-            elapsedTime = "17m01",
+            uiState = SummaryScreenState(
+                averageHeartRate = 75.0,
+                totalDistance = 2000.0,
+                totalCalories = 100.0,
+                elapsedTime = java.time.Duration.ofMinutes(17).plusSeconds(1).toKotlinDuration()
+            ),
             onRestartClick = {},
             columnState = ScalingLazyColumnDefaults.belowTimeText().create()
         )

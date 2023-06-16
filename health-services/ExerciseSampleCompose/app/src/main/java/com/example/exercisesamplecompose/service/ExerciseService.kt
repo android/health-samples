@@ -21,9 +21,9 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.app.Service
 import android.content.ContentValues.TAG
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.os.Binder
 import android.os.IBinder
 import android.os.SystemClock
@@ -40,20 +40,21 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.wear.ongoing.OngoingActivity
 import androidx.wear.ongoing.Status
-import com.example.exercisesamplecompose.app.MainActivity
 import com.example.exercisesamplecompose.R
+import com.example.exercisesamplecompose.app.MainActivity
 import com.example.exercisesamplecompose.data.ExerciseClientManager
 import com.example.exercisesamplecompose.data.ExerciseMessage
 import dagger.hilt.android.AndroidEntryPoint
-import java.time.Duration
-import java.time.Instant
-import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Duration
+import java.time.Instant
+import javax.inject.Inject
+import kotlin.time.toKotlinDuration
 
 
 @AndroidEntryPoint
@@ -65,7 +66,8 @@ class ForegroundService : LifecycleService() {
     private var isBound = false
     private var isStarted = false
     private val localBinder = LocalBinder()
-    private var serviceRunningInForeground = false
+    private val serviceRunningInForeground: Boolean
+        get() = this.foregroundServiceType != ServiceInfo.FOREGROUND_SERVICE_TYPE_NONE
 
     private val _locationAvailabilityState = MutableStateFlow(LocationAvailability.UNKNOWN)
     val locationAvailabilityState: StateFlow<LocationAvailability> = _locationAvailabilityState
@@ -102,10 +104,10 @@ class ForegroundService : LifecycleService() {
      * Start exercise in this service's coroutine context.
      */
     fun startExercise() {
+        postOngoingActivityNotification()
         lifecycleScope.launch {
             exerciseClientManager.startExercise()
         }
-        postOngoingActivityNotification()
     }
 
     /**
@@ -182,7 +184,7 @@ class ForegroundService : LifecycleService() {
         }
         // If our process is stopped, we might have an active exercise. We want the system to
         // recreate our service so that we can present the ongoing notification in that case.
-        return Service.START_STICKY
+        return START_STICKY
     }
 
     private fun stopSelfIfNotRunning() {
@@ -268,7 +270,7 @@ class ForegroundService : LifecycleService() {
                 exerciseMetrics = exerciseUpdate.latestMetrics,
                 exerciseDurationUpdate = exerciseUpdate.activeDurationCheckpoint?.let {
                     ActiveDurationUpdate(
-                        it.activeDuration,
+                        it.activeDuration.toKotlinDuration(),
                         Instant.now()
                     )
                 })
@@ -315,15 +317,12 @@ class ForegroundService : LifecycleService() {
     private fun removeOngoingActivityNotification() {
         if (serviceRunningInForeground) {
             Log.d(TAG, "Removing ongoing activity notification")
-            serviceRunningInForeground = false
             stopForeground(STOP_FOREGROUND_REMOVE)
-
         }
     }
 
     private fun postOngoingActivityNotification() {
         if (!serviceRunningInForeground) {
-            serviceRunningInForeground = true
             Log.d(TAG, "Posting ongoing activity notification")
 
             createNotificationChannel()
@@ -416,7 +415,7 @@ class ForegroundService : LifecycleService() {
 /** Keeps track of the last time we received an update for active exercise duration. */
 data class ActiveDurationUpdate(
     /** The last active duration reported. */
-    val duration: Duration = Duration.ZERO,
+    val duration: kotlin.time.Duration = kotlin.time.Duration.ZERO,
     /** The instant at which the last duration was reported. */
     val timestamp: Instant = Instant.now()
 

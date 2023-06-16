@@ -21,8 +21,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.wear.compose.material.Text
 
 @Composable
-fun DistanceText(distance: Double) {
-    Text(text = formatDistanceKm(distance).toString())
+fun DistanceText(distance: Double?) {
+    Text(text = formatDistanceKm(distance))
 }
 
 @Preview

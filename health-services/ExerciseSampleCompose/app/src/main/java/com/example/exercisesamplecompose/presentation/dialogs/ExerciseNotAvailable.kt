@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalHorologistApi::class)
+
 package com.example.exercisesamplecompose.presentation.dialogs
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
@@ -32,18 +32,17 @@ import androidx.wear.compose.material.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import com.example.exercisesamplecompose.R
 import com.example.exercisesamplecompose.presentation.theme.ThemePreview
+import com.google.android.horologist.annotations.ExperimentalHorologistApi
+import com.google.android.horologist.compose.material.Confirmation
 
 /**
  * Screen that appears if an exercise is not available for the particular device
  */
 @Composable
 fun ExerciseNotAvailable() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize(),
-        verticalArrangement = Arrangement.Center
-    )
-    {
+    Confirmation(
+        onTimeout = {}
+    ) {
         Row(horizontalArrangement = Arrangement.Center) {
             Icon(
                 imageVector = Icons.Filled.Warning,
@@ -56,7 +55,6 @@ fun ExerciseNotAvailable() {
                 textAlign = TextAlign.Center,
                 text = stringResource(id = R.string.not_avail)
             )
-
         }
     }
 }

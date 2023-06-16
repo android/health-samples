@@ -13,31 +13,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.example.exercisesamplecompose.data
 
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.health.services.client.data.LocationAvailability
 import com.example.exercisesamplecompose.service.ActiveDurationUpdate
 import com.example.exercisesamplecompose.service.ForegroundService
 import com.example.exercisesamplecompose.service.ForegroundService.ExerciseServiceState
 import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.stateIn
+import javax.inject.Inject
 
 
 class HealthServicesRepository @Inject constructor(
-    @ApplicationContext private val applicationContext: Context
+    @ApplicationContext private val applicationContext: Context,
+    val exerciseClientManager: ExerciseClientManager,
+    coroutineScope: CoroutineScope
 ) {
+    private val exerciseService: MutableStateFlow<ForegroundService?> = MutableStateFlow(null)
 
-    @Inject
-    lateinit var exerciseClientManager: ExerciseClientManager
-
-    private var exerciseService: ForegroundService? = null
+    val serviceState: StateFlow<ServiceState> = exerciseService.flatMapLatest {
+        if (it == null) {
+            flowOf(ServiceState.Disconnected)
+        } else {
+            flowOf(ServiceState.Disconnected)
+        }
+    }.stateIn(coroutineScope, started = SharingStarted.Eagerly, initialValue = ServiceState.Disconnected)
 
     suspend fun hasExerciseCapability(): Boolean = getExerciseCapabilities() != null
 
@@ -45,39 +58,25 @@ class HealthServicesRepository @Inject constructor(
 
     suspend fun isExerciseInProgress(): Boolean = exerciseClientManager.isExerciseInProgress()
 
-
     suspend fun isTrackingExerciseInAnotherApp() =
         exerciseClientManager.isTrackingExerciseInAnotherApp()
 
-
-    fun prepareExercise() = exerciseService?.prepareExercise()
-    fun startExercise() = exerciseService?.startExercise()
-    fun pauseExercise() = exerciseService?.pauseExercise()
-    fun endExercise() = exerciseService?.endExercise()
-    fun resumeExercise() = exerciseService?.resumeExercise()
-
-    var bound = mutableStateOf(false)
-
-    var serviceState: MutableState<ServiceState> = mutableStateOf(ServiceState.Disconnected)
+    fun prepareExercise() = exerciseService.value!!.prepareExercise()
+    fun startExercise() = exerciseService.value!!.startExercise()
+    fun pauseExercise() = exerciseService.value!!.pauseExercise()
+    fun endExercise() = exerciseService.value!!.endExercise()
+    fun resumeExercise() = exerciseService.value!!.resumeExercise()
 
     private val connection = object : android.content.ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
             val binder = service as ForegroundService.LocalBinder
             binder.getService().let {
-                exerciseService = it
-                serviceState.value = ServiceState.Connected(
-                    exerciseServiceState = it.exerciseServiceState,
-                    locationAvailabilityState = it.locationAvailabilityState,
-                    activeDurationUpdate = it.exerciseServiceState.value.exerciseDurationUpdate,
-                )
+                exerciseService.value = it
             }
-            bound.value = true
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
-            bound.value = false
-            exerciseService = null
-            serviceState.value = ServiceState.Disconnected
+            exerciseService.value = null
         }
 
     }
@@ -96,8 +95,8 @@ class HealthServicesRepository @Inject constructor(
 sealed class ServiceState {
     object Disconnected : ServiceState()
     data class Connected(
-        val exerciseServiceState: StateFlow<ExerciseServiceState>,
-        val locationAvailabilityState: StateFlow<LocationAvailability>,
+        val exerciseServiceState: ExerciseServiceState,
+        val locationAvailabilityState: LocationAvailability,
         val activeDurationUpdate: ActiveDurationUpdate?,
     ) : ServiceState()
 }

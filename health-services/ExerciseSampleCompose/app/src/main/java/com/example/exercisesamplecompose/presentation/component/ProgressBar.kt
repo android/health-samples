@@ -15,8 +15,7 @@
  */
 package com.example.exercisesamplecompose.presentation.component
 
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,9 +29,7 @@ fun ProgressBar() {
         indicatorColor = MaterialTheme.colors.secondary,
         trackColor = MaterialTheme.colors.onBackground.copy(alpha = 0.1f),
         strokeWidth = 4.dp,
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
+        modifier = Modifier.fillMaxSize()
     )
 }
 

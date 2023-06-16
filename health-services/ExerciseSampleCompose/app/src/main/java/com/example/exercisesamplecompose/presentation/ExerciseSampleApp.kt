@@ -19,23 +19,22 @@ package com.example.exercisesamplecompose.presentation
 
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import androidx.wear.compose.navigation.composable
-import com.example.exercisesamplecompose.app.Screens
+import com.example.exercisesamplecompose.app.Screen.Exercise
+import com.example.exercisesamplecompose.app.Screen.ExerciseNotAvailable
+import com.example.exercisesamplecompose.app.Screen.PreparingExercise
+import com.example.exercisesamplecompose.app.Screen.Summary
+import com.example.exercisesamplecompose.app.navigateToTopLevel
 import com.example.exercisesamplecompose.presentation.dialogs.ExerciseNotAvailable
-import com.example.exercisesamplecompose.presentation.exercise.ExerciseScreen
-import com.example.exercisesamplecompose.presentation.preparing.PreparingExercise
-import com.example.exercisesamplecompose.presentation.summary.SummaryScreen
+import com.example.exercisesamplecompose.presentation.exercise.ExerciseRoute
+import com.example.exercisesamplecompose.presentation.preparing.PreparingExerciseRoute
+import com.example.exercisesamplecompose.presentation.summary.SummaryRoute
 import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.google.android.horologist.compose.navscaffold.WearNavScaffold
 import com.google.android.horologist.compose.navscaffold.scrollable
-
 
 /** Navigation for the exercise app. **/
 
@@ -44,78 +43,56 @@ fun ExerciseSampleApp(
     navController: NavHostController,
     onFinishActivity: () -> Unit
 ) {
-    val viewModel = hiltViewModel<ExerciseViewModel>()
-
     WearNavScaffold(
         navController = navController,
-        startDestination = Screens.ExerciseScreen.route
+        startDestination = Exercise.route
     ) {
-        composable(Screens.PreparingExercise.route) {
-            val serviceState by viewModel.exerciseServiceState
-            val permissions = viewModel.permissions
-            val uiState by viewModel.uiState.collectAsState()
-            PreparingExercise(
-                onStartClick = {
-                    navController.navigate(Screens.ExerciseScreen.route) {
+        composable(PreparingExercise.route) {
+            PreparingExerciseRoute(
+                onStart = {
+                    navController.navigate(Exercise.route) {
                         popUpTo(navController.graph.id) {
                             inclusive = false
                         }
                     }
                 },
-                prepareExercise = { viewModel.prepareExercise() },
-                onStart = { viewModel.startExercise() },
-                serviceState = serviceState,
-                permissions = permissions,
-                isTrackingAnotherExercise = uiState.isTrackingAnotherExercise,
-                onFinishActivity = onFinishActivity
-            )
-
-            SideEffect {
-                if (!uiState.hasExerciseCapabilities) {
-                    navController.navigate(Screens.ExerciseNotAvailable.route) {
+                onNoExerciseCapabilities = {
+                    navController.navigate(ExerciseNotAvailable.route) {
                         popUpTo(navController.graph.id) {
                             inclusive = false
                         }
                     }
-                }
-            }
-        }
-
-        composable(Screens.ExerciseScreen.route) {
-            val serviceState by viewModel.exerciseServiceState
-            ExerciseScreen(
-                onPauseClick = { viewModel.pauseExercise() },
-                onEndClick = { viewModel.endExercise() },
-                onResumeClick = { viewModel.resumeExercise() },
-                onStartClick = { viewModel.startExercise() },
-                serviceState = serviceState,
-                navController = navController,
+                },
+                onFinishActivity = onFinishActivity
             )
         }
 
-        composable(Screens.ExerciseNotAvailable.route) {
+        scrollable(Exercise.route) {
+            ExerciseRoute(
+                columnState = it.columnState,
+                onSummary = {
+                    navController.navigateToTopLevel(Summary, Summary.buildRoute(it))
+                }
+            )
+        }
+
+        composable(ExerciseNotAvailable.route) {
             ExerciseNotAvailable()
         }
 
         scrollable(
-            Screens.SummaryScreen.route + "/{averageHeartRate}/{totalDistance}/{totalCalories}/{elapsedTime}",
-            arguments = listOf(navArgument("averageHeartRate") { type = NavType.StringType },
-                navArgument("totalDistance") { type = NavType.StringType },
-                navArgument("totalCalories") { type = NavType.StringType },
-                navArgument("elapsedTime") { type = NavType.StringType })
+            Summary.route + "/{averageHeartRate}/{totalDistance}/{totalCalories}/{elapsedTime}",
+            arguments = listOf(
+                navArgument(Summary.averageHeartRateArg) { type = NavType.FloatType },
+                navArgument(Summary.totalDistanceArg) { type = NavType.FloatType },
+                navArgument(Summary.totalCaloriesArg) { type = NavType.FloatType },
+                navArgument(Summary.elapsedTimeArg) { type = NavType.StringType }
+            )
         ) {
-            SummaryScreen(
+            SummaryRoute(
                 columnState = it.columnState,
-                averageHeartRate = it.arguments?.getString("averageHeartRate")!!,
-                totalDistance = it.arguments?.getString("totalDistance")!!,
-                totalCalories = it.arguments?.getString("totalCalories")!!,
-                elapsedTime = it.arguments?.getString("elapsedTime")!!,
                 onRestartClick = {
-                    navController.navigate(Screens.PreparingExercise.route) {
-                        popUpTo(navController.graph.id) {
-                            inclusive = true
-                        }
-                    }
+                    navController.navigateToTopLevel(PreparingExercise)
                 }
             )
         }

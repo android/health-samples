@@ -22,7 +22,7 @@ import androidx.wear.compose.material.Text
 
 @Composable
 fun CaloriesText(calories: Double) {
-    Text(text = formatCalories(calories).toString())
+    Text(text = formatCalories(calories))
 
 }
 

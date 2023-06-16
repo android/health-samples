@@ -15,11 +15,31 @@
  */
 package com.example.exercisesamplecompose.app
 
-sealed class Screens(
+import androidx.navigation.NavController
+import com.example.exercisesamplecompose.presentation.summary.SummaryScreenState
+
+sealed class Screen(
     val route: String
 ) {
-    object ExerciseScreen : Screens("exercise")
-    object ExerciseNotAvailable : Screens("exerciseNotAvailable")
-    object PreparingExercise : Screens("preparingExercise")
-    object SummaryScreen : Screens("summaryScreen")
+    object Exercise : Screen("exercise")
+    object ExerciseNotAvailable : Screen("exerciseNotAvailable")
+    object PreparingExercise : Screen("preparingExercise")
+    object Summary : Screen("summaryScreen") {
+        fun buildRoute(summary: SummaryScreenState): String {
+            return "$route/{${summary.averageHeartRate}/${summary.totalDistance}/${summary.totalCalories}/${summary.elapsedTime}"
+        }
+
+        val averageHeartRateArg = "averageHeartRate"
+        val totalDistanceArg = "totalDistance"
+        val totalCaloriesArg = "totalCalories"
+        val elapsedTimeArg = "elapsedTime"
+    }
+}
+
+fun NavController.navigateToTopLevel(screen: Screen, route: String = screen.route) {
+    navigate(route) {
+        popUpTo(graph.id) {
+            inclusive = true
+        }
+    }
 }

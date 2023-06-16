@@ -15,7 +15,7 @@
  */
 @file:OptIn(ExperimentalHorologistApi::class)
 
-package com.example.exercisesamplecompose.presentation.component
+package com.example.exercisesamplecompose.presentation.dialogs
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
