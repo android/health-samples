@@ -30,6 +30,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.example.exercisesamplecompose.data.ExerciseClientManager
 import com.example.exercisesamplecompose.data.isExerciseInProgress
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.Duration
@@ -127,7 +128,7 @@ class ExerciseService : LifecycleService() {
             }
             // Start collecting exercise information. We might stop shortly (see above), in which
             // case launchWhenStarted takes care of canceling this coroutine.
-            lifecycleScope.launch {
+            lifecycleScope.launch(Dispatchers.Default) {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
                     exerciseServiceMonitor.monitor()
                 }
