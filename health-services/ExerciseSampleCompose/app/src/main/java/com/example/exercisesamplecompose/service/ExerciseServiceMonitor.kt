@@ -27,7 +27,6 @@ class ExerciseServiceMonitor @Inject constructor(
 
     suspend fun monitor() {
         exerciseClientManager.exerciseUpdateFlow.collect {
-            println(it)
             when (it) {
                 is ExerciseMessage.ExerciseUpdateMessage ->
                     processExerciseUpdate(it.exerciseUpdate)
