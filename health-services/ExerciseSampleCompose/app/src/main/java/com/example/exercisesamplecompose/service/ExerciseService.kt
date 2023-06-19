@@ -116,8 +116,8 @@ class ExerciseService : LifecycleService() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        println("onStartCommand")
         super.onStartCommand(intent, flags, startId)
+
         Log.d(TAG, "onStartCommand")
 
         if (!isStarted) {
@@ -157,15 +157,16 @@ class ExerciseService : LifecycleService() {
     }
 
     override fun onBind(intent: Intent): IBinder {
-        println("onBind")
         super.onBind(intent)
+
         handleBind()
+
         return localBinder
     }
 
     override fun onRebind(intent: Intent?) {
-        println("onRebind")
         super.onRebind(intent)
+
         handleBind()
     }
 
@@ -178,7 +179,6 @@ class ExerciseService : LifecycleService() {
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
-        println("onUnbind")
         isBound = false
         lifecycleScope.launch {
             // Client can unbind because it went through a configuration change, in which case it

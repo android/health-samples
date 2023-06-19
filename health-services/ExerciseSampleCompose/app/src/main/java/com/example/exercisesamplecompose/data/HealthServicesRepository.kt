@@ -76,7 +76,6 @@ class HealthServicesRepository @Inject constructor(
 
     private val connection = object : android.content.ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
-            println("onServiceConnected")
             val binder = service as ExerciseService.LocalBinder
             binder.getService().let {
                 exerciseService.value = it
@@ -84,14 +83,12 @@ class HealthServicesRepository @Inject constructor(
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
-            println("onServiceDisconnected")
             exerciseService.value = null
         }
 
     }
 
     fun createService() {
-        println("createService")
         Intent(applicationContext, ExerciseService::class.java).also { intent ->
             applicationContext.startService(intent)
             applicationContext.bindService(intent, connection, Context.BIND_AUTO_CREATE)
