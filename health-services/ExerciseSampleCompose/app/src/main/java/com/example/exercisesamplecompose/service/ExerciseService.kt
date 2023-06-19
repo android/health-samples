@@ -63,47 +63,37 @@ class ExerciseService : LifecycleService() {
     /**
      * Prepare exercise in this service's coroutine context.
      */
-    fun prepareExercise() {
-        lifecycleScope.launch {
+    suspend fun prepareExercise() {
             exerciseClientManager.prepareExercise()
-        }
     }
 
     /**
      * Start exercise in this service's coroutine context.
      */
-    fun startExercise() {
+    suspend fun startExercise() {
         postOngoingActivityNotification()
-        lifecycleScope.launch {
-            exerciseClientManager.startExercise()
-        }
+        exerciseClientManager.startExercise()
     }
 
     /**
      * Pause exercise in this service's coroutine context.
      */
-    fun pauseExercise() {
-        lifecycleScope.launch {
-            exerciseClientManager.pauseExercise()
-        }
+    suspend fun pauseExercise() {
+        exerciseClientManager.pauseExercise()
     }
 
     /**
      * Resume exercise in this service's coroutine context.
      */
-    fun resumeExercise() {
-        lifecycleScope.launch {
-            exerciseClientManager.resumeExercise()
-        }
+    suspend fun resumeExercise() {
+        exerciseClientManager.resumeExercise()
     }
 
     /**
      * End exercise in this service's coroutine context.
      */
-    fun endExercise() {
-        lifecycleScope.launch {
-            exerciseClientManager.endExercise()
-        }
+    suspend fun endExercise() {
+        exerciseClientManager.endExercise()
         removeOngoingActivityNotification()
     }
 

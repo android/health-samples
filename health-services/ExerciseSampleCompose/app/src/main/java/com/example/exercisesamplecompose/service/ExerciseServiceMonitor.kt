@@ -113,17 +113,17 @@ class ExerciseServiceMonitor @Inject constructor(
             }
         }
         exerciseServiceState.update { it ->
-            it.copy(exerciseState = exerciseUpdate.exerciseStateInfo.state,
+            it.copy(
+                exerciseState = exerciseUpdate.exerciseStateInfo.state,
                 exerciseMetrics = exerciseUpdate.latestMetrics,
                 exerciseDurationUpdate = exerciseUpdate.activeDurationCheckpoint?.let {
                     ActiveDurationUpdate(
                         it.activeDuration,
                         Instant.now()
                     )
-                })
-        }
-        exerciseServiceState.update {
-            it.copy(lastActiveDurationCheckpoint = exerciseUpdate.activeDurationCheckpoint)
+                },
+                lastActiveDurationCheckpoint = exerciseUpdate.activeDurationCheckpoint
+            )
         }
     }
 }

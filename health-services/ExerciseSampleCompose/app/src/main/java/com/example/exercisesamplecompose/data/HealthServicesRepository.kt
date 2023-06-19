@@ -45,12 +45,15 @@ class HealthServicesRepository @Inject constructor(
 ) {
     private val exerciseService: MutableStateFlow<ExerciseService?> = MutableStateFlow(null)
 
-    val serviceState: StateFlow<ServiceState> = exerciseService.flatMapLatest {
-        if (it == null) {
+    @Suppress("IfThenToElvis")
+    val serviceState: StateFlow<ServiceState> = exerciseService.flatMapLatest { exerciseService ->
+        if (exerciseService == null) {
             flowOf(ServiceState.Disconnected)
         } else {
-            it.exerciseServiceMonitor.exerciseServiceState.map {
-                ServiceState.Connected(it)
+            exerciseService.exerciseServiceMonitor.exerciseServiceState.map {
+                ServiceState.Connected(it).also {
+                    println(it)
+                }
             }
         }
     }.stateIn(
@@ -68,11 +71,11 @@ class HealthServicesRepository @Inject constructor(
     suspend fun isTrackingExerciseInAnotherApp() =
         exerciseClientManager.exerciseClient.isTrackingExerciseInAnotherApp()
 
-    fun prepareExercise() = exerciseService.value!!.prepareExercise()
-    fun startExercise() = exerciseService.value!!.startExercise()
-    fun pauseExercise() = exerciseService.value!!.pauseExercise()
-    fun endExercise() = exerciseService.value!!.endExercise()
-    fun resumeExercise() = exerciseService.value!!.resumeExercise()
+    suspend fun prepareExercise() = exerciseService.value!!.prepareExercise()
+    suspend fun startExercise() = exerciseService.value!!.startExercise()
+    suspend fun pauseExercise() = exerciseService.value!!.pauseExercise()
+    suspend fun endExercise() = exerciseService.value!!.endExercise()
+    suspend fun resumeExercise() = exerciseService.value!!.resumeExercise()
 
     private val connection = object : android.content.ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {

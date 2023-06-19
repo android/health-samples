@@ -19,10 +19,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.exercisesamplecompose.data.HealthServicesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -50,10 +52,18 @@ class ExerciseViewModel @Inject constructor(
         return healthServicesRepository.isExerciseInProgress()
     }
 
-    fun startExercise() = healthServicesRepository.startExercise()
-    fun pauseExercise() = healthServicesRepository.pauseExercise()
-    fun endExercise() = healthServicesRepository.endExercise()
-    fun resumeExercise() = healthServicesRepository.resumeExercise()
+    fun startExercise() {
+        viewModelScope.launch { healthServicesRepository.startExercise() }
+    }
+    fun pauseExercise() {
+        viewModelScope.launch { healthServicesRepository.pauseExercise() }
+    }
+    fun endExercise() {
+        viewModelScope.launch { healthServicesRepository.endExercise() }
+    }
+    fun resumeExercise() {
+        viewModelScope.launch { healthServicesRepository.resumeExercise() }
+    }
 }
 
 

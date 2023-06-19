@@ -49,6 +49,7 @@ import com.example.exercisesamplecompose.presentation.summary.SummaryScreenState
 import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.google.android.horologist.compose.layout.ScalingLazyColumn
 import com.google.android.horologist.compose.layout.ScalingLazyColumnState
+import com.google.android.horologist.health.composables.ActiveDurationText
 
 @Composable
 fun ExerciseRoute(
@@ -178,12 +179,12 @@ private fun HeartRateAndCaloriesRow(uiState: ExerciseScreenState) {
                 uiState.calories!!
             )
         }
-
     }
 }
 
 @Composable
 private fun DurationRow(uiState: ExerciseScreenState) {
+    val lastActiveDurationCheckpoint = uiState.exerciseState?.lastActiveDurationCheckpoint
     Row(
         horizontalArrangement = Arrangement.Center,
         modifier = Modifier.fillMaxWidth()
@@ -192,9 +193,16 @@ private fun DurationRow(uiState: ExerciseScreenState) {
             imageVector = Icons.Default.WatchLater,
             contentDescription = stringResource(id = R.string.duration)
         )
-        Text(
-            formatElapsedTime(uiState.elapsedTime?.duration)
-        )
+        if (lastActiveDurationCheckpoint != null) {
+            ActiveDurationText(
+                checkpoint = lastActiveDurationCheckpoint,
+                state = uiState.exerciseState.exerciseState
+            ) {
+                formatElapsedTime(uiState.elapsedTime?.duration)
+            }
+        } else {
+            Text(text = "--")
+        }
     }
 }
 

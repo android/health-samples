@@ -77,7 +77,8 @@ fun PreparingExerciseRoute(
     }
 
     SideEffect {
-        if (!uiState.hasExerciseCapabilities) {
+        val preparingState = uiState
+        if (preparingState is PreparingScreenState.Preparing && !preparingState.hasExerciseCapabilities) {
             onNoExerciseCapabilities()
         }
     }
@@ -86,12 +87,17 @@ fun PreparingExerciseRoute(
         val requiredPermissions = uiState.requiredPermissions
         LaunchedEffect(requiredPermissions) {
             permissionLauncher.launch(requiredPermissions.toTypedArray())
-            viewModel.prepareExercise()
         }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        PreparingExerciseScreen(onStart, uiState)
+        PreparingExerciseScreen(
+            onStart = {
+                viewModel.startExercise()
+                onStart()
+            },
+            uiState = uiState
+        )
 
         if (uiState.isTrackingAnotherExercise) {
             ExerciseInProgressAlert(onNegative = onFinishActivity, onPositive = {})
@@ -107,7 +113,7 @@ fun PreparingExerciseScreen(
     onStart: () -> Unit = {},
     uiState: PreparingScreenState
 ) {
-    val location = uiState.locationAvailability
+    val location = (uiState as? PreparingScreenState.Preparing)?.locationAvailability
 
     Column(
         modifier = Modifier
@@ -144,7 +150,9 @@ fun PreparingExerciseScreen(
         ) {
             Text(
                 textAlign = TextAlign.Center,
-                text = updatePrepareLocationStatus(locationAvailability = location),
+                text = updatePrepareLocationStatus(
+                    locationAvailability = location ?: LocationAvailability.UNAVAILABLE
+                ),
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -160,7 +168,8 @@ fun PreparingExerciseScreen(
             ) {
                 Button(
                     onClick = { onStart() },
-                    modifier = Modifier.size(ButtonDefaults.SmallButtonSize)
+                    modifier = Modifier.size(ButtonDefaults.SmallButtonSize),
+                    enabled = uiState is PreparingScreenState.Preparing
                 ) {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
@@ -193,7 +202,7 @@ fun PreparingExerciseScreenPreview() {
     ThemePreview {
         PreparingExerciseScreen(
             onStart = {},
-            uiState = PreparingScreenState(
+            uiState = PreparingScreenState.Preparing(
                 serviceState = ServiceState.Connected(
                     ExerciseServiceState()
                 ),

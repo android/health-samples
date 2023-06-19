@@ -1,12 +1,17 @@
 package com.example.exercisesamplecompose.presentation.preparing
 
 import android.Manifest
+import androidx.health.services.client.data.LocationAvailability
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.exercisesamplecompose.data.HealthServicesRepository
+import com.example.exercisesamplecompose.data.ServiceState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.WhileSubscribed
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -20,29 +25,43 @@ class PreparingViewModel @Inject constructor(
 
     init {
         healthServicesRepository.createService()
-    }
-    
-    fun prepareExercise() {
-        healthServicesRepository.prepareExercise()
+
+        viewModelScope.launch {
+            healthServicesRepository.serviceState.filter { it is ServiceState.Connected }.first()
+            healthServicesRepository.prepareExercise()
+        }
     }
 
-    val uiState = healthServicesRepository.serviceState.map {
-        PreparingScreenState(
-            serviceState = it,
-            isTrackingAnotherExercise = healthServicesRepository.isTrackingExerciseInAnotherApp(),
-            requiredPermissions = permissions,
-            hasExerciseCapabilities = healthServicesRepository.hasExerciseCapability(),
-        )
+    fun startExercise() {
+        viewModelScope.launch {
+            healthServicesRepository.startExercise()
+        }
+    }
+
+    val uiState: StateFlow<PreparingScreenState> = healthServicesRepository.serviceState.map {
+        toUiState(it)
     }.stateIn(
         viewModelScope,
         started = SharingStarted.WhileSubscribed(5.seconds),
-        initialValue = PreparingScreenState(
-            healthServicesRepository.serviceState.value,
-            isTrackingAnotherExercise = false,
-            requiredPermissions = permissions,
-            hasExerciseCapabilities = true
-        )
+        initialValue = toUiState(healthServicesRepository.serviceState.value)
     )
+
+    private fun toUiState(
+        serviceState: ServiceState,
+        isTrackingAnotherExercise: Boolean = false,
+        hasExerciseCapabilities: Boolean = true
+    ): PreparingScreenState {
+        return if (serviceState is ServiceState.Disconnected) {
+            PreparingScreenState.Disconnected(serviceState, isTrackingAnotherExercise, permissions)
+        } else {
+            PreparingScreenState.Preparing(
+                serviceState = serviceState as ServiceState.Connected,
+                isTrackingAnotherExercise = isTrackingAnotherExercise,
+                requiredPermissions = permissions,
+                hasExerciseCapabilities = hasExerciseCapabilities,
+            )
+        }
+    }
 
     companion object {
         val permissions = listOf(
