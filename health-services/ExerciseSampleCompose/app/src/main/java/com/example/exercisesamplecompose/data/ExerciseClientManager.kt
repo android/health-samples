@@ -43,17 +43,18 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.callbackFlow
 import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Entry point for [HealthServicesClient] APIs, wrapping them in coroutine-friendly APIs.
  */
 @SuppressLint("RestrictedApi")
+@Singleton
 class ExerciseClientManager @Inject constructor(
     val healthServicesClient: HealthServicesClient,
     val logger: ExerciseLogger
 ) {
-    val exerciseClient: ExerciseClient
-        get() = healthServicesClient.exerciseClient
+    val exerciseClient: ExerciseClient = healthServicesClient.exerciseClient
 
     suspend fun getExerciseCapabilities(): ExerciseTypeCapabilities? {
         val capabilities = exerciseClient.getCapabilities()
