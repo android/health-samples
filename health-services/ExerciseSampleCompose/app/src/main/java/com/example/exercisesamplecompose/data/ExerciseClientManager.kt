@@ -110,6 +110,7 @@ class ExerciseClientManager @Inject constructor(
             isGpsEnabled = true,
             exerciseGoals = exerciseGoals
         )
+        println("exerciseClient.startExercise")
         exerciseClient.startExercise(config)
     }
 
@@ -124,6 +125,7 @@ class ExerciseClientManager @Inject constructor(
             dataTypes = setOf(DataType.HEART_RATE_BPM, DataType.LOCATION)
         )
         try {
+            println("exerciseClient.prepareExercise")
             exerciseClient.prepareExercise(warmUpConfig)
         } catch (e: Exception) {
             logger.log("Prepare exercise failed - ${e.message}")
@@ -179,12 +181,14 @@ class ExerciseClientManager @Inject constructor(
             override fun onAvailabilityChanged(
                 dataType: DataType<*, *>, availability: Availability
             ) {
+                println("onAvailabilityChanged $dataType $availability")
                 if (availability is LocationAvailability) {
                     trySendBlocking(ExerciseMessage.LocationAvailabilityMessage(availability))
                 }
             }
         }
 
+        println("exerciseClient.setUpdateCallback")
         exerciseClient.setUpdateCallback(callback)
         awaitClose {
             // Ignore async result
