@@ -18,13 +18,12 @@ package com.example.exercisesamplecompose.presentation.exercise
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.exercisesamplecompose.data.HealthServicesRepository
+import com.example.exercisesamplecompose.data.ServiceState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -36,12 +35,21 @@ class ExerciseViewModel @Inject constructor(
         ExerciseScreenState(
             hasExerciseCapabilities = healthServicesRepository.hasExerciseCapability(),
             isTrackingAnotherExercise = healthServicesRepository.isTrackingExerciseInAnotherApp(),
-            it
+            serviceState = it,
+            exerciseState = (it as? ServiceState.Connected)?.exerciseServiceState
         )
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(3_000),
-        ExerciseScreenState(true, false, healthServicesRepository.serviceState.value)
+        healthServicesRepository.serviceState.value.let {
+            ExerciseScreenState(
+                true,
+                false,
+                it,
+                (it as? ServiceState.Connected)?.exerciseServiceState
+            )
+        }
+
     )
 
     init {
@@ -53,16 +61,19 @@ class ExerciseViewModel @Inject constructor(
     }
 
     fun startExercise() {
-        viewModelScope.launch { healthServicesRepository.startExercise() }
+        healthServicesRepository.startExercise()
     }
+
     fun pauseExercise() {
-        viewModelScope.launch { healthServicesRepository.pauseExercise() }
+        healthServicesRepository.pauseExercise()
     }
+
     fun endExercise() {
-        viewModelScope.launch { healthServicesRepository.endExercise() }
+        healthServicesRepository.endExercise()
     }
+
     fun resumeExercise() {
-        viewModelScope.launch { healthServicesRepository.resumeExercise() }
+        healthServicesRepository.resumeExercise()
     }
 }
 

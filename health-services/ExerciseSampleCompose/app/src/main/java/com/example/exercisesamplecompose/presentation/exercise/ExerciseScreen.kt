@@ -142,18 +142,23 @@ private fun ExerciseControlButtons(
 private fun DistanceAndLapsRow(uiState: ExerciseScreenState) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
+        horizontalArrangement = Arrangement.SpaceAround,
     ) {
-        Icon(
-            imageVector = Icons.Default.TrendingUp,
-            contentDescription = stringResource(id = R.string.distance)
-        )
-        DistanceText(uiState.distance)
-        Icon(
-            imageVector = Icons.Default._360,
-            contentDescription = stringResource(id = R.string.laps)
-        )
-        Text(text = uiState.exerciseLaps?.toString() ?: "--")
+        Row {
+            Icon(
+                imageVector = Icons.Default.TrendingUp,
+                contentDescription = stringResource(id = R.string.distance)
+            )
+            DistanceText(uiState.exerciseState?.exerciseMetrics?.distance)
+        }
+
+        Row {
+            Icon(
+                imageVector = Icons.Default._360,
+                contentDescription = stringResource(id = R.string.laps)
+            )
+            Text(text = uiState.exerciseState?.exerciseLaps?.toString() ?: "--")
+        }
     }
 }
 
@@ -161,22 +166,24 @@ private fun DistanceAndLapsRow(uiState: ExerciseScreenState) {
 private fun HeartRateAndCaloriesRow(uiState: ExerciseScreenState) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
+        horizontalArrangement = Arrangement.SpaceAround,
     ) {
-        Icon(
-            imageVector = Icons.Filled.Favorite,
-            contentDescription = stringResource(id = R.string.heart_rate)
-        )
-        HRText(
-            hr = uiState.heartRate
-        )
-        Icon(
-            imageVector = Icons.Default.LocalFireDepartment,
-            contentDescription = stringResource(id = R.string.calories)
-        )
-        if (uiState.calories != null) {
+        Row {
+            Icon(
+                imageVector = Icons.Filled.Favorite,
+                contentDescription = stringResource(id = R.string.heart_rate)
+            )
+            HRText(
+                hr = uiState.exerciseState?.exerciseMetrics?.heartRate
+            )
+        }
+        Row {
+            Icon(
+                imageVector = Icons.Default.LocalFireDepartment,
+                contentDescription = stringResource(id = R.string.calories)
+            )
             CaloriesText(
-                uiState.calories!!
+                uiState.exerciseState?.exerciseMetrics?.calories
             )
         }
     }
@@ -184,24 +191,27 @@ private fun HeartRateAndCaloriesRow(uiState: ExerciseScreenState) {
 
 @Composable
 private fun DurationRow(uiState: ExerciseScreenState) {
-    val lastActiveDurationCheckpoint = uiState.exerciseState?.lastActiveDurationCheckpoint
+    val lastActiveDurationCheckpoint = uiState.exerciseState?.activeDurationCheckpoint
+    val exerciseState = uiState.exerciseState?.exerciseState
     Row(
-        horizontalArrangement = Arrangement.Center,
+        horizontalArrangement = Arrangement.SpaceAround,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Icon(
-            imageVector = Icons.Default.WatchLater,
-            contentDescription = stringResource(id = R.string.duration)
-        )
-        if (lastActiveDurationCheckpoint != null) {
-            ActiveDurationText(
-                checkpoint = lastActiveDurationCheckpoint,
-                state = uiState.exerciseState.exerciseState
-            ) {
-                formatElapsedTime(uiState.elapsedTime?.duration)
+        Row {
+            Icon(
+                imageVector = Icons.Default.WatchLater,
+                contentDescription = stringResource(id = R.string.duration)
+            )
+            if (exerciseState != null && lastActiveDurationCheckpoint != null) {
+                ActiveDurationText(
+                    checkpoint = lastActiveDurationCheckpoint,
+                    state = uiState.exerciseState.exerciseState
+                ) {
+                    Text(text = formatElapsedTime(it))
+                }
+            } else {
+                Text(text = "--")
             }
-        } else {
-            Text(text = "--")
         }
     }
 }

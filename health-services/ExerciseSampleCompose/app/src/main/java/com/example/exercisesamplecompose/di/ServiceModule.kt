@@ -19,10 +19,6 @@ package com.example.exercisesamplecompose.di
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
-import androidx.health.services.client.HealthServices
-import androidx.health.services.client.HealthServicesClient
-import com.example.exercisesamplecompose.service.AndroidLogExerciseLogger
-import com.example.exercisesamplecompose.service.ExerciseLogger
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

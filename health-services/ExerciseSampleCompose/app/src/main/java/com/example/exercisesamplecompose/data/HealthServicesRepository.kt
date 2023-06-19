@@ -22,7 +22,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import androidx.health.services.client.data.LocationAvailability
-import com.example.exercisesamplecompose.service.ActiveDurationUpdate
 import com.example.exercisesamplecompose.service.ExerciseService
 import com.example.exercisesamplecompose.service.ExerciseServiceState
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -35,13 +34,14 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
 class HealthServicesRepository @Inject constructor(
     @ApplicationContext private val applicationContext: Context,
     val exerciseClientManager: ExerciseClientManager,
-    coroutineScope: CoroutineScope
+    val coroutineScope: CoroutineScope
 ) {
     private val exerciseService: MutableStateFlow<ExerciseService?> = MutableStateFlow(null)
 
@@ -51,9 +51,7 @@ class HealthServicesRepository @Inject constructor(
             flowOf(ServiceState.Disconnected)
         } else {
             exerciseService.exerciseServiceMonitor.exerciseServiceState.map {
-                ServiceState.Connected(it).also {
-                    println(it)
-                }
+                ServiceState.Connected(it)
             }
         }
     }.stateIn(
@@ -71,11 +69,11 @@ class HealthServicesRepository @Inject constructor(
     suspend fun isTrackingExerciseInAnotherApp() =
         exerciseClientManager.exerciseClient.isTrackingExerciseInAnotherApp()
 
-    suspend fun prepareExercise() = exerciseService.value!!.prepareExercise()
-    suspend fun startExercise() = exerciseService.value!!.startExercise()
-    suspend fun pauseExercise() = exerciseService.value!!.pauseExercise()
-    suspend fun endExercise() = exerciseService.value!!.endExercise()
-    suspend fun resumeExercise() = exerciseService.value!!.resumeExercise()
+    fun prepareExercise() = coroutineScope.launch { exerciseService.value!!.prepareExercise() }
+    fun startExercise() = coroutineScope.launch { exerciseService.value!!.startExercise() }
+    fun pauseExercise() = coroutineScope.launch { exerciseService.value!!.pauseExercise() }
+    fun endExercise() = coroutineScope.launch { exerciseService.value!!.endExercise() }
+    fun resumeExercise() = coroutineScope.launch { exerciseService.value!!.resumeExercise() }
 
     private val connection = object : android.content.ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
@@ -108,7 +106,6 @@ sealed class ServiceState {
         val exerciseServiceState: ExerciseServiceState,
     ) : ServiceState() {
         val locationAvailabilityState: LocationAvailability = exerciseServiceState.locationAvailability
-        val activeDurationUpdate: ActiveDurationUpdate? = exerciseServiceState.exerciseDurationUpdate
     }
 }
 

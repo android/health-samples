@@ -1,7 +1,6 @@
 package com.example.exercisesamplecompose.presentation.preparing
 
 import android.Manifest
-import androidx.health.services.client.data.LocationAvailability
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.exercisesamplecompose.data.HealthServicesRepository
@@ -33,9 +32,7 @@ class PreparingViewModel @Inject constructor(
     }
 
     fun startExercise() {
-        viewModelScope.launch {
             healthServicesRepository.startExercise()
-        }
     }
 
     val uiState: StateFlow<PreparingScreenState> = healthServicesRepository.serviceState.map {

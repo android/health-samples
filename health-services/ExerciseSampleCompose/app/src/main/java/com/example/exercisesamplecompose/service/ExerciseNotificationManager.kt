@@ -13,7 +13,6 @@ import androidx.wear.ongoing.Status
 import com.example.exercisesamplecompose.R
 import com.example.exercisesamplecompose.app.MainActivity
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.android.scopes.ServiceScoped
 import java.time.Duration
 import javax.inject.Inject
 

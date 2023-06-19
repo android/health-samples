@@ -64,7 +64,7 @@ class ExerciseService : LifecycleService() {
      * Prepare exercise in this service's coroutine context.
      */
     suspend fun prepareExercise() {
-            exerciseClientManager.prepareExercise()
+        exerciseClientManager.prepareExercise()
     }
 
     /**
@@ -199,7 +199,7 @@ class ExerciseService : LifecycleService() {
             startForeground(
                 ExerciseNotificationManager.NOTIFICATION_ID,
                 exerciseNotificationManager.buildNotification(
-                    serviceState.exerciseDurationUpdate?.duration ?: Duration.ZERO
+                    serviceState.activeDurationCheckpoint?.activeDuration ?: Duration.ZERO
                 )
             )
         }

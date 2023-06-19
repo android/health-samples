@@ -21,9 +21,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.wear.compose.material.Text
 
 @Composable
-fun CaloriesText(calories: Double) {
-    Text(text = formatCalories(calories))
-
+fun CaloriesText(calories: Double?) {
+    if (calories != null)
+        Text(text = formatCalories(calories))
+    else
+        Text(text = "--")
 }
 
 @Preview

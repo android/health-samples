@@ -69,7 +69,13 @@ class ExerciseClientManager @Inject constructor(
     suspend fun startExercise() {
         logger.log("Starting exercise")
         // Types for which we want to receive metrics. Only ask for ones that are supported.
-        val capabilities = getExerciseCapabilities() ?: return
+        val capabilities = getExerciseCapabilities()
+
+        if (capabilities == null) {
+            logger.log("No capabilities")
+            return
+        }
+
         val dataTypes = setOf(
             DataType.HEART_RATE_BPM,
             DataType.HEART_RATE_BPM_STATS,
@@ -113,6 +119,7 @@ class ExerciseClientManager @Inject constructor(
         )
 
         exerciseClient.startExercise(config)
+        logger.log("Started exercise")
     }
 
     /***

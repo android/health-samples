@@ -45,7 +45,6 @@ import com.google.android.horologist.compose.layout.ScalingLazyColumn
 import com.google.android.horologist.compose.layout.ScalingLazyColumnDefaults
 import com.google.android.horologist.compose.layout.ScalingLazyColumnState
 import java.time.Duration
-import kotlin.time.toKotlinDuration
 
 /**End-of-workout summary screen**/
 @Composable
