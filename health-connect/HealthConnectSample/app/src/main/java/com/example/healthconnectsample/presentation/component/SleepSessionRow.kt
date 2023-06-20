@@ -38,7 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.health.connect.client.records.SleepStageRecord
+import androidx.health.connect.client.records.SleepSessionRecord
 import com.example.healthconnectsample.R
 import com.example.healthconnectsample.data.SleepSessionData
 import com.example.healthconnectsample.data.dateTimeWithOffsetOrDefault
@@ -131,12 +131,10 @@ fun SleepSessionRowPreview() {
                     endZoneOffset = end.offset,
                     duration = Duration.between(start, end),
                     stages = listOf(
-                        SleepStageRecord(
-                            stage = SleepStageRecord.STAGE_TYPE_DEEP,
+                        SleepSessionRecord.Stage(
+                            stage = SleepSessionRecord.STAGE_TYPE_DEEP,
                             startTime = start.toInstant(),
-                            startZoneOffset = start.offset,
                             endTime = end.toInstant(),
-                            endZoneOffset = end.offset
                         )
                     )
                 ),

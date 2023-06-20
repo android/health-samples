@@ -16,7 +16,6 @@
 package com.example.healthconnectsample.data
 
 import androidx.health.connect.client.records.SleepSessionRecord
-import androidx.health.connect.client.records.SleepStageRecord
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneOffset
@@ -33,5 +32,5 @@ data class SleepSessionData(
     val endTime: Instant,
     val endZoneOffset: ZoneOffset?,
     val duration: Duration?,
-    val stages: List<SleepStageRecord> = listOf()
+    val stages: List<SleepSessionRecord.Stage> = listOf()
 )

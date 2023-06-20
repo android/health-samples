@@ -101,7 +101,7 @@ class HealthConnectManager(private val context: Context) {
         private set
 
     fun checkAvailability() {
-        availability.value = HealthConnectClient.sdkStatus(context)
+        availability.value = HealthConnectClient.getSdkStatus(context)
     }
 
     init {
@@ -266,13 +266,14 @@ class HealthConnectManager(private val context: Context) {
      */
     suspend fun deleteAllSleepData() {
         val now = Instant.now()
+        // [SleepStageRecord] is intentionally left here for legacy record deletion.
         healthConnectClient.deleteRecords(SleepStageRecord::class, TimeRangeFilter.before(now))
         healthConnectClient.deleteRecords(SleepSessionRecord::class, TimeRangeFilter.before(now))
     }
 
     /**
-     * Generates a week's worth of sleep data using both a [SleepSessionRecord] to describe the overall
-     * period of sleep, and additionally multiple [SleepStageRecord] periods which cover the entire
+     * Generates a week's worth of sleep data using a [SleepSessionRecord] to describe the overall
+     * period of sleep, with multiple [SleepSessionRecord.Stage] periods which cover the entire
      * [SleepSessionRecord]. For the purposes of this sample, the sleep stage data is generated randomly.
      */
     suspend fun generateSleepData() {
@@ -293,11 +294,10 @@ class HealthConnectManager(private val context: Context) {
                 startTime = bedtime.toInstant(),
                 startZoneOffset = bedtime.offset,
                 endTime = wakeUp.toInstant(),
-                endZoneOffset = wakeUp.offset
+                endZoneOffset = wakeUp.offset,
+                stages = generateSleepStages(bedtime, wakeUp)
             )
-            val sleepStages = generateSleepStages(bedtime, wakeUp)
             records.add(sleepSession)
-            records.addAll(sleepStages)
         }
         healthConnectClient.insertRecords(records)
     }
@@ -307,7 +307,7 @@ class HealthConnectManager(private val context: Context) {
      * sleep data.
      *
      * In addition to reading [SleepSessionRecord]s, for each session, the duration is calculated to
-     * demonstrate aggregation, and the underlying [SleepStageRecord] data is also read.
+     * demonstrate aggregation, and the underlying [SleepSessionRecord.Stage] data is also read.
      */
     suspend fun readSleepSessions(): List<SleepSessionData> {
         val lastDay = ZonedDateTime.now().truncatedTo(ChronoUnit.DAYS)
@@ -330,11 +330,6 @@ class HealthConnectManager(private val context: Context) {
                 timeRangeFilter = sessionTimeFilter
             )
             val aggregateResponse = healthConnectClient.aggregate(durationAggregateRequest)
-            val stagesRequest = ReadRecordsRequest(
-                recordType = SleepStageRecord::class,
-                timeRangeFilter = sessionTimeFilter
-            )
-            val stagesResponse = healthConnectClient.readRecords(stagesRequest)
             sessions.add(
                 SleepSessionData(
                     uid = session.metadata.id,
@@ -345,7 +340,7 @@ class HealthConnectManager(private val context: Context) {
                     endTime = session.endTime,
                     endZoneOffset = session.endZoneOffset,
                     duration = aggregateResponse[SleepSessionRecord.SLEEP_DURATION_TOTAL],
-                    stages = stagesResponse.records
+                    stages = session.stages
                 )
             )
         }
@@ -427,24 +422,22 @@ class HealthConnectManager(private val context: Context) {
     }
 
     /**
-     * Creates a random list of sleep stages that spans the specified [start] to [end] time.
+     * Creates a random sleep stage that spans the specified [start] to [end] time.
      */
     private fun generateSleepStages(
         start: ZonedDateTime,
         end: ZonedDateTime
-    ): List<SleepStageRecord> {
-        val sleepStages = mutableListOf<SleepStageRecord>()
+    ): List<SleepSessionRecord.Stage> {
+        val sleepStages = mutableListOf<SleepSessionRecord.Stage>()
         var stageStart = start
         while (stageStart < end) {
             val stageEnd = stageStart.plusMinutes(Random.nextLong(30, 120))
             val checkedEnd = if (stageEnd > end) end else stageEnd
             sleepStages.add(
-                SleepStageRecord(
+                SleepSessionRecord.Stage(
                     stage = randomSleepStage(),
                     startTime = stageStart.toInstant(),
-                    startZoneOffset = stageStart.offset,
-                    endTime = checkedEnd.toInstant(),
-                    endZoneOffset = checkedEnd.offset
+                    endTime = checkedEnd.toInstant()
                 )
             )
             stageStart = checkedEnd

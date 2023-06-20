@@ -22,7 +22,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.SleepSessionRecord
-import androidx.health.connect.client.records.SleepStageRecord
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -37,9 +36,7 @@ class SleepSessionViewModel(private val healthConnectManager: HealthConnectManag
 
     val permissions = setOf(
         HealthPermission.getReadPermission(SleepSessionRecord::class),
-        HealthPermission.getWritePermission(SleepSessionRecord::class),
-        HealthPermission.getReadPermission(SleepStageRecord::class),
-        HealthPermission.getWritePermission(SleepStageRecord::class)
+        HealthPermission.getWritePermission(SleepSessionRecord::class)
     )
 
     var permissionsGranted = mutableStateOf(false)

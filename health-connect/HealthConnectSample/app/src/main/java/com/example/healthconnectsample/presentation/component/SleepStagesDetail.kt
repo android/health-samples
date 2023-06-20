@@ -26,13 +26,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.health.connect.client.records.SleepStageRecord
+import androidx.health.connect.client.records.SleepSessionRecord
 import com.example.healthconnectsample.formatDisplayTimeStartEnd
 import com.example.healthconnectsample.presentation.theme.HealthConnectTheme
 import java.time.ZonedDateTime
 
 @Composable
-fun SleepStagesDetail(sleepStages: List<SleepStageRecord>) {
+fun SleepStagesDetail(sleepStages: List<SleepSessionRecord.Stage>) {
     sleepStages.forEach { stage ->
         Row(
             modifier = Modifier
@@ -40,7 +40,7 @@ fun SleepStagesDetail(sleepStages: List<SleepStageRecord>) {
                 .padding(horizontal = 32.dp)
         ) {
             val startEndLabel = formatDisplayTimeStartEnd(
-                stage.startTime, stage.startZoneOffset, stage.endTime, stage.endZoneOffset
+                stage.startTime, null, stage.endTime, null
             )
             Text(
                 modifier = Modifier.weight(0.5f),
@@ -51,7 +51,7 @@ fun SleepStagesDetail(sleepStages: List<SleepStageRecord>) {
             Text(
                 modifier = Modifier
                     .weight(0.4f),
-                text = SleepStageRecord.STAGE_TYPE_INT_TO_STRING_MAP[stage.stage] ?: "unknown",
+                text = SleepSessionRecord.STAGE_TYPE_INT_TO_STRING_MAP[stage.stage] ?: "unknown",
                 textAlign = TextAlign.Start
             )
         }
@@ -68,19 +68,15 @@ fun SleepStagesDetailPreview() {
         Column {
             SleepStagesDetail(
                 sleepStages = listOf(
-                    SleepStageRecord(
-                        stage = SleepStageRecord.STAGE_TYPE_DEEP,
+                    SleepSessionRecord.Stage(
+                        stage = SleepSessionRecord.STAGE_TYPE_DEEP,
                         startTime = start2.toInstant(),
-                        startZoneOffset = start2.offset,
-                        endTime = end2.toInstant(),
-                        endZoneOffset = end2.offset
+                        endTime = end2.toInstant()
                     ),
-                    SleepStageRecord(
-                        stage = SleepStageRecord.STAGE_TYPE_LIGHT,
+                    SleepSessionRecord.Stage(
+                        stage = SleepSessionRecord.STAGE_TYPE_LIGHT,
                         startTime = start1.toInstant(),
-                        startZoneOffset = start1.offset,
-                        endTime = start2.toInstant(),
-                        endZoneOffset = start2.offset
+                        endTime = start2.toInstant()
                     )
                 )
             )
