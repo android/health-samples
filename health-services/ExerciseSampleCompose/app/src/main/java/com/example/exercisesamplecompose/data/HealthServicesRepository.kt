@@ -64,7 +64,8 @@ class HealthServicesRepository @Inject constructor(
 
     private suspend fun getExerciseCapabilities() = exerciseClientManager.getExerciseCapabilities()
 
-    suspend fun isExerciseInProgress(): Boolean = exerciseClientManager.exerciseClient.isExerciseInProgress()
+    suspend fun isExerciseInProgress(): Boolean =
+        exerciseClientManager.exerciseClient.isExerciseInProgress()
 
     suspend fun isTrackingExerciseInAnotherApp() =
         exerciseClientManager.exerciseClient.isTrackingExerciseInAnotherApp()
@@ -105,7 +106,8 @@ sealed class ServiceState {
     data class Connected(
         val exerciseServiceState: ExerciseServiceState,
     ) : ServiceState() {
-        val locationAvailabilityState: LocationAvailability = exerciseServiceState.locationAvailability
+        val locationAvailabilityState: LocationAvailability =
+            exerciseServiceState.locationAvailability
     }
 }
 

@@ -32,7 +32,7 @@ class PreparingViewModel @Inject constructor(
     }
 
     fun startExercise() {
-            healthServicesRepository.startExercise()
+        healthServicesRepository.startExercise()
     }
 
     val uiState: StateFlow<PreparingScreenState> = healthServicesRepository.serviceState.map {
