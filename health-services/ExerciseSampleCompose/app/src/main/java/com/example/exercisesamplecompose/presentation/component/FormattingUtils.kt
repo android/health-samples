@@ -82,13 +82,13 @@ fun formatDistanceKm(meters: Double?) = buildAnnotatedString {
     }
 }
 
-/** Format a distance to two decimals with a "km" suffix. */
+/** Format heartrate with a "bpm" suffix. */
 @Composable
 fun formatHeartRate(bpm: Double?) = buildAnnotatedString {
     if (bpm == null) {
         append("--")
     } else {
-        append("%f".format(bpm))
+        append("%.0f".format(bpm))
         withStyle(style = MaterialTheme.typography.caption3.toSpanStyle()) {
             append("bpm")
         }

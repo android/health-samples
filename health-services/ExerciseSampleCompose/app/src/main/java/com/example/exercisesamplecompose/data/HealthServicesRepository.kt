@@ -67,7 +67,7 @@ class HealthServicesRepository @Inject constructor(
     suspend fun isExerciseInProgress(): Boolean =
         exerciseClientManager.exerciseClient.isExerciseInProgress()
 
-    suspend fun isTrackingExerciseInAnotherApp() =
+    suspend fun isTrackingExerciseInAnotherApp(): Boolean =
         exerciseClientManager.exerciseClient.isTrackingExerciseInAnotherApp()
 
     fun prepareExercise() = coroutineScope.launch { exerciseService.value!!.prepareExercise() }

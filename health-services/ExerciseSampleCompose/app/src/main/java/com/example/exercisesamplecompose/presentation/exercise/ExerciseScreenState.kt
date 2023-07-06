@@ -23,6 +23,9 @@ data class ExerciseScreenState(
     val isEnding: Boolean
         get() = exerciseState?.exerciseState?.isEnding == true
 
+    val isEnded: Boolean
+        get() = exerciseState?.exerciseState?.isEnded == true
+
     val isPaused: Boolean
         get() = exerciseState?.exerciseState?.isPaused == true
 }

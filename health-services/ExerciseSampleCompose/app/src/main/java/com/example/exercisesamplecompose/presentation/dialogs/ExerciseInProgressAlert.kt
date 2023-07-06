@@ -30,13 +30,14 @@ import com.google.android.horologist.compose.material.AlertDialog
 fun ExerciseInProgressAlert(
     onNegative: () -> Unit,
     onPositive: () -> Unit,
+    showDialog: Boolean,
 ) {
     AlertDialog(
         title = stringResource(id = R.string.exercise_in_progress),
         message = stringResource(id = R.string.ending_continue),
         onCancelButtonClick = onNegative,
         onOKButtonClick = onPositive,
-        showDialog = true,
+        showDialog = showDialog,
         scalingLazyListState = rememberScalingLazyListState()
     )
 }
@@ -44,6 +45,6 @@ fun ExerciseInProgressAlert(
 @WearPreviewDevices
 @Composable
 fun ExerciseInProgressAlertPreview() {
-    ExerciseInProgressAlert(onNegative = {}, onPositive = {})
+    ExerciseInProgressAlert(onNegative = {}, onPositive = {}, showDialog = true)
 }
 

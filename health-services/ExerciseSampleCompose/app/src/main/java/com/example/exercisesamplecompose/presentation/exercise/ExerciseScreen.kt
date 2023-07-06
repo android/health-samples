@@ -60,7 +60,7 @@ fun ExerciseRoute(
     val viewModel = hiltViewModel<ExerciseViewModel>()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    if (uiState.isEnding) {
+    if (uiState.isEnded) {
         SideEffect {
             onSummary(uiState.toSummary())
         }
@@ -207,7 +207,7 @@ private fun DurationRow(uiState: ExerciseScreenState) {
                     checkpoint = lastActiveDurationCheckpoint,
                     state = uiState.exerciseState.exerciseState
                 ) {
-                    Text(text = formatElapsedTime(it))
+                    Text(text = formatElapsedTime(it, includeSeconds = true))
                 }
             } else {
                 Text(text = "--")

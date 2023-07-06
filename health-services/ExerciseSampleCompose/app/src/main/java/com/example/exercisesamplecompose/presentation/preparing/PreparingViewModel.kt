@@ -36,7 +36,13 @@ class PreparingViewModel @Inject constructor(
     }
 
     val uiState: StateFlow<PreparingScreenState> = healthServicesRepository.serviceState.map {
-        toUiState(it)
+        val isTrackingInAnotherApp = healthServicesRepository.isTrackingExerciseInAnotherApp()
+        val hasExerciseCapabilities = healthServicesRepository.hasExerciseCapability()
+        toUiState(
+            serviceState = it,
+            isTrackingInAnotherApp = isTrackingInAnotherApp,
+            hasExerciseCapabilities = hasExerciseCapabilities
+        )
     }.stateIn(
         viewModelScope,
         started = SharingStarted.WhileSubscribed(5.seconds),
@@ -45,15 +51,15 @@ class PreparingViewModel @Inject constructor(
 
     private fun toUiState(
         serviceState: ServiceState,
-        isTrackingAnotherExercise: Boolean = false,
+        isTrackingInAnotherApp: Boolean = false,
         hasExerciseCapabilities: Boolean = true
     ): PreparingScreenState {
         return if (serviceState is ServiceState.Disconnected) {
-            PreparingScreenState.Disconnected(serviceState, isTrackingAnotherExercise, permissions)
+            PreparingScreenState.Disconnected(serviceState, isTrackingInAnotherApp, permissions)
         } else {
             PreparingScreenState.Preparing(
                 serviceState = serviceState as ServiceState.Connected,
-                isTrackingAnotherExercise = isTrackingAnotherExercise,
+                isTrackingInAnotherApp = isTrackingInAnotherApp,
                 requiredPermissions = permissions,
                 hasExerciseCapabilities = hasExerciseCapabilities,
             )
