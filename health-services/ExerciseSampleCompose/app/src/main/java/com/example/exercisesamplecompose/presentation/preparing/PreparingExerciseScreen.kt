@@ -37,6 +37,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -102,8 +103,12 @@ fun PreparingExerciseRoute(
         )
 
         if (uiState.isTrackingInAnotherApp) {
-            val dismissed by remember { mutableStateOf(false) }
-            ExerciseInProgressAlert(onNegative = onFinishActivity, onPositive = {}, !dismissed)
+            var dismissed by remember { mutableStateOf(false) }
+            ExerciseInProgressAlert(
+                onNegative = onFinishActivity,
+                onPositive = { dismissed = true },
+                showDialog = !dismissed
+            )
         }
     }
 }
