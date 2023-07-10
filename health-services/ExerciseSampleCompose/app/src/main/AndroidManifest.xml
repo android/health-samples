@@ -30,7 +30,7 @@
         <package android:name="com.google.android.wearable.healthservices" />
     </queries>
     <application
-        android:name="com.example.exercisesamplecompose.ExerciseSampleApplication"
+        android:name="com.example.exercisesamplecompose.app.ExerciseSampleApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -45,7 +45,7 @@
             android:value="true" />
 
         <activity
-            android:name="com.example.exercisesamplecompose.MainActivity"
+            android:name="com.example.exercisesamplecompose.app.MainActivity"
             android:exported="true"
             android:launchMode="singleTask">
             <intent-filter>
@@ -55,7 +55,7 @@
         </activity>
         <!-- Add foreground service location permission for exercise tracking -->
         <service
-            android:name=".service.ForegroundService"
+            android:name=".service.ExerciseService"
             android:exported="false"
             android:foregroundServiceType="location" />
     </application>

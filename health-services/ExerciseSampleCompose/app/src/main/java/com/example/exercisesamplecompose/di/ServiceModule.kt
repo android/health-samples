@@ -14,34 +14,27 @@
  * limitations under the License.
  */
 
-package com.example.exercisesamplecompose
+package com.example.exercisesamplecompose.di
 
+import android.app.NotificationManager
+import android.app.Service
 import android.content.Context
-import androidx.health.services.client.HealthServices
-import androidx.health.services.client.HealthServicesClient
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.components.ServiceComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import dagger.hilt.android.scopes.ServiceScoped
 
 /**
  * Hilt module that provides singleton (application-scoped) objects.
  */
 @Module
-@InstallIn(SingletonComponent::class)
-class MainModule {
-    @Singleton
-    @Provides
-    fun provideHealthServicesClient(@ApplicationContext context: Context): HealthServicesClient =
-        HealthServices.getClient(context)
+@InstallIn(ServiceComponent::class)
+class ServiceModule {
 
-    @Singleton
+    @ServiceScoped
     @Provides
-    fun provideApplicationCoroutineScope(): CoroutineScope =
-        CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    fun provideNotificationManager(@ApplicationContext context: Context): NotificationManager =
+        context.getSystemService(Service.NOTIFICATION_SERVICE) as NotificationManager
 }

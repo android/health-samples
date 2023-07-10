@@ -50,7 +50,6 @@ fun PassiveGoalsScreen(
 ) {
     ScalingLazyColumn(
         modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
             PassiveGoalsToggle(

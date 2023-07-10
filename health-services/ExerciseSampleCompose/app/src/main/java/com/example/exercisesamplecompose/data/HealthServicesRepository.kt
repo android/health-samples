@@ -13,77 +13,85 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.example.exercisesamplecompose.data
 
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.health.services.client.data.LocationAvailability
-import com.example.exercisesamplecompose.service.ActiveDurationUpdate
-import com.example.exercisesamplecompose.service.ForegroundService
-import com.example.exercisesamplecompose.service.ForegroundService.ExerciseServiceState
+import com.example.exercisesamplecompose.service.ExerciseService
+import com.example.exercisesamplecompose.service.ExerciseServiceState
 import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 
 class HealthServicesRepository @Inject constructor(
-    @ApplicationContext private val applicationContext: Context
+    @ApplicationContext private val applicationContext: Context,
+    val exerciseClientManager: ExerciseClientManager,
+    val coroutineScope: CoroutineScope
 ) {
+    private val exerciseService: MutableStateFlow<ExerciseService?> = MutableStateFlow(null)
 
-    @Inject
-    lateinit var exerciseClientManager: ExerciseClientManager
-
-    private var exerciseService: ForegroundService? = null
+    @Suppress("IfThenToElvis")
+    val serviceState: StateFlow<ServiceState> = exerciseService.flatMapLatest { exerciseService ->
+        if (exerciseService == null) {
+            flowOf(ServiceState.Disconnected)
+        } else {
+            exerciseService.exerciseServiceMonitor.exerciseServiceState.map {
+                ServiceState.Connected(it)
+            }
+        }
+    }.stateIn(
+        coroutineScope,
+        started = SharingStarted.Eagerly,
+        initialValue = ServiceState.Disconnected
+    )
 
     suspend fun hasExerciseCapability(): Boolean = getExerciseCapabilities() != null
 
     private suspend fun getExerciseCapabilities() = exerciseClientManager.getExerciseCapabilities()
 
-    suspend fun isExerciseInProgress(): Boolean = exerciseClientManager.isExerciseInProgress()
+    suspend fun isExerciseInProgress(): Boolean =
+        exerciseClientManager.exerciseClient.isExerciseInProgress()
 
+    suspend fun isTrackingExerciseInAnotherApp(): Boolean =
+        exerciseClientManager.exerciseClient.isTrackingExerciseInAnotherApp()
 
-    suspend fun isTrackingExerciseInAnotherApp() =
-        exerciseClientManager.isTrackingExerciseInAnotherApp()
-
-
-    fun prepareExercise() = exerciseService?.prepareExercise()
-    fun startExercise() = exerciseService?.startExercise()
-    fun pauseExercise() = exerciseService?.pauseExercise()
-    fun endExercise() = exerciseService?.endExercise()
-    fun resumeExercise() = exerciseService?.resumeExercise()
-
-    var bound = mutableStateOf(false)
-
-    var serviceState: MutableState<ServiceState> = mutableStateOf(ServiceState.Disconnected)
+    fun prepareExercise() = coroutineScope.launch { exerciseService.value!!.prepareExercise() }
+    fun startExercise() = coroutineScope.launch { exerciseService.value!!.startExercise() }
+    fun pauseExercise() = coroutineScope.launch { exerciseService.value!!.pauseExercise() }
+    fun endExercise() = coroutineScope.launch { exerciseService.value!!.endExercise() }
+    fun resumeExercise() = coroutineScope.launch { exerciseService.value!!.resumeExercise() }
 
     private val connection = object : android.content.ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
-            val binder = service as ForegroundService.LocalBinder
+            val binder = service as ExerciseService.LocalBinder
             binder.getService().let {
-                exerciseService = it
-                serviceState.value = ServiceState.Connected(
-                    exerciseServiceState = it.exerciseServiceState,
-                    locationAvailabilityState = it.locationAvailabilityState,
-                    activeDurationUpdate = it.exerciseServiceState.value.exerciseDurationUpdate,
-                )
+                exerciseService.value = it
             }
-            bound.value = true
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
-            bound.value = false
-            exerciseService = null
-            serviceState.value = ServiceState.Disconnected
+            exerciseService.value = null
         }
 
     }
 
     fun createService() {
-        Intent(applicationContext, ForegroundService::class.java).also { intent ->
+        Intent(applicationContext, ExerciseService::class.java).also { intent ->
             applicationContext.startService(intent)
             applicationContext.bindService(intent, connection, Context.BIND_AUTO_CREATE)
         }
@@ -96,10 +104,11 @@ class HealthServicesRepository @Inject constructor(
 sealed class ServiceState {
     object Disconnected : ServiceState()
     data class Connected(
-        val exerciseServiceState: StateFlow<ExerciseServiceState>,
-        val locationAvailabilityState: StateFlow<LocationAvailability>,
-        val activeDurationUpdate: ActiveDurationUpdate?,
-    ) : ServiceState()
+        val exerciseServiceState: ExerciseServiceState,
+    ) : ServiceState() {
+        val locationAvailabilityState: LocationAvailability =
+            exerciseServiceState.locationAvailability
+    }
 }
 
 

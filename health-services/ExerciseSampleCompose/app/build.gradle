@@ -41,26 +41,32 @@ android {
   }
 
   compileOptions {
-    sourceCompatibility JavaVersion.VERSION_1_8
-    targetCompatibility JavaVersion.VERSION_1_8
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
   }
   kotlinOptions {
-    jvmTarget = "1.8"
+    jvmTarget = JavaVersion.VERSION_17.majorVersion
+    freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
+    freeCompilerArgs += "-opt-in=com.google.android.horologist.annotations.ExperimentalHorologistApi"
   }
   buildFeatures {
     compose true
   }
   composeOptions {
-    kotlinCompilerExtensionVersion libs.versions.compose.get()
+    kotlinCompilerExtensionVersion libs.compose.compiler.get().version
   }
   packagingOptions {
-    pickFirst 'data.proto'
+//    pickFirst 'data.proto'
     resources {
       excludes += "/META-INF/{AL2.0,LGPL2.1}"
 
     }
   }
   namespace 'com.example.exercisesamplecompose'
+}
+
+kotlin {
+  jvmToolchain(17)
 }
 
 dependencies {
@@ -70,9 +76,10 @@ dependencies {
 
   // Compose for Wear OS Dependencies
   implementation libs.wear.compose.material
-  implementation 'androidx.compose.material:material-icons-extended:1.3.1'
+  implementation libs.androidx.material.icons.extended
   implementation libs.androidx.wear
   implementation libs.androidx.compose.runtime
+  implementation libs.androidx.compose.ui.tooling
 
   // Foundation is additive, so you can use the mobile version in your Wear OS app.
   implementation libs.wear.compose.foundation
@@ -83,10 +90,12 @@ dependencies {
   //Wear OS Compose Navigation
   implementation libs.compose.wear.navigation
   implementation libs.androidx.compose.navigation
+  implementation libs.horologist.compose.layout
+  implementation libs.horologist.compose.material
+  implementation libs.horologist.health.composables
 
   //Wear Health Services
   implementation libs.androidx.health.services
-
 
   // Lifecycle components
   implementation libs.androidx.lifecycle.viewmodel
@@ -94,9 +103,8 @@ dependencies {
   implementation libs.androidx.lifecycle.common.java8
   implementation libs.androidx.lifecycle.extensions
   implementation libs.androidx.lifecycle.service
-  implementation libs.androidx.lifecycle.runtime.livedata
   implementation libs.androidx.lifecycle.runtime.compose
-
+  implementation libs.androidx.core.splashscreen
 
   // Ongoing Activity
   implementation libs.wear.ongoing.activity

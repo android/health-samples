@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.exercisesamplecompose
+package com.example.exercisesamplecompose.app
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
-
 
 @HiltAndroidApp
 class ExerciseSampleApplication : Application()

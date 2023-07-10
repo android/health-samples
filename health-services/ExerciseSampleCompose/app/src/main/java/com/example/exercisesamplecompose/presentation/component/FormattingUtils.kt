@@ -15,51 +15,82 @@
  */
 package com.example.exercisesamplecompose.presentation.component
 
-import android.text.style.RelativeSizeSpan
-import androidx.core.text.buildSpannedString
-import androidx.core.text.inSpans
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.wear.compose.material.MaterialTheme
+import java.time.Duration
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 
-private const val UNITS_RELATIVE_SIZE = .6f
 private val MINUTES_PER_HOUR = TimeUnit.HOURS.toMinutes(1)
 private val SECONDS_PER_MINUTE = TimeUnit.MINUTES.toSeconds(1)
 
-fun formatElapsedTime(elapsedDuration: kotlin.time.Duration, includeSeconds: Boolean) =
-    buildSpannedString {
-        val hours = elapsedDuration.inWholeHours
+@Composable
+fun formatElapsedTime(
+    elapsedDuration: Duration?,
+    includeSeconds: Boolean = false
+) = buildAnnotatedString {
+    if (elapsedDuration == null) {
+        append("--")
+    } else {
+        val hours = elapsedDuration.toHours()
         if (hours > 0) {
             append(hours.toString())
-            inSpans(RelativeSizeSpan(UNITS_RELATIVE_SIZE)) {
+            withStyle(style = MaterialTheme.typography.caption3.toSpanStyle()) {
                 append("h")
             }
         }
-        val minutes = elapsedDuration.inWholeMinutes % MINUTES_PER_HOUR
+        val minutes = elapsedDuration.toMinutes() % MINUTES_PER_HOUR
         append("%02d".format(minutes))
-        inSpans(RelativeSizeSpan(UNITS_RELATIVE_SIZE)) {
+        withStyle(style = MaterialTheme.typography.caption3.toSpanStyle()) {
             append("m")
         }
         if (includeSeconds) {
-            val seconds = elapsedDuration.inWholeSeconds % SECONDS_PER_MINUTE
+            val seconds = elapsedDuration.seconds % SECONDS_PER_MINUTE
             append("%02d".format(seconds))
-            inSpans(RelativeSizeSpan(UNITS_RELATIVE_SIZE)) {
+            withStyle(style = MaterialTheme.typography.caption3.toSpanStyle()) {
                 append("s")
             }
         }
     }
+}
 
 /** Format calories burned to an integer with a "cal" suffix. */
-fun formatCalories(calories: Double) = buildSpannedString {
-    append(calories.roundToInt().toString())
-    inSpans(RelativeSizeSpan(UNITS_RELATIVE_SIZE)) {
-        append(" cal")
+@Composable
+fun formatCalories(calories: Double?) = buildAnnotatedString {
+    if (calories == null) {
+        append("--")
+    } else {
+        append(calories.roundToInt().toString())
+        withStyle(style = MaterialTheme.typography.caption3.toSpanStyle()) {
+            append(" cal")
+        }
     }
 }
 
 /** Format a distance to two decimals with a "km" suffix. */
-fun formatDistanceKm(meters: Double) = buildSpannedString {
-    append("%02.2f".format(meters / 1_000))
-    inSpans(RelativeSizeSpan(UNITS_RELATIVE_SIZE)) {
-        append("km")
+@Composable
+fun formatDistanceKm(meters: Double?) = buildAnnotatedString {
+    if (meters == null) {
+        append("--")
+    } else {
+        append("%02.2f".format(meters / 1_000))
+        withStyle(style = MaterialTheme.typography.caption3.toSpanStyle()) {
+            append("km")
+        }
+    }
+}
+
+/** Format heartrate with a "bpm" suffix. */
+@Composable
+fun formatHeartRate(bpm: Double?) = buildAnnotatedString {
+    if (bpm == null) {
+        append("--")
+    } else {
+        append("%.0f".format(bpm))
+        withStyle(style = MaterialTheme.typography.caption3.toSpanStyle()) {
+            append("bpm")
+        }
     }
 }

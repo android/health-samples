@@ -13,106 +13,86 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:OptIn(ExperimentalHorologistApi::class)
+
 package com.example.exercisesamplecompose.presentation
 
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
-import com.example.exercisesamplecompose.Screens
-
+import com.example.exercisesamplecompose.app.Screen.Exercise
+import com.example.exercisesamplecompose.app.Screen.ExerciseNotAvailable
+import com.example.exercisesamplecompose.app.Screen.PreparingExercise
+import com.example.exercisesamplecompose.app.Screen.Summary
+import com.example.exercisesamplecompose.app.navigateToTopLevel
+import com.example.exercisesamplecompose.presentation.dialogs.ExerciseNotAvailable
+import com.example.exercisesamplecompose.presentation.exercise.ExerciseRoute
+import com.example.exercisesamplecompose.presentation.preparing.PreparingExerciseRoute
+import com.example.exercisesamplecompose.presentation.summary.SummaryRoute
+import com.google.android.horologist.annotations.ExperimentalHorologistApi
+import com.google.android.horologist.compose.navscaffold.WearNavScaffold
+import com.google.android.horologist.compose.navscaffold.scrollable
 
 /** Navigation for the exercise app. **/
 
 @Composable
 fun ExerciseSampleApp(
     navController: NavHostController,
-    startDestination: String
+    onFinishActivity: () -> Unit
 ) {
-    SwipeDismissableNavHost(
-        navController = navController, startDestination = startDestination
+    WearNavScaffold(
+        navController = navController,
+        startDestination = Exercise.route
     ) {
-        composable(Screens.StartingUp.route) {
-            val viewModel = hiltViewModel<ExerciseViewModel>()
-            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-            StartingUp(onAvailable = {
-                navController.navigate(Screens.PreparingExercise.route) {
-                    popUpTo(navController.graph.id) {
-                        inclusive = true
-                    }
-                }
-            }, onUnavailable = {
-                navController.navigate(Screens.ExerciseNotAvailable.route) {
-                    popUpTo(navController.graph.id) {
-                        inclusive = false
-                    }
-                }
-            }, hasCapabilities = uiState.hasExerciseCapabilities
-
-            )
-        }
-        composable(Screens.PreparingExercise.route) {
-            val viewModel = hiltViewModel<ExerciseViewModel>()
-            val serviceState by viewModel.exerciseServiceState
-            val permissions = viewModel.permissions
-            val uiState by viewModel.uiState.collectAsState()
-            PreparingExercise(
-                onStartClick = {
-                    navController.navigate(Screens.ExerciseScreen.route) {
+        composable(PreparingExercise.route) {
+            PreparingExerciseRoute(
+                onStart = {
+                    navController.navigate(Exercise.route) {
                         popUpTo(navController.graph.id) {
                             inclusive = false
                         }
                     }
-
                 },
-                prepareExercise = { viewModel.prepareExercise() },
-                onStart = { viewModel.startExercise() },
-                serviceState = serviceState,
-                permissions = permissions,
-                isTrackingAnotherExercise = uiState.isTrackingAnotherExercise,
-            )
-        }
-        composable(Screens.ExerciseScreen.route) {
-            val viewModel = hiltViewModel<ExerciseViewModel>()
-            val serviceState by viewModel.exerciseServiceState
-            ExerciseScreen(
-                onPauseClick = { viewModel.pauseExercise() },
-                onEndClick = { viewModel.endExercise() },
-                onResumeClick = { viewModel.resumeExercise() },
-                onStartClick = { viewModel.startExercise() },
-                serviceState = serviceState,
-                navController = navController,
-            )
-
-
-        }
-        composable(Screens.ExerciseNotAvailable.route) {
-            ExerciseNotAvailable()
-        }
-        composable(
-            Screens.SummaryScreen.route + "/{averageHeartRate}/{totalDistance}/{totalCalories}/{elapsedTime}",
-            arguments = listOf(navArgument("averageHeartRate") { type = NavType.StringType },
-                navArgument("totalDistance") { type = NavType.StringType },
-                navArgument("totalCalories") { type = NavType.StringType },
-                navArgument("elapsedTime") { type = NavType.StringType })
-        ) {
-            SummaryScreen(averageHeartRate = it.arguments?.getString("averageHeartRate")!!,
-                totalDistance = it.arguments?.getString("totalDistance")!!,
-                totalCalories = it.arguments?.getString("totalCalories")!!,
-                elapsedTime = it.arguments?.getString("elapsedTime")!!,
-                onRestartClick = {
-                    navController.navigate(Screens.StartingUp.route) {
+                onNoExerciseCapabilities = {
+                    navController.navigate(ExerciseNotAvailable.route) {
                         popUpTo(navController.graph.id) {
-                            inclusive = true
+                            inclusive = false
                         }
                     }
+                },
+                onFinishActivity = onFinishActivity
+            )
+        }
+
+        scrollable(Exercise.route) {
+            ExerciseRoute(
+                columnState = it.columnState,
+                onSummary = {
+                    navController.navigateToTopLevel(Summary, Summary.buildRoute(it))
+                }
+            )
+        }
+
+        composable(ExerciseNotAvailable.route) {
+            ExerciseNotAvailable()
+        }
+
+        scrollable(
+            Summary.route + "/{averageHeartRate}/{totalDistance}/{totalCalories}/{elapsedTime}",
+            arguments = listOf(
+                navArgument(Summary.averageHeartRateArg) { type = NavType.FloatType },
+                navArgument(Summary.totalDistanceArg) { type = NavType.FloatType },
+                navArgument(Summary.totalCaloriesArg) { type = NavType.FloatType },
+                navArgument(Summary.elapsedTimeArg) { type = NavType.StringType }
+            )
+        ) {
+            SummaryRoute(
+                columnState = it.columnState,
+                onRestartClick = {
+                    navController.navigateToTopLevel(PreparingExercise)
                 }
             )
         }
