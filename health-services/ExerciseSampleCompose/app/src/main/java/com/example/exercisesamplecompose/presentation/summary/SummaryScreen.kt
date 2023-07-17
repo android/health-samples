@@ -17,8 +17,6 @@
 
 package com.example.exercisesamplecompose.presentation.summary
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -26,12 +24,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.wear.compose.material.Button
-import androidx.wear.compose.material.ListHeader
-import androidx.wear.compose.material.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import com.example.exercisesamplecompose.R
 import com.example.exercisesamplecompose.presentation.component.SummaryFormat
@@ -44,6 +40,8 @@ import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.google.android.horologist.compose.layout.ScalingLazyColumn
 import com.google.android.horologist.compose.layout.ScalingLazyColumnDefaults
 import com.google.android.horologist.compose.layout.ScalingLazyColumnState
+import com.google.android.horologist.compose.material.Chip
+import com.google.android.horologist.compose.material.Title
 import java.time.Duration
 
 /**End-of-workout summary screen**/
@@ -69,7 +67,7 @@ fun SummaryScreen(
         modifier = Modifier.fillMaxSize(),
         columnState = columnState
     ) {
-        item { ListHeader { Text(stringResource(id = R.string.workout_complete)) } }
+        item { Title(text = stringResource(id = R.string.workout_complete)) }
         item {
             SummaryFormat(
                 value = formatElapsedTime(uiState.elapsedTime, includeSeconds = true),
@@ -99,19 +97,12 @@ fun SummaryScreen(
             )
         }
         item {
-            Row(
-                horizontalArrangement = Arrangement.Center,
+            Chip(
+                label = stringResource(id = R.string.restart),
+                onClick = onRestartClick,
                 modifier = Modifier
-                    .fillMaxWidth()
                     .padding(6.dp)
-            ) {
-                Button(
-                    onClick = { onRestartClick() },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = stringResource(id = R.string.restart))
-                }
-            }
+            )
         }
     }
 }
