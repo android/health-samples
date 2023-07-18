@@ -59,7 +59,7 @@ fun formatElapsedTime(
 /** Format calories burned to an integer with a "cal" suffix. */
 @Composable
 fun formatCalories(calories: Double?) = buildAnnotatedString {
-    if (calories == null) {
+    if (calories == null || calories.isNaN()) {
         append("--")
     } else {
         append(calories.roundToInt().toString())
@@ -82,10 +82,10 @@ fun formatDistanceKm(meters: Double?) = buildAnnotatedString {
     }
 }
 
-/** Format heartrate with a "bpm" suffix. */
+/** Format heart rate with a "bpm" suffix. */
 @Composable
 fun formatHeartRate(bpm: Double?) = buildAnnotatedString {
-    if (bpm == null) {
+    if (bpm == null || bpm.isNaN()) {
         append("--")
     } else {
         append("%.0f".format(bpm))
