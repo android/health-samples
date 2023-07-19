@@ -28,7 +28,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
@@ -46,9 +45,6 @@ import androidx.compose.ui.unit.dp
 import androidx.health.services.client.data.LocationAvailability
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.wear.compose.material.Button
-import androidx.wear.compose.material.ButtonDefaults
-import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
@@ -60,6 +56,8 @@ import com.example.exercisesamplecompose.presentation.component.ProgressBar
 import com.example.exercisesamplecompose.presentation.dialogs.ExerciseInProgressAlert
 import com.example.exercisesamplecompose.presentation.theme.ThemePreview
 import com.example.exercisesamplecompose.service.ExerciseServiceState
+import com.google.android.horologist.compose.material.Button
+import com.google.android.horologist.compose.material.ButtonSize
 
 @Composable
 fun PreparingExerciseRoute(
@@ -175,15 +173,12 @@ fun PreparingExerciseScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Button(
-                    onClick = { onStart() },
-                    modifier = Modifier.size(ButtonDefaults.SmallButtonSize),
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = stringResource(id = R.string.start),
+                    onClick = onStart,
+                    buttonSize = ButtonSize.Small,
                     enabled = uiState is PreparingScreenState.Preparing
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.PlayArrow,
-                        contentDescription = stringResource(id = R.string.start)
-                    )
-                }
+                )
             }
         }
     }

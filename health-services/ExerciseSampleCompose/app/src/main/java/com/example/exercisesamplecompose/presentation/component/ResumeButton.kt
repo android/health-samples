@@ -6,19 +6,22 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import androidx.wear.compose.material.Button
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.exercisesamplecompose.R
 import com.google.android.horologist.annotations.ExperimentalHorologistApi
-import com.google.android.horologist.compose.material.Icon
+import com.google.android.horologist.compose.material.Button
 
 @Composable
 fun ResumeButton(onResumeClick: () -> Unit) {
-    Button(onClick = {
-        onResumeClick()
-    }) {
-        Icon(
-            imageVector = Icons.Default.PlayArrow,
-            contentDescription = stringResource(id = R.string.pauseOrResume)
-        )
-    }
+    Button(
+        imageVector = Icons.Default.PlayArrow,
+        contentDescription = stringResource(id = R.string.resume_button_cd),
+        onClick = onResumeClick
+    )
+}
+
+@Preview
+@Composable
+fun ResumeButtonPreview() {
+    ResumeButton { }
 }

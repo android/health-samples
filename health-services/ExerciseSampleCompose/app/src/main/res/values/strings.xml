@@ -15,6 +15,7 @@
   -->
 <resources>
     <string name="app_name">Exercise Sample</string>
+
     <!-- Screens -->
     <string name="preparing_exercise">Preparing exercise</string>
     <string name="start">Start</string>
@@ -39,8 +40,10 @@
 
     <!-- Descriptions -->
     <string name="laps">Laps</string>
-    <string name="startOrEnd">Start or End</string>
-    <string name="pauseOrResume">Pause or Resume</string>
+    <string name="start_button_cd">Start</string>
+    <string name="stop_button_cd">End</string>
+    <string name="pause_button_cd">Pause</string>
+    <string name="resume_button_cd">Resume</string>
     <string name="heart_rate">Heart Rate</string>
 
     <!-- Exercise in Progress Dialog -->
