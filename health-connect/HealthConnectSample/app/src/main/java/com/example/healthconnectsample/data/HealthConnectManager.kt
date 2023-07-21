@@ -31,7 +31,6 @@ import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.SleepSessionRecord
-import androidx.health.connect.client.records.SleepStageRecord
 import androidx.health.connect.client.records.SpeedRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
@@ -83,7 +82,7 @@ class HealthConnectManager(private val context: Context) {
         packages.associate {
             val icon = try {
                 context.packageManager.getApplicationIcon(it.activityInfo.packageName)
-            } catch(e: NotFoundException) {
+            } catch (e: NotFoundException) {
                 null
             }
             val label = context.packageManager.getApplicationLabel(it.activityInfo.applicationInfo)
@@ -115,14 +114,15 @@ class HealthConnectManager(private val context: Context) {
      * [PermissionController.createRequestPermissionResultContract].
      */
     suspend fun hasAllPermissions(permissions: Set<String>): Boolean {
-        return healthConnectClient.permissionController.getGrantedPermissions().containsAll(permissions)
+        return healthConnectClient.permissionController.getGrantedPermissions()
+            .containsAll(permissions)
     }
 
     fun requestPermissionsActivityContract(): ActivityResultContract<Set<String>, Set<String>> {
         return PermissionController.createRequestPermissionResultContract()
     }
 
-    suspend fun revokeAllPermissions(){
+    suspend fun revokeAllPermissions() {
         healthConnectClient.permissionController.revokeAllPermissions()
     }
 
@@ -145,7 +145,10 @@ class HealthConnectManager(private val context: Context) {
      * Writes an [ExerciseSessionRecord] to Health Connect, and additionally writes underlying data for
      * the session too, such as [StepsRecord], [DistanceRecord] etc.
      */
-    suspend fun writeExerciseSession(start: ZonedDateTime, end: ZonedDateTime): InsertRecordsResponse {
+    suspend fun writeExerciseSession(
+        start: ZonedDateTime,
+        end: ZonedDateTime
+    ): InsertRecordsResponse {
         return healthConnectClient.insertRecords(
             listOf(
                 ExerciseSessionRecord(
@@ -266,8 +269,6 @@ class HealthConnectManager(private val context: Context) {
      */
     suspend fun deleteAllSleepData() {
         val now = Instant.now()
-        // [SleepStageRecord] is intentionally left here for legacy record deletion.
-        healthConnectClient.deleteRecords(SleepStageRecord::class, TimeRangeFilter.before(now))
         healthConnectClient.deleteRecords(SleepSessionRecord::class, TimeRangeFilter.before(now))
     }
 
