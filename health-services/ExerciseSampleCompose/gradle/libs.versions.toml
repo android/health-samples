@@ -1,5 +1,5 @@
 [versions]
-android-gradle-plugin = "8.1.0"
+android-gradle-plugin = "8.1.1"
 androidx-activity = "1.7.2"
 androidx-compose = "1.5.0"
 androidx-lifecycle = "2.6.1"
@@ -11,7 +11,7 @@ horologist = "0.4.13"
 org-jetbrains-kotlin = "1.8.21"
 
 [libraries]
-android-lint-gradle = "com.android.tools.lint:lint-gradle:31.1.0"
+android-lint-gradle = "com.android.tools.lint:lint-gradle:31.1.1"
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-compose-navigation = "androidx.navigation:navigation-compose:2.7.0"
 androidx-compose-runtime = "androidx.compose.runtime:runtime:1.5.0"
