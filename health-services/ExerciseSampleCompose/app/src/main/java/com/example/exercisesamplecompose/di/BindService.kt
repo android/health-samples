@@ -3,7 +3,7 @@ package com.example.exercisesamplecompose.di
 import android.app.Service
 import android.content.Context
 import android.os.IBinder
-import com.example.exercisesamplecompose.temp.BinderConnection
+import com.google.android.horologist.health.service.BinderConnection
 import dagger.hilt.android.ActivityRetainedLifecycle
 
 
