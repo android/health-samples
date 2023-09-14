@@ -136,7 +136,7 @@ private val grayscale = Paint().apply {
     isAntiAlias = false
 }
 
-private fun Modifier.ambientGray(ambientState: AmbientState): Modifier =
+internal fun Modifier.ambientGray(ambientState: AmbientState): Modifier =
     if (ambientState is AmbientState.Ambient) {
         graphicsLayer {
             scaleX = 0.9f
