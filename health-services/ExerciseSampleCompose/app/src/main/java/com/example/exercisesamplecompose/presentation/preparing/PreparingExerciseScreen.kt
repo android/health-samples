@@ -39,6 +39,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.toRect
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.withSaveLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -56,6 +64,8 @@ import com.example.exercisesamplecompose.presentation.component.ProgressBar
 import com.example.exercisesamplecompose.presentation.dialogs.ExerciseInProgressAlert
 import com.example.exercisesamplecompose.presentation.theme.ThemePreview
 import com.example.exercisesamplecompose.service.ExerciseServiceState
+import com.example.exercisesamplecompose.temp.ambient.AmbientAware
+import com.example.exercisesamplecompose.temp.ambient.AmbientState
 import com.google.android.horologist.compose.material.Button
 import com.google.android.horologist.compose.material.ButtonSize
 
@@ -91,25 +101,56 @@ fun PreparingExerciseRoute(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        PreparingExerciseScreen(
-            onStart = {
-                viewModel.startExercise()
-                onStart()
-            },
-            uiState = uiState
-        )
-
-        if (uiState.isTrackingInAnotherApp) {
-            var dismissed by remember { mutableStateOf(false) }
-            ExerciseInProgressAlert(
-                onNegative = onFinishActivity,
-                onPositive = { dismissed = true },
-                showDialog = !dismissed
+    AmbientAware { ambientStateUpdate ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .ambientGray(ambientStateUpdate.ambientState)
+        ) {
+            PreparingExerciseScreen(
+                onStart = {
+                    viewModel.startExercise()
+                    onStart()
+                },
+                uiState = uiState
             )
+
+            if (uiState.isTrackingInAnotherApp) {
+                var dismissed by remember { mutableStateOf(false) }
+                ExerciseInProgressAlert(
+                    onNegative = onFinishActivity,
+                    onPositive = { dismissed = true },
+                    showDialog = !dismissed
+                )
+            }
         }
     }
 }
+
+private val grayscale = Paint().apply {
+    colorFilter = ColorFilter.colorMatrix(
+        ColorMatrix().apply {
+            setToSaturation(0f)
+        }
+    )
+    isAntiAlias = false
+}
+
+private fun Modifier.ambientGray(ambientState: AmbientState): Modifier =
+    if (ambientState is AmbientState.Ambient) {
+        graphicsLayer {
+            scaleX = 0.9f
+            scaleY = 0.9f
+        }.drawWithContent {
+            drawIntoCanvas {
+                it.withSaveLayer(size.toRect(), grayscale) {
+                    drawContent()
+                }
+            }
+        }
+    } else {
+        this
+    }
 
 /**
  * Screen that appears while the device is preparing the exercise.
