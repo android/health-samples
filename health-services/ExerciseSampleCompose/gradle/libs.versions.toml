@@ -5,15 +5,15 @@ androidx-compose = "1.5.0"
 androidx-lifecycle = "2.6.1"
 androidx-wear-compose = "1.2.0"
 core-splashscreen = "1.0.1"
-dagger = "2.47"
+dagger = "2.48"
 health-services = "1.0.0-rc01"
-horologist = "0.4.13"
+horologist = "0.5.5"
 org-jetbrains-kotlin = "1.8.21"
 
 [libraries]
 android-lint-gradle = "com.android.tools.lint:lint-gradle:31.1.1"
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
-androidx-compose-navigation = "androidx.navigation:navigation-compose:2.7.0"
+androidx-compose-navigation = "androidx.navigation:navigation-compose:2.7.1"
 androidx-compose-runtime = "androidx.compose.runtime:runtime:1.5.0"
 androidx-compose-ui-tooling = { module = "androidx.wear.compose:compose-ui-tooling", version.ref = "androidx-wear-compose" }
 androidx-concurrent = "androidx.concurrent:concurrent-futures-ktx:1.1.0"
@@ -39,6 +39,7 @@ hilt-navigation-compose = "androidx.hilt:hilt-navigation-compose:1.0.0"
 horologist-compose-layout = { module = "com.google.android.horologist:horologist-compose-layout", version.ref = "horologist" }
 horologist-compose-material = { module = "com.google.android.horologist:horologist-compose-material", version.ref = "horologist" }
 horologist-health-composables = { module = "com.google.android.horologist:horologist-health-composables", version.ref = "horologist" }
+horologist-health-service = { module = "com.google.android.horologist:horologist-health-service", version.ref = "horologist" }
 jacoco-ant = "org.jacoco:org.jacoco.ant:0.8.8"
 junit = "junit:junit:4.13.2"
 test-espresso-core = "androidx.test.espresso:espresso-core:3.5.1"
