@@ -32,6 +32,7 @@ import com.example.exercisesamplecompose.data.isExerciseInProgress
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import java.time.Duration
 import javax.inject.Inject
@@ -208,6 +209,9 @@ class ExerciseService : LifecycleService() {
     /** Local clients will use this to access the service. */
     inner class LocalBinder : Binder() {
         fun getService() = this@ExerciseService
+
+        val exerciseServiceState: Flow<ExerciseServiceState>
+            get() = this@ExerciseService.exerciseServiceMonitor.exerciseServiceState
     }
 
     companion object {
