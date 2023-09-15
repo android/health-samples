@@ -47,12 +47,14 @@ import com.example.exercisesamplecompose.presentation.component.StopButton
 import com.example.exercisesamplecompose.presentation.component.formatElapsedTime
 import com.example.exercisesamplecompose.presentation.summary.SummaryScreenState
 import com.google.android.horologist.annotations.ExperimentalHorologistApi
+import com.google.android.horologist.compose.ambient.AmbientState
 import com.google.android.horologist.compose.layout.ScalingLazyColumn
 import com.google.android.horologist.compose.layout.ScalingLazyColumnState
 import com.google.android.horologist.health.composables.ActiveDurationText
 
 @Composable
 fun ExerciseRoute(
+    ambientState: AmbientState,
     columnState: ScalingLazyColumnState,
     modifier: Modifier = Modifier,
     onSummary: (SummaryScreenState) -> Unit
@@ -66,15 +68,17 @@ fun ExerciseRoute(
         }
     }
 
-    ExerciseScreen(
-        onPauseClick = { viewModel.pauseExercise() },
-        onEndClick = { viewModel.endExercise() },
-        onResumeClick = { viewModel.resumeExercise() },
-        onStartClick = { viewModel.startExercise() },
-        uiState = uiState,
-        columnState = columnState,
-        modifier = modifier
-    )
+    if (ambientState is AmbientState.Interactive) {
+        ExerciseScreen(
+            onPauseClick = { viewModel.pauseExercise() },
+            onEndClick = { viewModel.endExercise() },
+            onResumeClick = { viewModel.resumeExercise() },
+            onStartClick = { viewModel.startExercise() },
+            uiState = uiState,
+            columnState = columnState,
+            modifier = modifier
+        )
+    }
 }
 
 /**
