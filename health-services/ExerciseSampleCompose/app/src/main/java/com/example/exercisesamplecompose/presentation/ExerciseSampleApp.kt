@@ -18,11 +18,13 @@
 package com.example.exercisesamplecompose.presentation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import androidx.wear.compose.material.TimeText
 import androidx.wear.compose.navigation.composable
+import androidx.wear.compose.navigation.currentBackStackEntryAsState
 import com.example.exercisesamplecompose.app.Screen.Exercise
 import com.example.exercisesamplecompose.app.Screen.ExerciseNotAvailable
 import com.example.exercisesamplecompose.app.Screen.PreparingExercise
@@ -39,18 +41,24 @@ import com.google.android.horologist.compose.navscaffold.WearNavScaffold
 import com.google.android.horologist.compose.navscaffold.scrollable
 
 /** Navigation for the exercise app. **/
-
 @Composable
 fun ExerciseSampleApp(
     navController: NavHostController,
     onFinishActivity: () -> Unit
 ) {
-    AmbientAware { ambientUpdateState ->
+    val currentScreen by navController.currentBackStackEntryAsState()
+
+    val isAlwaysOnScreen = currentScreen?.destination?.route in AlwaysOnRoutes
+
+    AmbientAware(
+        isAlwaysOnScreen = isAlwaysOnScreen
+    ) { ambientStateUpdate ->
+
         WearNavScaffold(
             navController = navController,
             startDestination = Exercise.route,
             timeText = {
-                if (ambientUpdateState.ambientState is AmbientState.Interactive) {
+                if (ambientStateUpdate.ambientState is AmbientState.Interactive) {
                     TimeText(
                         modifier = it,
                     )
@@ -59,7 +67,7 @@ fun ExerciseSampleApp(
         ) {
             composable(PreparingExercise.route) {
                 PreparingExerciseRoute(
-                    ambientState = ambientUpdateState.ambientState,
+                    ambientState = ambientStateUpdate.ambientState,
                     onStart = {
                         navController.navigate(Exercise.route) {
                             popUpTo(navController.graph.id) {
@@ -80,7 +88,7 @@ fun ExerciseSampleApp(
 
             scrollable(Exercise.route) {
                 ExerciseRoute(
-                    ambientState = ambientUpdateState.ambientState,
+                    ambientState = ambientStateUpdate.ambientState,
                     columnState = it.columnState,
                     onSummary = {
                         navController.navigateToTopLevel(Summary, Summary.buildRoute(it))
@@ -112,6 +120,6 @@ fun ExerciseSampleApp(
     }
 }
 
-
+val AlwaysOnRoutes = listOf(PreparingExercise.route, Exercise.route)
 
 
