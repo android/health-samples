@@ -64,13 +64,13 @@ import com.example.exercisesamplecompose.presentation.component.ProgressBar
 import com.example.exercisesamplecompose.presentation.dialogs.ExerciseInProgressAlert
 import com.example.exercisesamplecompose.presentation.theme.ThemePreview
 import com.example.exercisesamplecompose.service.ExerciseServiceState
-import com.example.exercisesamplecompose.temp.ambient.AmbientAware
-import com.example.exercisesamplecompose.temp.ambient.AmbientState
+import com.google.android.horologist.compose.ambient.AmbientState
 import com.google.android.horologist.compose.material.Button
 import com.google.android.horologist.compose.material.ButtonSize
 
 @Composable
 fun PreparingExerciseRoute(
+    ambientState: AmbientState,
     onStart: () -> Unit,
     onFinishActivity: () -> Unit,
     onNoExerciseCapabilities: () -> Unit,
@@ -101,28 +101,27 @@ fun PreparingExerciseRoute(
         }
     }
 
-    AmbientAware { ambientStateUpdate ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .ambientGray(ambientStateUpdate.ambientState)
-        ) {
-            PreparingExerciseScreen(
-                onStart = {
-                    viewModel.startExercise()
-                    onStart()
-                },
-                uiState = uiState
-            )
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .ambientGray(ambientState)
+    ) {
+        PreparingExerciseScreen(
+            ambientState = ambientState,
+            onStart = {
+                viewModel.startExercise()
+                onStart()
+            },
+            uiState = uiState
+        )
 
-            if (uiState.isTrackingInAnotherApp) {
-                var dismissed by remember { mutableStateOf(false) }
-                ExerciseInProgressAlert(
-                    onNegative = onFinishActivity,
-                    onPositive = { dismissed = true },
-                    showDialog = !dismissed
-                )
-            }
+        if (uiState.isTrackingInAnotherApp) {
+            var dismissed by remember { mutableStateOf(false) }
+            ExerciseInProgressAlert(
+                onNegative = onFinishActivity,
+                onPositive = { dismissed = true },
+                showDialog = !dismissed
+            )
         }
     }
 }
@@ -157,6 +156,7 @@ internal fun Modifier.ambientGray(ambientState: AmbientState): Modifier =
  */
 @Composable
 fun PreparingExerciseScreen(
+    ambientState: AmbientState,
     onStart: () -> Unit = {},
     uiState: PreparingScreenState
 ) {
@@ -185,7 +185,11 @@ fun PreparingExerciseScreen(
             modifier = Modifier.height(40.dp)
         ) {
             when (location) {
-                LocationAvailability.ACQUIRING, LocationAvailability.UNKNOWN -> ProgressBar()
+                LocationAvailability.ACQUIRING, LocationAvailability.UNKNOWN -> ProgressBar(
+                    ambientState,
+                    Modifier.fillMaxSize()
+                )
+
                 LocationAvailability.ACQUIRED_TETHERED, LocationAvailability.ACQUIRED_UNTETHERED -> AcquiredCheck()
                 else -> NotAcquired()
             }
@@ -245,6 +249,26 @@ private fun updatePrepareLocationStatus(locationAvailability: LocationAvailabili
 fun PreparingExerciseScreenPreview() {
     ThemePreview {
         PreparingExerciseScreen(
+            ambientState = AmbientState.Interactive,
+            onStart = {},
+            uiState = PreparingScreenState.Preparing(
+                serviceState = ServiceState.Connected(
+                    ExerciseServiceState()
+                ),
+                isTrackingInAnotherApp = false,
+                requiredPermissions = PreparingViewModel.permissions,
+                hasExerciseCapabilities = true
+            )
+        )
+    }
+}
+
+@WearPreviewDevices
+@Composable
+fun PreparingExerciseScreenPreviewAmbient() {
+    ThemePreview {
+        PreparingExerciseScreen(
+            ambientState = AmbientState.Ambient(),
             onStart = {},
             uiState = PreparingScreenState.Preparing(
                 serviceState = ServiceState.Connected(

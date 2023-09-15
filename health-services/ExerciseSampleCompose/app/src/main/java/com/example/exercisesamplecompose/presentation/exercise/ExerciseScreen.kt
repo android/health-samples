@@ -18,7 +18,6 @@
 package com.example.exercisesamplecompose.presentation.exercise
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -46,17 +45,16 @@ import com.example.exercisesamplecompose.presentation.component.ResumeButton
 import com.example.exercisesamplecompose.presentation.component.StartButton
 import com.example.exercisesamplecompose.presentation.component.StopButton
 import com.example.exercisesamplecompose.presentation.component.formatElapsedTime
-import com.example.exercisesamplecompose.presentation.preparing.ambientGray
 import com.example.exercisesamplecompose.presentation.summary.SummaryScreenState
-import com.example.exercisesamplecompose.temp.ambient.AmbientAware
-import com.example.exercisesamplecompose.temp.ambient.AmbientState
 import com.google.android.horologist.annotations.ExperimentalHorologistApi
+import com.google.android.horologist.compose.ambient.AmbientState
 import com.google.android.horologist.compose.layout.ScalingLazyColumn
 import com.google.android.horologist.compose.layout.ScalingLazyColumnState
 import com.google.android.horologist.health.composables.ActiveDurationText
 
 @Composable
 fun ExerciseRoute(
+    ambientState: AmbientState,
     columnState: ScalingLazyColumnState,
     modifier: Modifier = Modifier,
     onSummary: (SummaryScreenState) -> Unit
@@ -70,18 +68,16 @@ fun ExerciseRoute(
         }
     }
 
-    AmbientAware { ambientStateUpdate ->
-        if (ambientStateUpdate.ambientState is AmbientState.Interactive) {
-            ExerciseScreen(
-                onPauseClick = { viewModel.pauseExercise() },
-                onEndClick = { viewModel.endExercise() },
-                onResumeClick = { viewModel.resumeExercise() },
-                onStartClick = { viewModel.startExercise() },
-                uiState = uiState,
-                columnState = columnState,
-                modifier = modifier
-            )
-        }
+    if (ambientState is AmbientState.Interactive) {
+        ExerciseScreen(
+            onPauseClick = { viewModel.pauseExercise() },
+            onEndClick = { viewModel.endExercise() },
+            onResumeClick = { viewModel.resumeExercise() },
+            onStartClick = { viewModel.startExercise() },
+            uiState = uiState,
+            columnState = columnState,
+            modifier = modifier
+        )
     }
 }
 
