@@ -40,7 +40,7 @@ horologist-compose-layout = { module = "com.google.android.horologist:horologist
 horologist-compose-material = { module = "com.google.android.horologist:horologist-compose-material", version.ref = "horologist" }
 horologist-health-composables = { module = "com.google.android.horologist:horologist-health-composables", version.ref = "horologist" }
 horologist-health-service = { module = "com.google.android.horologist:horologist-health-service", version.ref = "horologist" }
-jacoco-ant = "org.jacoco:org.jacoco.ant:0.8.8"
+jacoco-ant = "org.jacoco:org.jacoco.ant:0.8.10"
 junit = "junit:junit:4.13.2"
 test-espresso-core = "androidx.test.espresso:espresso-core:3.5.1"
 test-ext-junit = "androidx.test.ext:junit:1.1.5"
