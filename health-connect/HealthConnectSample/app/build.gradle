@@ -73,7 +73,7 @@ dependencies {
 
     // Fix permissions issue until 1.1.0-alpha02
     implementation "androidx.core:core:1.12.0-alpha05"
-    implementation "androidx.core:core-ktx:1.12.0-alpha05"
+    implementation "androidx.core:core-ktx:1.12.0"
 
     // For viewmodel support
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version"
