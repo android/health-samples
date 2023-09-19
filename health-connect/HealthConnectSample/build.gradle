@@ -17,7 +17,7 @@
 buildscript {
     ext.kotlin_version = '1.8.0'
     ext {
-        activity_compose_version = '1.5.1'
+        activity_compose_version = '1.7.2'
         hilt_navigation_compose_version = '1.0.0'
         navigation_compose_version = '2.5.1'
 
