@@ -37,7 +37,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           build-root-directory: ${{ env.SAMPLE_PATH }}
-          arguments: testDebug --rerun
+          arguments: testDebug
 
       - name: Upload test results and reports
         if: always()
