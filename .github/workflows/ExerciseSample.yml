@@ -1,19 +1,19 @@
-name: ExerciseSampleCompose
+name: ExerciseSample
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'health-services/ExerciseSampleCompose/**'
-      - '.github/workflows/ExerciseSampleCompose.yml'
+      - 'health-services/ExerciseSample/**'
+      - '.github/workflows/ExerciseSample.yml'
   pull_request:
     paths:
-      - 'health-services/ExerciseSampleCompose/**'
-      - '.github/workflows/ExerciseSampleCompose.yml'
+      - 'health-services/ExerciseSample/**'
+      - '.github/workflows/ExerciseSample.yml'
 
 env:
-  SAMPLE_PATH: health-services/ExerciseSampleCompose
+  SAMPLE_PATH: health-services/ExerciseSample
 
 jobs:
   build:

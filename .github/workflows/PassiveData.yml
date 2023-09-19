@@ -1,19 +1,19 @@
-name: ExerciseSampleCompose
+name: PassiveData
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'health-services/ExerciseSampleCompose/**'
-      - '.github/workflows/ExerciseSampleCompose.yml'
+      - 'health-services/PassiveData/**'
+      - '.github/workflows/PassiveData.yml'
   pull_request:
     paths:
-      - 'health-services/ExerciseSampleCompose/**'
-      - '.github/workflows/ExerciseSampleCompose.yml'
+      - 'health-services/PassiveData/**'
+      - '.github/workflows/PassiveData.yml'
 
 env:
-  SAMPLE_PATH: health-services/ExerciseSampleCompose
+  SAMPLE_PATH: health-services/PassiveData
 
 jobs:
   build:

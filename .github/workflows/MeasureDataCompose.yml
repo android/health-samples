@@ -1,19 +1,19 @@
-name: ExerciseSampleCompose
+name: MeasureDataCompose
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'health-services/ExerciseSampleCompose/**'
-      - '.github/workflows/ExerciseSampleCompose.yml'
+      - 'health-services/MeasureDataCompose/**'
+      - '.github/workflows/MeasureDataCompose.yml'
   pull_request:
     paths:
-      - 'health-services/ExerciseSampleCompose/**'
-      - '.github/workflows/ExerciseSampleCompose.yml'
+      - 'health-services/MeasureDataCompose/**'
+      - '.github/workflows/MeasureDataCompose.yml'
 
 env:
-  SAMPLE_PATH: health-services/ExerciseSampleCompose
+  SAMPLE_PATH: health-services/MeasureDataCompose
 
 jobs:
   build:
