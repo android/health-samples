@@ -19,7 +19,7 @@ buildscript {
     ext {
         kotlin_version = "1.8.0"
         hilt_version = '2.43.2'
-        lifecycle_version = "2.6.0-beta01"
+        lifecycle_version = "2.6.2"
     }
 
     repositories {
