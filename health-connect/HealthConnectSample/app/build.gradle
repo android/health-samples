@@ -53,7 +53,7 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.3"
+        kotlinCompilerExtensionVersion = "1.4.1"
     }
     packagingOptions {
         resources {
@@ -97,4 +97,7 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-tooling"
 
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.0.3"
+
+
+    testImplementation "junit:junit:4.13.2"
 }

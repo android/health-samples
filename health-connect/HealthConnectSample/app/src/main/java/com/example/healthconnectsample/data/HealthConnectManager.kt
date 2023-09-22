@@ -16,9 +16,6 @@
 package com.example.healthconnectsample.data
 
 import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.content.res.Resources.NotFoundException
 import android.os.Build
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.compose.runtime.mutableStateOf
@@ -45,7 +42,6 @@ import androidx.health.connect.client.units.Energy
 import androidx.health.connect.client.units.Length
 import androidx.health.connect.client.units.Mass
 import androidx.health.connect.client.units.Velocity
-import com.example.healthconnectsample.R
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.io.IOException
@@ -61,50 +57,13 @@ const val MIN_SUPPORTED_SDK = Build.VERSION_CODES.O_MR1
 /**
  * Demonstrates reading and writing from Health Connect.
  */
-class HealthConnectManager(private val context: Context) {
-    private val healthConnectClient by lazy { HealthConnectClient.getOrCreate(context) }
-
-    val healthConnectCompatibleApps by lazy {
-        val intent = Intent("androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE")
-
-        val packages = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            context.packageManager.queryIntentActivities(
-                intent,
-                PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_ALL.toLong())
-            )
-        } else {
-            context.packageManager.queryIntentActivities(
-                intent,
-                PackageManager.MATCH_ALL
-            )
-        }
-
-        packages.associate {
-            val icon = try {
-                context.packageManager.getApplicationIcon(it.activityInfo.packageName)
-            } catch (e: NotFoundException) {
-                null
-            }
-            val label = context.packageManager.getApplicationLabel(it.activityInfo.applicationInfo)
-                .toString()
-            it.activityInfo.packageName to
-                    HealthConnectAppInfo(
-                        packageName = it.activityInfo.packageName,
-                        icon = icon,
-                        appLabel = label
-                    )
-        }
-    }
+class HealthConnectManager(private val healthConnectClient: HealthConnectClient) {
 
     var availability = mutableStateOf(SDK_UNAVAILABLE)
         private set
 
-    fun checkAvailability() {
+    fun checkAvailability(context: Context) {
         availability.value = HealthConnectClient.getSdkStatus(context)
-    }
-
-    init {
-        checkAvailability()
     }
 
     /**
@@ -277,11 +236,10 @@ class HealthConnectManager(private val context: Context) {
      * period of sleep, with multiple [SleepSessionRecord.Stage] periods which cover the entire
      * [SleepSessionRecord]. For the purposes of this sample, the sleep stage data is generated randomly.
      */
-    suspend fun generateSleepData() {
+    suspend fun generateSleepData(notes: Array<String>) {
         val records = mutableListOf<Record>()
         // Make yesterday the last day of the sleep data
         val lastDay = ZonedDateTime.now().minusDays(1).truncatedTo(ChronoUnit.DAYS)
-        val notes = context.resources.getStringArray(R.array.sleep_notes_array)
         // Create 7 days-worth of sleep data
         for (i in 0..7) {
             val wakeUp = lastDay.minusDays(i.toLong())

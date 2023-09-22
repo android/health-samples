@@ -20,11 +20,15 @@ import androidx.compose.material.ScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringArrayResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navDeepLink
+import com.example.healthconnectsample.R
+import com.example.healthconnectsample.data.HealthConnectAppsManager
 import com.example.healthconnectsample.data.HealthConnectManager
 import com.example.healthconnectsample.presentation.screen.SettingsScreen
 import com.example.healthconnectsample.presentation.screen.WelcomeScreen
@@ -45,9 +49,7 @@ import com.example.healthconnectsample.presentation.screen.sleepsession.SleepSes
 import com.example.healthconnectsample.presentation.screen.sleepsession.SleepSessionViewModel
 import com.example.healthconnectsample.presentation.screen.sleepsession.SleepSessionViewModelFactory
 import com.example.healthconnectsample.showExceptionSnackbar
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 /**
  * Provides the navigation in the app.
@@ -56,16 +58,19 @@ import kotlinx.coroutines.runBlocking
 fun HealthConnectNavigation(
     navController: NavHostController,
     healthConnectManager: HealthConnectManager,
+    healthConnectAppsManager: HealthConnectAppsManager,
     scaffoldState: ScaffoldState
 ) {
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val notes = stringArrayResource(R.array.sleep_notes_array)
     NavHost(navController = navController, startDestination = Screen.WelcomeScreen.route) {
         val availability by healthConnectManager.availability
         composable(Screen.WelcomeScreen.route) {
             WelcomeScreen(
                 healthConnectAvailability = availability,
                 onResumeAvailabilityCheck = {
-                    healthConnectManager.checkAvailability()
+                    healthConnectManager.checkAvailability(context)
                 }
             )
         }
@@ -85,7 +90,8 @@ fun HealthConnectNavigation(
         composable(Screen.ExerciseSessions.route) {
             val viewModel: ExerciseSessionViewModel = viewModel(
                 factory = ExerciseSessionViewModelFactory(
-                    healthConnectManager = healthConnectManager
+                    healthConnectManager = healthConnectManager,
+                    healthConnectAppsManager = healthConnectAppsManager
                 )
             )
             val permissionsGranted by viewModel.permissionsGranted
@@ -168,7 +174,7 @@ fun HealthConnectNavigation(
                 sessionsList = sessionsList,
                 uiState = viewModel.uiState,
                 onInsertClick = {
-                    viewModel.generateSleepData()
+                    viewModel.generateSleepData(notes)
                 },
                 onError = { exception ->
                     showExceptionSnackbar(scaffoldState, scope, exception)
@@ -183,7 +189,8 @@ fun HealthConnectNavigation(
         composable(Screen.InputReadings.route) {
             val viewModel: InputReadingsViewModel = viewModel(
                 factory = InputReadingsViewModelFactory(
-                    healthConnectManager = healthConnectManager
+                    healthConnectManager = healthConnectManager,
+                    healthConnectAppsManager = healthConnectAppsManager
                 )
             )
             val permissionsGranted by viewModel.permissionsGranted

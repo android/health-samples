@@ -26,6 +26,7 @@ import androidx.health.connect.client.units.Mass
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.healthconnectsample.data.HealthConnectAppsManager
 import com.example.healthconnectsample.data.HealthConnectManager
 import com.example.healthconnectsample.data.WeightData
 import com.example.healthconnectsample.data.dateTimeWithOffsetOrDefault
@@ -36,9 +37,11 @@ import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 
-class InputReadingsViewModel(private val healthConnectManager: HealthConnectManager) :
-    ViewModel() {
-    private val healthConnectCompatibleApps = healthConnectManager.healthConnectCompatibleApps
+class InputReadingsViewModel(
+    private val healthConnectManager: HealthConnectManager,
+    healthConnectAppsManager: HealthConnectAppsManager
+) : ViewModel() {
+    private val healthConnectCompatibleApps = healthConnectAppsManager.healthConnectCompatibleApps
 
     val permissions = setOf(
         HealthPermission.getReadPermission(WeightRecord::class),
@@ -148,13 +151,15 @@ class InputReadingsViewModel(private val healthConnectManager: HealthConnectMana
 }
 
 class InputReadingsViewModelFactory(
-    private val healthConnectManager: HealthConnectManager
+    private val healthConnectManager: HealthConnectManager,
+    private val healthConnectAppsManager: HealthConnectAppsManager
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(InputReadingsViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return InputReadingsViewModel(
-                healthConnectManager = healthConnectManager
+                healthConnectManager = healthConnectManager,
+                healthConnectAppsManager = healthConnectAppsManager
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")

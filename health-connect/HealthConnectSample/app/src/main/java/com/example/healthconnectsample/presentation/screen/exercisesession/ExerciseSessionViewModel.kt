@@ -31,6 +31,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.healthconnectsample.data.ExerciseSession
+import com.example.healthconnectsample.data.HealthConnectAppsManager
 import com.example.healthconnectsample.data.HealthConnectManager
 import com.example.healthconnectsample.data.dateTimeWithOffsetOrDefault
 import kotlinx.coroutines.launch
@@ -42,9 +43,11 @@ import java.time.temporal.ChronoUnit
 import java.util.UUID
 import kotlin.random.Random
 
-class ExerciseSessionViewModel(private val healthConnectManager: HealthConnectManager) :
-    ViewModel() {
-    private val healthConnectCompatibleApps = healthConnectManager.healthConnectCompatibleApps
+class ExerciseSessionViewModel(
+    private val healthConnectManager: HealthConnectManager,
+    healthConnectAppsManager: HealthConnectAppsManager
+) : ViewModel() {
+    private val healthConnectCompatibleApps = healthConnectAppsManager.healthConnectCompatibleApps
 
     val permissions = setOf(
         HealthPermission.getWritePermission(ExerciseSessionRecord::class),
@@ -160,13 +163,15 @@ class ExerciseSessionViewModel(private val healthConnectManager: HealthConnectMa
 }
 
 class ExerciseSessionViewModelFactory(
-    private val healthConnectManager: HealthConnectManager
+    private val healthConnectManager: HealthConnectManager,
+    private val healthConnectAppsManager: HealthConnectAppsManager
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ExerciseSessionViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return ExerciseSessionViewModel(
-                healthConnectManager = healthConnectManager
+                healthConnectManager = healthConnectManager,
+                healthConnectAppsManager = healthConnectAppsManager
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")

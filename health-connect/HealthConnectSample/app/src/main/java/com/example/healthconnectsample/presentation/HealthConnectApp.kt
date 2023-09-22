@@ -34,6 +34,7 @@ import androidx.health.connect.client.HealthConnectClient.Companion.SDK_AVAILABL
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.healthconnectsample.R
+import com.example.healthconnectsample.data.HealthConnectAppsManager
 import com.example.healthconnectsample.data.HealthConnectManager
 import com.example.healthconnectsample.presentation.navigation.Drawer
 import com.example.healthconnectsample.presentation.navigation.HealthConnectNavigation
@@ -45,7 +46,10 @@ const val TAG = "Health Connect sample"
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
-fun HealthConnectApp(healthConnectManager: HealthConnectManager) {
+fun HealthConnectApp(
+    healthConnectManager: HealthConnectManager,
+    healthConnectAppsManager: HealthConnectAppsManager
+) {
     HealthConnectTheme {
         val scaffoldState = rememberScaffoldState()
         val navController = rememberNavController()
@@ -102,6 +106,7 @@ fun HealthConnectApp(healthConnectManager: HealthConnectManager) {
         ) {
             HealthConnectNavigation(
                 healthConnectManager = healthConnectManager,
+                healthConnectAppsManager = healthConnectAppsManager,
                 navController = navController,
                 scaffoldState = scaffoldState
             )

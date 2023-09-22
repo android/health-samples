@@ -16,10 +16,16 @@
 package com.example.healthconnectsample.presentation
 
 import android.app.Application
+import androidx.health.connect.client.HealthConnectClient
+import com.example.healthconnectsample.data.HealthConnectAppsManager
 import com.example.healthconnectsample.data.HealthConnectManager
 
 class BaseApplication : Application() {
     val healthConnectManager by lazy {
-        HealthConnectManager(this)
+        HealthConnectManager(HealthConnectClient.getOrCreate(this))
+            .also { it.checkAvailability(this) }
+    }
+    val healthConnectAppsManager by lazy {
+        HealthConnectAppsManager(this)
     }
 }
