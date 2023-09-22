@@ -21,6 +21,8 @@ plugins {
 android {
     compileSdk 34
 
+    namespace "com.example.passivedatacompose"
+
     defaultConfig {
         applicationId "com.example.passivedatacompose"
         minSdk 30

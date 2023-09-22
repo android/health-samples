@@ -21,6 +21,8 @@ plugins {
 android {
     compileSdk 34
 
+    namespace "com.example.passivegoalscompose"
+
     defaultConfig {
         applicationId "com.example.passivegoalscompose"
         minSdk 30

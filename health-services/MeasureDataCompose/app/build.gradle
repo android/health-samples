@@ -21,6 +21,8 @@ plugins {
 android {
     compileSdk 34
 
+    namespace "com.example.measuredatacompose"
+
     defaultConfig {
         applicationId "com.example.measuredatacompose"
         minSdk 30
