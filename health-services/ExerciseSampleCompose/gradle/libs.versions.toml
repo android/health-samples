@@ -34,7 +34,7 @@ compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview"
 compose-wear-navigation = "androidx.wear.compose:compose-navigation:1.2.0"
 dagger-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "dagger"}
 dagger-hilt-android-compiler = {module = "com.google.dagger:hilt-android-compiler", version.ref = "dagger"}
-guava = "com.google.guava:guava:32.1.2-jre"
+guava = "com.google.guava:guava:32.1.2-android"
 hilt-navigation-compose = "androidx.hilt:hilt-navigation-compose:1.0.0"
 horologist-compose-layout = { module = "com.google.android.horologist:horologist-compose-layout", version.ref = "horologist" }
 horologist-compose-material = { module = "com.google.android.horologist:horologist-compose-material", version.ref = "horologist" }
