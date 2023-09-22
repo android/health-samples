@@ -23,7 +23,8 @@ plugins {
 
 android {
     compileSdk 34
-    buildToolsVersion "30.0.3"
+
+    namespace "com.example.passivegoals"
 
     defaultConfig {
         applicationId "com.example.passivegoals"
