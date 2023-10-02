@@ -11,7 +11,6 @@ androidx-work = "2.8.1"
 compose = "1.5.1"
 compose-compiler = "1.5.3"
 concurrent-futures = "1.1.0"
-guava = "32.1.2-jre"
 health-services = "1.0.0-rc01"
 ktlint = "0.46.1"
 org-jetbrains-kotlin = "1.9.10"
@@ -31,7 +30,6 @@ compose-material-icons-extended = { module = "androidx.compose.material:material
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }
 compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose" }
 concurrent-futures = { module = "androidx.concurrent:concurrent-futures-ktx", version.ref = "concurrent-futures" }
-guava = { module = "com.google.guava:guava", version.ref = "guava" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "org-jetbrains-kotlin" }
 wear-compose-foundation = { module = "androidx.wear.compose:compose-foundation", version.ref = "androidx-wear-compose" }
 wear-compose-material = { module = "androidx.wear.compose:compose-material", version.ref = "androidx-wear-compose" }

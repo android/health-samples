@@ -84,7 +84,6 @@ dependencies {
   // Foundation is additive, so you can use the mobile version in your Wear OS app.
   implementation libs.wear.compose.foundation
 
-  implementation libs.guava
   implementation libs.androidx.concurrent
 
   //Wear OS Compose Navigation

@@ -76,7 +76,6 @@ dependencies {
     implementation libs.androidx.health.services
 
     // Used to bridge between Futures and coroutines
-    implementation libs.guava
     implementation libs.concurrent.futures
 
     // Used for permissions
