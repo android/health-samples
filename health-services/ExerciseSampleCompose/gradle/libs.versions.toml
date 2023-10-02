@@ -1,7 +1,7 @@
 [versions]
-android-gradle-plugin = "8.1.1"
+android-gradle-plugin = "8.1.2"
 androidx-activity = "1.7.2"
-androidx-compose = "1.5.1"
+androidx-compose = "1.5.2"
 androidx-lifecycle = "2.6.2"
 androidx-wear-compose = "1.2.0"
 core-splashscreen = "1.0.1"
@@ -11,10 +11,10 @@ horologist = "0.5.7"
 org-jetbrains-kotlin = "1.9.10"
 
 [libraries]
-android-lint-gradle = "com.android.tools.lint:lint-gradle:31.1.1"
+android-lint-gradle = "com.android.tools.lint:lint-gradle:31.1.2"
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-compose-navigation = "androidx.navigation:navigation-compose:2.7.3"
-androidx-compose-runtime = "androidx.compose.runtime:runtime:1.5.1"
+androidx-compose-runtime = "androidx.compose.runtime:runtime:1.5.2"
 androidx-compose-ui-tooling = { module = "androidx.wear.compose:compose-ui-tooling", version.ref = "androidx-wear-compose" }
 androidx-concurrent = "androidx.concurrent:concurrent-futures-ktx:1.1.0"
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "core-splashscreen" }
