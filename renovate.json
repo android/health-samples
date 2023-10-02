@@ -25,6 +25,10 @@
         "com.google.devtools.ksp"
       ],
       "groupName": "kotlin"
+    },
+    {
+      "matchPackageNames": ["com.google.guava:guava"],
+      "versioning": "regex:^(?<major>\\d+)(\\.(?<minor>\\d+))?(\\.(?<patch>\\d+))?(-(?<compatibility>.*))?$"
     }
   ]
 }
