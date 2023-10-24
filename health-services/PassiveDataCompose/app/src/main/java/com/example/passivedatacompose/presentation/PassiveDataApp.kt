@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.TimeText
+import com.example.passivedatacompose.PERMISSION
 import com.example.passivedatacompose.data.HealthServicesRepository
 import com.example.passivedatacompose.data.PassiveDataRepository
 import com.example.passivedatacompose.theme.PassiveDataTheme
@@ -52,7 +53,7 @@ fun PassiveDataApp(
 
             if (uiState == UiState.Supported) {
                 val permissionState = rememberPermissionState(
-                    permission = "android.permission.BODY_SENSORS",
+                    permission = PERMISSION,
                     onPermissionResult = { granted ->
                         if (granted) viewModel.toggleEnabled()
                     }
