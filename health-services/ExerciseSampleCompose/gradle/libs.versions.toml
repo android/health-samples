@@ -8,7 +8,7 @@ core-splashscreen = "1.0.1"
 dagger = "2.48.1"
 health-services = "1.0.0-rc01"
 horologist = "0.5.9"
-org-jetbrains-kotlin = "1.9.10"
+org-jetbrains-kotlin = "1.9.20"
 
 [libraries]
 android-lint-gradle = "com.android.tools.lint:lint-gradle:31.1.2"
