@@ -13,7 +13,7 @@ org-jetbrains-kotlin = "1.9.10"
 [libraries]
 android-lint-gradle = "com.android.tools.lint:lint-gradle:31.1.2"
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
-androidx-compose-navigation = "androidx.navigation:navigation-compose:2.7.4"
+androidx-compose-navigation = "androidx.navigation:navigation-compose:2.7.5"
 androidx-compose-runtime = "androidx.compose.runtime:runtime:1.5.4"
 androidx-compose-ui-tooling = { module = "androidx.wear.compose:compose-ui-tooling", version.ref = "androidx-wear-compose" }
 androidx-concurrent = "androidx.concurrent:concurrent-futures-ktx:1.1.0"
@@ -35,7 +35,7 @@ compose-wear-navigation = "androidx.wear.compose:compose-navigation:1.2.1"
 dagger-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "dagger"}
 dagger-hilt-android-compiler = {module = "com.google.dagger:hilt-android-compiler", version.ref = "dagger"}
 guava = "com.google.guava:guava:32.1.3-android"
-hilt-navigation-compose = "androidx.hilt:hilt-navigation-compose:1.0.0"
+hilt-navigation-compose = "androidx.hilt:hilt-navigation-compose:1.1.0"
 horologist-compose-layout = { module = "com.google.android.horologist:horologist-compose-layout", version.ref = "horologist" }
 horologist-compose-material = { module = "com.google.android.horologist:horologist-compose-material", version.ref = "horologist" }
 horologist-health-composables = { module = "com.google.android.horologist:horologist-health-composables", version.ref = "horologist" }
