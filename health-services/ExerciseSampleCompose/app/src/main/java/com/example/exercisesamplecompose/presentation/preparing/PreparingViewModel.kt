@@ -63,7 +63,7 @@ class PreparingViewModel @Inject constructor(
     }
 
     companion object {
-        val permissions = kotlin.run {
+        val permissions = run {
             val mList = mutableListOf(
                 Manifest.permission.BODY_SENSORS,
                 Manifest.permission.ACCESS_FINE_LOCATION,
