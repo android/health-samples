@@ -1,6 +1,7 @@
 package com.example.exercisesamplecompose.presentation.preparing
 
 import android.Manifest
+import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.exercisesamplecompose.data.HealthServicesRepository
@@ -62,10 +63,17 @@ class PreparingViewModel @Inject constructor(
     }
 
     companion object {
-        val permissions = listOf(
-            Manifest.permission.BODY_SENSORS,
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACTIVITY_RECOGNITION
-        )
+        val permissions = kotlin.run {
+            val mList = mutableListOf(
+                Manifest.permission.BODY_SENSORS,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACTIVITY_RECOGNITION,
+            )
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                mList.add(Manifest.permission.POST_NOTIFICATIONS)
+
+            mList.toList()
+        }
     }
 }
