@@ -5,9 +5,9 @@ androidx-compose = "1.5.4"
 androidx-lifecycle = "2.6.2"
 androidx-wear-compose = "1.2.1"
 core-splashscreen = "1.0.1"
-dagger = "2.48.1"
+dagger = "2.49"
 health-services = "1.0.0-rc01"
-horologist = "0.5.12"
+horologist = "0.5.13"
 org-jetbrains-kotlin = "1.9.21"
 
 [libraries]
