@@ -5,6 +5,8 @@
 
     <!-- Required for HR sensor -->
     <uses-permission android:name="android.permission.BODY_SENSORS" />
+    <!-- Needed in order to re-register for data on device startup. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />    
 
     <uses-feature
         android:name="android.hardware.type.watch"
