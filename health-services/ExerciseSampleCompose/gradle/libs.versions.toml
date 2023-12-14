@@ -1,19 +1,19 @@
 [versions]
 android-gradle-plugin = "8.2.0"
-androidx-activity = "1.8.1"
+androidx-activity = "1.8.2"
 androidx-compose = "1.5.4"
 androidx-lifecycle = "2.6.2"
 androidx-wear-compose = "1.2.1"
 core-splashscreen = "1.0.1"
 dagger = "2.49"
 health-services = "1.0.0-rc01"
-horologist = "0.5.13"
+horologist = "0.5.14"
 org-jetbrains-kotlin = "1.9.21"
 
 [libraries]
 android-lint-gradle = "com.android.tools.lint:lint-gradle:31.2.0"
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
-androidx-compose-navigation = "androidx.navigation:navigation-compose:2.7.5"
+androidx-compose-navigation = "androidx.navigation:navigation-compose:2.7.6"
 androidx-compose-runtime = "androidx.compose.runtime:runtime:1.5.4"
 androidx-compose-ui-tooling = { module = "androidx.wear.compose:compose-ui-tooling", version.ref = "androidx-wear-compose" }
 androidx-concurrent = "androidx.concurrent:concurrent-futures-ktx:1.1.0"
