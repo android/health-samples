@@ -5,9 +5,9 @@ androidx-compose = "1.5.4"
 androidx-lifecycle = "2.6.2"
 androidx-wear-compose = "1.2.1"
 core-splashscreen = "1.0.1"
-dagger = "2.49"
+dagger = "2.50"
 health-services = "1.0.0-rc01"
-horologist = "0.5.14"
+horologist = "0.5.15"
 org-jetbrains-kotlin = "1.9.21"
 
 [libraries]
@@ -34,7 +34,7 @@ compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview"
 compose-wear-navigation = "androidx.wear.compose:compose-navigation:1.2.1"
 dagger-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "dagger"}
 dagger-hilt-android-compiler = {module = "com.google.dagger:hilt-android-compiler", version.ref = "dagger"}
-guava = "com.google.guava:guava:32.1.3-android"
+guava = "com.google.guava:guava:33.0.0-android"
 hilt-navigation-compose = "androidx.hilt:hilt-navigation-compose:1.1.0"
 horologist-compose-layout = { module = "com.google.android.horologist:horologist-compose-layout", version.ref = "horologist" }
 horologist-compose-material = { module = "com.google.android.horologist:horologist-compose-material", version.ref = "horologist" }
