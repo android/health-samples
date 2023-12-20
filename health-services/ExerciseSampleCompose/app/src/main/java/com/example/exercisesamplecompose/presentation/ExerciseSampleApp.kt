@@ -23,6 +23,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import androidx.wear.compose.material.TimeText
+import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.currentBackStackEntryAsState
 import com.example.exercisesamplecompose.app.Screen.Exercise
@@ -37,8 +38,9 @@ import com.example.exercisesamplecompose.presentation.summary.SummaryRoute
 import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.google.android.horologist.compose.ambient.AmbientAware
 import com.google.android.horologist.compose.ambient.AmbientState
-import com.google.android.horologist.compose.navscaffold.WearNavScaffold
-import com.google.android.horologist.compose.navscaffold.scrollable
+import com.google.android.horologist.compose.layout.AppScaffold
+import com.google.android.horologist.compose.layout.ScreenScaffold
+import com.google.android.horologist.compose.layout.rememberColumnState
 
 /** Navigation for the exercise app. **/
 @Composable
@@ -54,67 +56,77 @@ fun ExerciseSampleApp(
         isAlwaysOnScreen = isAlwaysOnScreen
     ) { ambientStateUpdate ->
 
-        WearNavScaffold(
-            navController = navController,
-            startDestination = Exercise.route,
+        AppScaffold(
             timeText = {
                 if (ambientStateUpdate.ambientState is AmbientState.Interactive) {
-                    TimeText(
-                        modifier = it,
-                    )
+                    TimeText()
                 }
             }
         ) {
-            composable(PreparingExercise.route) {
-                PreparingExerciseRoute(
-                    ambientState = ambientStateUpdate.ambientState,
-                    onStart = {
-                        navController.navigate(Exercise.route) {
-                            popUpTo(navController.graph.id) {
-                                inclusive = false
+            SwipeDismissableNavHost(
+                navController = navController,
+                startDestination = Exercise.route,
+
+                ) {
+                composable(PreparingExercise.route) {
+                    PreparingExerciseRoute(
+                        ambientState = ambientStateUpdate.ambientState,
+                        onStart = {
+                            navController.navigate(Exercise.route) {
+                                popUpTo(navController.graph.id) {
+                                    inclusive = false
+                                }
                             }
-                        }
-                    },
-                    onNoExerciseCapabilities = {
-                        navController.navigate(ExerciseNotAvailable.route) {
-                            popUpTo(navController.graph.id) {
-                                inclusive = false
+                        },
+                        onNoExerciseCapabilities = {
+                            navController.navigate(ExerciseNotAvailable.route) {
+                                popUpTo(navController.graph.id) {
+                                    inclusive = false
+                                }
                             }
-                        }
-                    },
-                    onFinishActivity = onFinishActivity
-                )
-            }
+                        },
+                        onFinishActivity = onFinishActivity
+                    )
+                }
 
-            scrollable(Exercise.route) {
-                ExerciseRoute(
-                    ambientState = ambientStateUpdate.ambientState,
-                    columnState = it.columnState,
-                    onSummary = {
-                        navController.navigateToTopLevel(Summary, Summary.buildRoute(it))
+                composable(Exercise.route) {
+                    val columnState = rememberColumnState()
+
+                    ScreenScaffold(scrollState = columnState) {
+                        ExerciseRoute(
+                            ambientState = ambientStateUpdate.ambientState,
+                            columnState = columnState,
+                            onSummary = {
+                                navController.navigateToTopLevel(Summary, Summary.buildRoute(it))
+                            }
+                        )
                     }
-                )
-            }
+                }
 
-            composable(ExerciseNotAvailable.route) {
-                ExerciseNotAvailable()
-            }
+                composable(ExerciseNotAvailable.route) {
+                    ExerciseNotAvailable()
+                }
 
-            scrollable(
-                Summary.route + "/{averageHeartRate}/{totalDistance}/{totalCalories}/{elapsedTime}",
-                arguments = listOf(
-                    navArgument(Summary.averageHeartRateArg) { type = NavType.FloatType },
-                    navArgument(Summary.totalDistanceArg) { type = NavType.FloatType },
-                    navArgument(Summary.totalCaloriesArg) { type = NavType.FloatType },
-                    navArgument(Summary.elapsedTimeArg) { type = NavType.StringType }
-                )
-            ) {
-                SummaryRoute(
-                    columnState = it.columnState,
-                    onRestartClick = {
-                        navController.navigateToTopLevel(PreparingExercise)
+                composable(
+                    Summary.route + "/{averageHeartRate}/{totalDistance}/{totalCalories}/{elapsedTime}",
+                    arguments = listOf(
+                        navArgument(Summary.averageHeartRateArg) { type = NavType.FloatType },
+                        navArgument(Summary.totalDistanceArg) { type = NavType.FloatType },
+                        navArgument(Summary.totalCaloriesArg) { type = NavType.FloatType },
+                        navArgument(Summary.elapsedTimeArg) { type = NavType.StringType }
+                    )
+                ) {
+                    val columnState = rememberColumnState()
+
+                    ScreenScaffold(scrollState = columnState) {
+                        SummaryRoute(
+                            columnState = columnState,
+                            onRestartClick = {
+                                navController.navigateToTopLevel(PreparingExercise)
+                            }
+                        )
                     }
-                )
+                }
             }
         }
     }
