@@ -2,7 +2,7 @@
 android-gradle-plugin = "8.2.1"
 androidx-activity = "1.8.2"
 androidx-compose = "1.5.4"
-androidx-lifecycle = "2.6.2"
+androidx-lifecycle = "2.7.0"
 androidx-wear-compose = "1.2.1"
 core-splashscreen = "1.0.1"
 dagger = "2.50"
@@ -22,7 +22,7 @@ androidx-health-services = { module = "androidx.health:health-services-client", 
 androidx-lifecycle-common-java8 = { module = "androidx.lifecycle:lifecycle-common-java8", version.ref = "androidx-lifecycle"}
 androidx-lifecycle-extensions  = "androidx.lifecycle:lifecycle-extensions:2.2.0"
 androidx-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "androidx-lifecycle"}
-androidx-lifecycle-runtime-compose = "androidx.lifecycle:lifecycle-runtime-compose:2.6.2"
+androidx-lifecycle-runtime-compose = "androidx.lifecycle:lifecycle-runtime-compose:2.7.0"
 androidx-lifecycle-service = {module = "androidx.lifecycle:lifecycle-service", version.ref = "androidx-lifecycle"}
 androidx-lifecycle-viewmodel = {module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "androidx-lifecycle"}
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "androidx-compose" }
