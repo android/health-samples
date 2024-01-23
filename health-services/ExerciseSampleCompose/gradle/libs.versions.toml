@@ -6,7 +6,7 @@ androidx-lifecycle = "2.7.0"
 androidx-wear-compose = "1.2.1"
 core-splashscreen = "1.0.1"
 dagger = "2.50"
-health-services = "1.0.0-rc01"
+health-services = "1.1.0-alpha02"
 horologist = "0.5.18"
 org-jetbrains-kotlin = "1.9.21"
 
