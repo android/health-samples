@@ -242,67 +242,21 @@ sealed class ExerciseMessage {
         ExerciseMessage()
 }
 
-@RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-@ExperimentalCoroutinesApi
-fun FusedLocationProviderClient.locationUpdates(): Flow<Location> = callbackFlow {
-    val locationRequest =
-        LocationRequest.Builder(10000).setPriority(Priority.PRIORITY_HIGH_ACCURACY).build()
-
-//    val locationCallback = object : LocationCallback() {
-//        override fun onLocationResult(locationResult: LocationResult) {
-//            for (location in locationResult.locations) {
-//                trySend(location)
-//            }
-//        }
-//    }
-//    requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
-//    awaitClose { removeLocationUpdates(locationCallback) }
-
-    val locationListener = LocationListener { location -> trySend(location) }
-
-    requestLocationUpdates(locationRequest, locationListener, Looper.getMainLooper()) // is this the right looper?
-    awaitClose { removeLocationUpdates(locationListener) }
-
-    Log.d("qqqqqq", "requested location updates")
-}
-
-@RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-fun FusedLocationProviderClient.locationUpdates(callback: (l: Location) -> Unit) {
-    val locationRequest =
-        LocationRequest.Builder(10000).setPriority(Priority.PRIORITY_HIGH_ACCURACY).build()
-
-    val locationCallback = object : LocationCallback() {
-        override fun onLocationResult(locationResult: LocationResult) {
-            for (location in locationResult.locations) {
-                Log.d("qqqqq", "got location")
-                callback(location)
-            }
-        }
-    }
-
-    requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
-}
-
 @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
 @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
 suspend fun ExerciseClient.setUpdateCallback(
     callback: ExerciseUpdateCallback,
     ftpClient: FusedLocationProviderClient
 ) {
-    Log.d("qqqqqq", "exerciseupdatecallback")
-
     val locationRequest =
         LocationRequest.Builder(10000).setPriority(Priority.PRIORITY_HIGH_ACCURACY).build()
 
     val locationListener = LocationListener { location -> callback.onExerciseUpdateReceived(
-        exerciseUpdateFromLocation(location))
+        ExerciseUpdate.fromLocation(location))
+        Log.d("qqqqqq", "Got location from FLP: $location")
     }
 
     ftpClient.requestLocationUpdates(locationRequest, locationListener, Looper.getMainLooper())
-
-    ftpClient.locationUpdates { location -> callback.onExerciseUpdateReceived(
-        exerciseUpdateFromLocation(location))
-    }
 
     class Proxy(val obj: ExerciseUpdateCallback) : ExerciseUpdateCallback by obj {
 
@@ -311,7 +265,7 @@ suspend fun ExerciseClient.setUpdateCallback(
             val hasLocation = update.latestMetrics.getData(DataType.LOCATION).isNotEmpty()
 
             if (hasLocation) {
-                Log.d("qqqqqq", "WHS is now providing location, switching to WHS")
+                Log.d("qqqqqq", "Removing FLP")
                 ftpClient.removeLocationUpdates(locationListener)
             }
 
@@ -322,38 +276,11 @@ suspend fun ExerciseClient.setUpdateCallback(
     val proxy = Proxy(callback)
 
     return setUpdateCallback(proxy)
-
-//    val locationFlow = ftpClient.locationUpdates()
-//    locationFlow.collect { location ->
-//        Log.d("qqqqqq", "sending update from FLP")
-//        callback.onExerciseUpdateReceived(ExerciseUpdateFromLocation(location))
-//    }
-//    return setUpdateCallback(callback)
 }
 
 @SuppressLint("RestrictedApi")
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-fun DataPointContainer.fromLocation(l: Location) {
-    DataPointContainer(
-        mapOf(
-            Pair(
-                DataType.LOCATION,
-                listOf(
-                    SampleDataPoint(
-                        DataType.LOCATION,
-                        LocationData(l.latitude, l.longitude),
-                        Duration.ZERO
-                    )
-                )
-            )
-        )
-    )
-}
-
-//@SuppressLint("RestrictedApi")
-@SuppressLint("RestrictedApi")
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-fun exerciseUpdateFromLocation(l: Location): ExerciseUpdate {
+fun ExerciseUpdate.Companion.fromLocation(l: Location): ExerciseUpdate {
     val latestMetrics: DataPointContainer = DataPointContainer(
         mapOf(
             Pair(
