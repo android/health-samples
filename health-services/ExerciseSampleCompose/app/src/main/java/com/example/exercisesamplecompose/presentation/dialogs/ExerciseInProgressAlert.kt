@@ -38,7 +38,6 @@ fun ExerciseInProgressAlert(
         onCancelButtonClick = onNegative,
         onOKButtonClick = onPositive,
         showDialog = showDialog,
-        scalingLazyListState = rememberScalingLazyListState()
     )
 }
 
