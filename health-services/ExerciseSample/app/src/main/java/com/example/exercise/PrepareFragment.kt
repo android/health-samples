@@ -1,6 +1,7 @@
 package com.example.exercise
 
 import android.Manifest
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -114,6 +115,10 @@ class PrepareFragment : Fragment(R.layout.fragment_prepare) {
             Manifest.permission.BODY_SENSORS,
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACTIVITY_RECOGNITION
-        )
+        ) + if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arrayOf(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            emptyArray()
+        }
     }
 }
