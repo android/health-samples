@@ -108,10 +108,12 @@ class HealthServicesManager @Inject constructor(
             )
         }
 
+        val supportsAutoPauseAndResume = capabilities.supportsAutoPauseAndResume
+
         val config = ExerciseConfig(
             exerciseType = ExerciseType.RUNNING,
             dataTypes = dataTypes,
-            isAutoPauseAndResumeEnabled = false,
+            isAutoPauseAndResumeEnabled = supportsAutoPauseAndResume,
             isGpsEnabled = true,
             exerciseGoals = exerciseGoals
         )
