@@ -28,4 +28,10 @@ data class ExerciseScreenState(
 
     val isPaused: Boolean
         get() = exerciseState?.exerciseState?.isPaused == true
+
+    val error: String?
+        get() = when(serviceState) {
+            is ServiceState.Connected -> serviceState.exerciseServiceState.error
+            else -> null
+        }
 }

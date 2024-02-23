@@ -20,11 +20,11 @@ import androidx.lifecycle.viewModelScope
 import com.example.exercisesamplecompose.data.HealthServicesRepository
 import com.example.exercisesamplecompose.data.ServiceState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import javax.inject.Inject
 
 @HiltViewModel
 class ExerciseViewModel @Inject constructor(

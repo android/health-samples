@@ -36,7 +36,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.Text
+import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import com.example.exercisesamplecompose.R
+import com.example.exercisesamplecompose.data.ServiceState
 import com.example.exercisesamplecompose.presentation.component.CaloriesText
 import com.example.exercisesamplecompose.presentation.component.DistanceText
 import com.example.exercisesamplecompose.presentation.component.HRText
@@ -46,10 +48,13 @@ import com.example.exercisesamplecompose.presentation.component.StartButton
 import com.example.exercisesamplecompose.presentation.component.StopButton
 import com.example.exercisesamplecompose.presentation.component.formatElapsedTime
 import com.example.exercisesamplecompose.presentation.summary.SummaryScreenState
+import com.example.exercisesamplecompose.presentation.theme.ThemePreview
+import com.example.exercisesamplecompose.service.ExerciseServiceState
 import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.google.android.horologist.compose.ambient.AmbientState
 import com.google.android.horologist.compose.layout.ScalingLazyColumn
 import com.google.android.horologist.compose.layout.ScalingLazyColumnState
+import com.google.android.horologist.compose.material.AlertDialog
 import com.google.android.horologist.health.composables.ActiveDurationText
 
 @Composable
@@ -57,7 +62,9 @@ fun ExerciseRoute(
     ambientState: AmbientState,
     columnState: ScalingLazyColumnState,
     modifier: Modifier = Modifier,
-    onSummary: (SummaryScreenState) -> Unit
+    onSummary: (SummaryScreenState) -> Unit,
+    onRestart: () -> Unit,
+    onFinishActivity: () -> Unit,
 ) {
     val viewModel = hiltViewModel<ExerciseViewModel>()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -68,7 +75,13 @@ fun ExerciseRoute(
         }
     }
 
-    if (ambientState is AmbientState.Interactive) {
+    if (uiState.error != null) {
+        ErrorStartingExerciseScreen(
+            onRestart = onRestart,
+            onFinishActivity = onFinishActivity,
+            uiState = uiState
+        )
+    } else if (ambientState is AmbientState.Interactive) {
         ExerciseScreen(
             onPauseClick = { viewModel.pauseExercise() },
             onEndClick = { viewModel.endExercise() },
@@ -79,6 +92,24 @@ fun ExerciseRoute(
             modifier = modifier
         )
     }
+}
+
+/**
+ * Shows an error that occured when starting an exercise
+ */
+@Composable
+fun ErrorStartingExerciseScreen(
+    onRestart: () -> Unit,
+    onFinishActivity: () -> Unit,
+    uiState: ExerciseScreenState
+) {
+    AlertDialog(
+        title = stringResource(id = R.string.error_starting_exercise),
+        message = "${uiState.error ?: stringResource(id = R.string.unknown_error)}. ${stringResource(id = R.string.try_again)}",
+        onCancel = onFinishActivity,
+        onOk = onRestart,
+        showDialog = true,
+    )
 }
 
 /**
@@ -220,10 +251,44 @@ private fun DurationRow(uiState: ExerciseScreenState) {
     }
 }
 
+@WearPreviewDevices
+@Composable
+fun ExerciseScreenPreview() {
+    ThemePreview {
+        ExerciseScreen(
+            onPauseClick = {},
+            onEndClick = {},
+            onResumeClick = {},
+            onStartClick = {},
+            uiState = ExerciseScreenState(
+                hasExerciseCapabilities = true,
+                isTrackingAnotherExercise = false,
+                serviceState = ServiceState.Connected(
+                    ExerciseServiceState()
+                ),
+                exerciseState = ExerciseServiceState()
+            ),
+            columnState = ScalingLazyColumnState(),
+            modifier = Modifier
+        )
+    }
+}
 
-
-
-
-
-
-
+@WearPreviewDevices
+@Composable
+fun ErrorStartingExerciseScreenPreview() {
+    ThemePreview {
+        ErrorStartingExerciseScreen(
+            onRestart = {},
+            onFinishActivity = {},
+            uiState = ExerciseScreenState(
+                hasExerciseCapabilities = true,
+                isTrackingAnotherExercise = false,
+                serviceState = ServiceState.Connected(
+                    ExerciseServiceState()
+                ),
+                exerciseState = ExerciseServiceState()
+            )
+        )
+    }
+}

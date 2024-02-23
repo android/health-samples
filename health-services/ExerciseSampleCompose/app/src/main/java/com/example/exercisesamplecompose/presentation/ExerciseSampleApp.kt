@@ -98,7 +98,11 @@ fun ExerciseSampleApp(
                             columnState = columnState,
                             onSummary = {
                                 navController.navigateToTopLevel(Summary, Summary.buildRoute(it))
-                            }
+                            },
+                            onRestart = {
+                                navController.navigateToTopLevel(PreparingExercise)
+                            },
+                            onFinishActivity = onFinishActivity
                         )
                     }
                 }

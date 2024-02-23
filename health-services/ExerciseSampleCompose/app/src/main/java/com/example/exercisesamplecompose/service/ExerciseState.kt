@@ -30,5 +30,6 @@ data class ExerciseServiceState(
     val exerciseMetrics: ExerciseMetrics = ExerciseMetrics(),
     val exerciseLaps: Int = 0,
     val activeDurationCheckpoint: ActiveDurationCheckpoint? = null,
-    val locationAvailability: LocationAvailability = LocationAvailability.UNKNOWN
+    val locationAvailability: LocationAvailability = LocationAvailability.UNKNOWN,
+    val error: String? = null,
 )
