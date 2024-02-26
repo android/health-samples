@@ -21,6 +21,9 @@
     <string name="start">Start</string>
     <string name="starting_up">Starting up</string>
     <string name="not_avail">Exercise not available on this device</string>
+    <string name="error_starting_exercise">Error starting exercise</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="try_again">Would you like to try again?</string>
 
     <!-- GPS -->
     <string name="GPS_acquiring">GPS Acquiring</string>
