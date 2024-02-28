@@ -18,7 +18,7 @@
 buildscript {
     ext {
         kotlin_version = "1.9.22"
-        hilt_version = '2.50'
+        hilt_version = '2.51'
         lifecycle_version = "2.7.0"
     }
 
