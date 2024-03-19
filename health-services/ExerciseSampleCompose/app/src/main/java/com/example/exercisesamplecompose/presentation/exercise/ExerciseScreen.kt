@@ -22,11 +22,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.automirrored.filled._360
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.LocalFireDepartment
-import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.WatchLater
-import androidx.compose.material.icons.filled._360
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -53,14 +53,15 @@ import com.example.exercisesamplecompose.service.ExerciseServiceState
 import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.google.android.horologist.compose.ambient.AmbientState
 import com.google.android.horologist.compose.layout.ScalingLazyColumn
-import com.google.android.horologist.compose.layout.ScalingLazyColumnState
+import com.google.android.horologist.compose.layout.ScalingLazyColumnDefaults
+import com.google.android.horologist.compose.layout.ScreenScaffold
+import com.google.android.horologist.compose.layout.rememberResponsiveColumnState
 import com.google.android.horologist.compose.material.AlertDialog
 import com.google.android.horologist.health.composables.ActiveDurationText
 
 @Composable
 fun ExerciseRoute(
     ambientState: AmbientState,
-    columnState: ScalingLazyColumnState,
     modifier: Modifier = Modifier,
     onSummary: (SummaryScreenState) -> Unit,
     onRestart: () -> Unit,
@@ -88,7 +89,6 @@ fun ExerciseRoute(
             onResumeClick = { viewModel.resumeExercise() },
             onStartClick = { viewModel.startExercise() },
             uiState = uiState,
-            columnState = columnState,
             modifier = modifier
         )
     }
@@ -105,7 +105,11 @@ fun ErrorStartingExerciseScreen(
 ) {
     AlertDialog(
         title = stringResource(id = R.string.error_starting_exercise),
-        message = "${uiState.error ?: stringResource(id = R.string.unknown_error)}. ${stringResource(id = R.string.try_again)}",
+        message = "${uiState.error ?: stringResource(id = R.string.unknown_error)}. ${
+            stringResource(
+                id = R.string.try_again
+            )
+        }",
         onCancel = onFinishActivity,
         onOk = onRestart,
         showDialog = true,
@@ -122,27 +126,40 @@ fun ExerciseScreen(
     onResumeClick: () -> Unit,
     onStartClick: () -> Unit,
     uiState: ExerciseScreenState,
-    columnState: ScalingLazyColumnState,
     modifier: Modifier = Modifier
 ) {
-    ScalingLazyColumn(
-        modifier = modifier.fillMaxSize(),
-        columnState = columnState
-    ) {
-        item {
-            DurationRow(uiState)
-        }
+    val columnState = rememberResponsiveColumnState(
+        contentPadding = ScalingLazyColumnDefaults.padding(
+            first = ScalingLazyColumnDefaults.ItemType.Text,
+            last = ScalingLazyColumnDefaults.ItemType.Chip
+        )
+    )
+    ScreenScaffold(scrollState = columnState) {
+        ScalingLazyColumn(
+            modifier = modifier.fillMaxSize(),
+            columnState = columnState
+        ) {
+            item {
+                DurationRow(uiState)
+            }
 
-        item {
-            HeartRateAndCaloriesRow(uiState)
-        }
+            item {
+                HeartRateAndCaloriesRow(uiState)
+            }
 
-        item {
-            DistanceAndLapsRow(uiState)
-        }
+            item {
+                DistanceAndLapsRow(uiState)
+            }
 
-        item {
-            ExerciseControlButtons(uiState, onStartClick, onEndClick, onResumeClick, onPauseClick)
+            item {
+                ExerciseControlButtons(
+                    uiState,
+                    onStartClick,
+                    onEndClick,
+                    onResumeClick,
+                    onPauseClick
+                )
+            }
         }
     }
 }
@@ -181,7 +198,7 @@ private fun DistanceAndLapsRow(uiState: ExerciseScreenState) {
     ) {
         Row {
             Icon(
-                imageVector = Icons.Default.TrendingUp,
+                imageVector = Icons.AutoMirrored.Default.TrendingUp,
                 contentDescription = stringResource(id = R.string.distance)
             )
             DistanceText(uiState.exerciseState?.exerciseMetrics?.distance)
@@ -189,7 +206,7 @@ private fun DistanceAndLapsRow(uiState: ExerciseScreenState) {
 
         Row {
             Icon(
-                imageVector = Icons.Default._360,
+                imageVector = Icons.AutoMirrored.Default._360,
                 contentDescription = stringResource(id = R.string.laps)
             )
             Text(text = uiState.exerciseState?.exerciseLaps?.toString() ?: "--")
@@ -268,8 +285,6 @@ fun ExerciseScreenPreview() {
                 ),
                 exerciseState = ExerciseServiceState()
             ),
-            columnState = ScalingLazyColumnState(),
-            modifier = Modifier
         )
     }
 }

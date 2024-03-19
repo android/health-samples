@@ -17,14 +17,12 @@
 
 package com.example.exercisesamplecompose.presentation.summary
 
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -38,9 +36,13 @@ import com.example.exercisesamplecompose.presentation.component.formatHeartRate
 import com.example.exercisesamplecompose.presentation.theme.ThemePreview
 import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.google.android.horologist.compose.layout.ScalingLazyColumn
-import com.google.android.horologist.compose.layout.ScalingLazyColumnDefaults
-import com.google.android.horologist.compose.layout.ScalingLazyColumnState
+import com.google.android.horologist.compose.layout.ScalingLazyColumnDefaults.ItemType
+import com.google.android.horologist.compose.layout.ScalingLazyColumnDefaults.padding
+import com.google.android.horologist.compose.layout.ScreenScaffold
+import com.google.android.horologist.compose.layout.rememberResponsiveColumnState
 import com.google.android.horologist.compose.material.Chip
+import com.google.android.horologist.compose.material.ListHeaderDefaults.firstItemPadding
+import com.google.android.horologist.compose.material.ResponsiveListHeader
 import com.google.android.horologist.compose.material.Title
 import java.time.Duration
 
@@ -48,12 +50,11 @@ import java.time.Duration
 @Composable
 fun SummaryRoute(
     onRestartClick: () -> Unit,
-    columnState: ScalingLazyColumnState,
 ) {
     val viewModel = hiltViewModel<SummaryViewModel>()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    SummaryScreen(uiState = uiState, onRestartClick = onRestartClick, columnState = columnState)
+    SummaryScreen(uiState = uiState, onRestartClick = onRestartClick)
 }
 
 
@@ -61,48 +62,56 @@ fun SummaryRoute(
 fun SummaryScreen(
     uiState: SummaryScreenState,
     onRestartClick: () -> Unit,
-    columnState: ScalingLazyColumnState,
 ) {
-    ScalingLazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        columnState = columnState
-    ) {
-        item { Title(text = stringResource(id = R.string.workout_complete)) }
-        item {
-            SummaryFormat(
-                value = formatElapsedTime(uiState.elapsedTime, includeSeconds = true),
-                metric = stringResource(id = R.string.duration),
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-        item {
-            SummaryFormat(
-                value = formatHeartRate(uiState.averageHeartRate),
-                metric = stringResource(id = R.string.avgHR),
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-        item {
-            SummaryFormat(
-                value = formatDistanceKm(uiState.totalDistance),
-                metric = stringResource(id = R.string.distance),
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-        item {
-            SummaryFormat(
-                value = formatCalories(uiState.totalCalories),
-                metric = stringResource(id = R.string.calories),
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-        item {
-            Chip(
-                label = stringResource(id = R.string.restart),
-                onClick = onRestartClick,
-                modifier = Modifier
-                    .padding(6.dp)
-            )
+    val columnState = rememberResponsiveColumnState(
+        contentPadding = padding(
+            first = ItemType.Text,
+            last = ItemType.Chip
+        )
+    )
+    ScreenScaffold(scrollState = columnState) {
+        ScalingLazyColumn(
+            columnState = columnState
+        ) {
+            item {
+                ResponsiveListHeader(contentPadding = firstItemPadding()) {
+                    Title(text = stringResource(id = R.string.workout_complete))
+                }
+            }
+            item {
+                SummaryFormat(
+                    value = formatElapsedTime(uiState.elapsedTime, includeSeconds = true),
+                    metric = stringResource(id = R.string.duration),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            item {
+                SummaryFormat(
+                    value = formatHeartRate(uiState.averageHeartRate),
+                    metric = stringResource(id = R.string.avgHR),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            item {
+                SummaryFormat(
+                    value = formatDistanceKm(uiState.totalDistance),
+                    metric = stringResource(id = R.string.distance),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            item {
+                SummaryFormat(
+                    value = formatCalories(uiState.totalCalories),
+                    metric = stringResource(id = R.string.calories),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            item {
+                Chip(
+                    label = stringResource(id = R.string.restart),
+                    onClick = onRestartClick,
+                )
+            }
         }
     }
 }
@@ -119,7 +128,6 @@ fun SummaryScreenPreview() {
                 elapsedTime = Duration.ofMinutes(17).plusSeconds(1)
             ),
             onRestartClick = {},
-            columnState = ScalingLazyColumnDefaults.belowTimeText().create()
         )
     }
 }
