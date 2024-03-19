@@ -17,7 +17,6 @@
 package com.example.exercisesamplecompose.presentation
 
 import androidx.compose.ui.test.hasScrollToIndexAction
-import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeUp
 import com.example.exercisesamplecompose.presentation.summary.SummaryScreen
