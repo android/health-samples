@@ -17,10 +17,13 @@
 package com.example.exercisesamplecompose.di
 
 import android.content.Context
+import android.util.Log
 import androidx.health.services.client.HealthServices
 import androidx.health.services.client.HealthServicesClient
 import com.example.exercisesamplecompose.service.AndroidLogExerciseLogger
 import com.example.exercisesamplecompose.service.ExerciseLogger
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -51,4 +54,11 @@ class MainModule {
     @Singleton
     @Provides
     fun provideLogger(): ExerciseLogger = AndroidLogExerciseLogger()
+
+    @Singleton
+    @Provides
+    fun provideFusedLocationProviderClient(@ApplicationContext context: Context): FusedLocationProviderClient {
+        Log.d("qqqqqq", "getting flpclient")
+        return LocationServices.getFusedLocationProviderClient(context)
+    }
 }

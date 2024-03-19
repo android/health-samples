@@ -88,7 +88,7 @@ dependencies {
   implementation libs.guava
   implementation libs.androidx.concurrent
 
-  //Wear OS Compose Navigation
+  // Wear OS Compose Navigation
   implementation libs.compose.wear.navigation
   implementation libs.androidx.compose.navigation
   implementation libs.horologist.compose.layout
@@ -96,7 +96,7 @@ dependencies {
   implementation libs.horologist.health.composables
   implementation libs.horologist.health.service
 
-  //Wear Health Services
+  // Wear Health Services
   implementation libs.androidx.health.services
 
   // Lifecycle components
@@ -110,6 +110,9 @@ dependencies {
 
   // Ongoing Activity
   implementation libs.wear.ongoing.activity
+
+  // Fused Location Provider
+  implementation libs.play.services.location
 
   // Hilt
   implementation libs.hilt.navigation.compose
