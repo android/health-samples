@@ -68,7 +68,7 @@ dependencies {
     // Health Services
     implementation 'androidx.health:health-services-client:1.0.0-rc01'
     // Used to bridge between Futures and coroutines
-    implementation 'com.google.guava:guava:33.0.0-android'
+    implementation 'com.google.guava:guava:33.1.0-android'
     implementation "androidx.concurrent:concurrent-futures-ktx:1.1.0"
 
     // Datastore
