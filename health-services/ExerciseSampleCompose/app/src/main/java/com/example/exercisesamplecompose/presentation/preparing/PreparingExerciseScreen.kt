@@ -47,9 +47,12 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.withSaveLayer
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.times
 import androidx.health.services.client.data.LocationAvailability
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -169,15 +172,15 @@ fun PreparingExerciseScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.Top,
             modifier = Modifier.height(25.dp)
         ) {
-
             Text(
                 textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 text = stringResource(id = R.string.preparing_exercise),
                 modifier = Modifier.fillMaxWidth()
+                    .padding(horizontal = 0.15f * LocalConfiguration.current.screenWidthDp.dp)
             )
         }
         Row(
@@ -195,36 +198,26 @@ fun PreparingExerciseScreen(
             }
         }
 
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.Top
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            text = updatePrepareLocationStatus(
+                locationAvailability = location ?: LocationAvailability.UNAVAILABLE
+            ),
+        )
+
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(
-                textAlign = TextAlign.Center,
-                text = updatePrepareLocationStatus(
-                    locationAvailability = location ?: LocationAvailability.UNAVAILABLE
-                ),
-                modifier = Modifier.fillMaxWidth()
+            Button(
+                imageVector = Icons.Default.PlayArrow,
+                contentDescription = stringResource(id = R.string.start),
+                onClick = onStart,
+                buttonSize = ButtonSize.Small,
+                enabled = uiState is PreparingScreenState.Preparing
             )
-        }
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(6.dp),
-        ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Button(
-                    imageVector = Icons.Default.PlayArrow,
-                    contentDescription = stringResource(id = R.string.start),
-                    onClick = onStart,
-                    buttonSize = ButtonSize.Small,
-                    enabled = uiState is PreparingScreenState.Preparing
-                )
-            }
         }
     }
 }
