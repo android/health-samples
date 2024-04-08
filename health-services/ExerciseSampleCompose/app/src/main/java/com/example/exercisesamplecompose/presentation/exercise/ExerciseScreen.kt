@@ -22,11 +22,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.automirrored.filled._360
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.LocalFireDepartment
-import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.WatchLater
-import androidx.compose.material.icons.filled._360
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -36,7 +36,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.Text
+import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import com.example.exercisesamplecompose.R
+import com.example.exercisesamplecompose.data.ServiceState
 import com.example.exercisesamplecompose.presentation.component.CaloriesText
 import com.example.exercisesamplecompose.presentation.component.DistanceText
 import com.example.exercisesamplecompose.presentation.component.HRText
@@ -46,18 +48,24 @@ import com.example.exercisesamplecompose.presentation.component.StartButton
 import com.example.exercisesamplecompose.presentation.component.StopButton
 import com.example.exercisesamplecompose.presentation.component.formatElapsedTime
 import com.example.exercisesamplecompose.presentation.summary.SummaryScreenState
+import com.example.exercisesamplecompose.presentation.theme.ThemePreview
+import com.example.exercisesamplecompose.service.ExerciseServiceState
 import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.google.android.horologist.compose.ambient.AmbientState
 import com.google.android.horologist.compose.layout.ScalingLazyColumn
-import com.google.android.horologist.compose.layout.ScalingLazyColumnState
+import com.google.android.horologist.compose.layout.ScalingLazyColumnDefaults
+import com.google.android.horologist.compose.layout.ScreenScaffold
+import com.google.android.horologist.compose.layout.rememberResponsiveColumnState
+import com.google.android.horologist.compose.material.AlertDialog
 import com.google.android.horologist.health.composables.ActiveDurationText
 
 @Composable
 fun ExerciseRoute(
     ambientState: AmbientState,
-    columnState: ScalingLazyColumnState,
     modifier: Modifier = Modifier,
-    onSummary: (SummaryScreenState) -> Unit
+    onSummary: (SummaryScreenState) -> Unit,
+    onRestart: () -> Unit,
+    onFinishActivity: () -> Unit,
 ) {
     val viewModel = hiltViewModel<ExerciseViewModel>()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -68,17 +76,44 @@ fun ExerciseRoute(
         }
     }
 
-    if (ambientState is AmbientState.Interactive) {
+    if (uiState.error != null) {
+        ErrorStartingExerciseScreen(
+            onRestart = onRestart,
+            onFinishActivity = onFinishActivity,
+            uiState = uiState
+        )
+    } else if (ambientState is AmbientState.Interactive) {
         ExerciseScreen(
             onPauseClick = { viewModel.pauseExercise() },
             onEndClick = { viewModel.endExercise() },
             onResumeClick = { viewModel.resumeExercise() },
             onStartClick = { viewModel.startExercise() },
             uiState = uiState,
-            columnState = columnState,
             modifier = modifier
         )
     }
+}
+
+/**
+ * Shows an error that occured when starting an exercise
+ */
+@Composable
+fun ErrorStartingExerciseScreen(
+    onRestart: () -> Unit,
+    onFinishActivity: () -> Unit,
+    uiState: ExerciseScreenState
+) {
+    AlertDialog(
+        title = stringResource(id = R.string.error_starting_exercise),
+        message = "${uiState.error ?: stringResource(id = R.string.unknown_error)}. ${
+            stringResource(
+                id = R.string.try_again
+            )
+        }",
+        onCancel = onFinishActivity,
+        onOk = onRestart,
+        showDialog = true,
+    )
 }
 
 /**
@@ -91,27 +126,40 @@ fun ExerciseScreen(
     onResumeClick: () -> Unit,
     onStartClick: () -> Unit,
     uiState: ExerciseScreenState,
-    columnState: ScalingLazyColumnState,
     modifier: Modifier = Modifier
 ) {
-    ScalingLazyColumn(
-        modifier = modifier.fillMaxSize(),
-        columnState = columnState
-    ) {
-        item {
-            DurationRow(uiState)
-        }
+    val columnState = rememberResponsiveColumnState(
+        contentPadding = ScalingLazyColumnDefaults.padding(
+            first = ScalingLazyColumnDefaults.ItemType.Text,
+            last = ScalingLazyColumnDefaults.ItemType.Chip
+        )
+    )
+    ScreenScaffold(scrollState = columnState) {
+        ScalingLazyColumn(
+            modifier = modifier.fillMaxSize(),
+            columnState = columnState
+        ) {
+            item {
+                DurationRow(uiState)
+            }
 
-        item {
-            HeartRateAndCaloriesRow(uiState)
-        }
+            item {
+                HeartRateAndCaloriesRow(uiState)
+            }
 
-        item {
-            DistanceAndLapsRow(uiState)
-        }
+            item {
+                DistanceAndLapsRow(uiState)
+            }
 
-        item {
-            ExerciseControlButtons(uiState, onStartClick, onEndClick, onResumeClick, onPauseClick)
+            item {
+                ExerciseControlButtons(
+                    uiState,
+                    onStartClick,
+                    onEndClick,
+                    onResumeClick,
+                    onPauseClick
+                )
+            }
         }
     }
 }
@@ -150,7 +198,7 @@ private fun DistanceAndLapsRow(uiState: ExerciseScreenState) {
     ) {
         Row {
             Icon(
-                imageVector = Icons.Default.TrendingUp,
+                imageVector = Icons.AutoMirrored.Default.TrendingUp,
                 contentDescription = stringResource(id = R.string.distance)
             )
             DistanceText(uiState.exerciseState?.exerciseMetrics?.distance)
@@ -158,7 +206,7 @@ private fun DistanceAndLapsRow(uiState: ExerciseScreenState) {
 
         Row {
             Icon(
-                imageVector = Icons.Default._360,
+                imageVector = Icons.AutoMirrored.Default._360,
                 contentDescription = stringResource(id = R.string.laps)
             )
             Text(text = uiState.exerciseState?.exerciseLaps?.toString() ?: "--")
@@ -220,10 +268,42 @@ private fun DurationRow(uiState: ExerciseScreenState) {
     }
 }
 
+@WearPreviewDevices
+@Composable
+fun ExerciseScreenPreview() {
+    ThemePreview {
+        ExerciseScreen(
+            onPauseClick = {},
+            onEndClick = {},
+            onResumeClick = {},
+            onStartClick = {},
+            uiState = ExerciseScreenState(
+                hasExerciseCapabilities = true,
+                isTrackingAnotherExercise = false,
+                serviceState = ServiceState.Connected(
+                    ExerciseServiceState()
+                ),
+                exerciseState = ExerciseServiceState()
+            ),
+        )
+    }
+}
 
-
-
-
-
-
-
+@WearPreviewDevices
+@Composable
+fun ErrorStartingExerciseScreenPreview() {
+    ThemePreview {
+        ErrorStartingExerciseScreen(
+            onRestart = {},
+            onFinishActivity = {},
+            uiState = ExerciseScreenState(
+                hasExerciseCapabilities = true,
+                isTrackingAnotherExercise = false,
+                serviceState = ServiceState.Connected(
+                    ExerciseServiceState()
+                ),
+                exerciseState = ExerciseServiceState()
+            )
+        )
+    }
+}

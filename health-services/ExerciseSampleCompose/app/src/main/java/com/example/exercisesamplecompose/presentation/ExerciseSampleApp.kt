@@ -22,7 +22,6 @@ import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import androidx.wear.compose.material.TimeText
 import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.currentBackStackEntryAsState
@@ -39,8 +38,7 @@ import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.google.android.horologist.compose.ambient.AmbientAware
 import com.google.android.horologist.compose.ambient.AmbientState
 import com.google.android.horologist.compose.layout.AppScaffold
-import com.google.android.horologist.compose.layout.ScreenScaffold
-import com.google.android.horologist.compose.layout.rememberColumnState
+import com.google.android.horologist.compose.layout.ResponsiveTimeText
 
 /** Navigation for the exercise app. **/
 @Composable
@@ -59,7 +57,7 @@ fun ExerciseSampleApp(
         AppScaffold(
             timeText = {
                 if (ambientStateUpdate.ambientState is AmbientState.Interactive) {
-                    TimeText()
+                    ResponsiveTimeText()
                 }
             }
         ) {
@@ -90,17 +88,16 @@ fun ExerciseSampleApp(
                 }
 
                 composable(Exercise.route) {
-                    val columnState = rememberColumnState()
-
-                    ScreenScaffold(scrollState = columnState) {
-                        ExerciseRoute(
-                            ambientState = ambientStateUpdate.ambientState,
-                            columnState = columnState,
-                            onSummary = {
-                                navController.navigateToTopLevel(Summary, Summary.buildRoute(it))
-                            }
-                        )
-                    }
+                    ExerciseRoute(
+                        ambientState = ambientStateUpdate.ambientState,
+                        onSummary = {
+                            navController.navigateToTopLevel(Summary, Summary.buildRoute(it))
+                        },
+                        onRestart = {
+                            navController.navigateToTopLevel(PreparingExercise)
+                        },
+                        onFinishActivity = onFinishActivity
+                    )
                 }
 
                 composable(ExerciseNotAvailable.route) {
@@ -116,16 +113,11 @@ fun ExerciseSampleApp(
                         navArgument(Summary.elapsedTimeArg) { type = NavType.StringType }
                     )
                 ) {
-                    val columnState = rememberColumnState()
-
-                    ScreenScaffold(scrollState = columnState) {
-                        SummaryRoute(
-                            columnState = columnState,
-                            onRestartClick = {
-                                navController.navigateToTopLevel(PreparingExercise)
-                            }
-                        )
-                    }
+                    SummaryRoute(
+                        onRestartClick = {
+                            navController.navigateToTopLevel(PreparingExercise)
+                        }
+                    )
                 }
             }
         }
