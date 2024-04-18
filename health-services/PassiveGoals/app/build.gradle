@@ -54,7 +54,7 @@ android {
 
 dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.core:core-ktx:1.13.0'
     implementation "androidx.fragment:fragment-ktx:1.6.2"
 
     // Hilt dependency injection
@@ -72,7 +72,7 @@ dependencies {
     implementation "androidx.concurrent:concurrent-futures-ktx:1.1.0"
 
     // Datastore
-    implementation "androidx.datastore:datastore-preferences:1.0.0"
+    implementation "androidx.datastore:datastore-preferences:1.1.0"
 
     // Lifecycle
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
