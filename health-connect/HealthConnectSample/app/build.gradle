@@ -53,7 +53,7 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.11"
+        kotlinCompilerExtensionVersion = "1.5.12"
     }
     packagingOptions {
         resources {
@@ -65,15 +65,15 @@ android {
 
 dependencies {
 
-    def composeBom = platform('androidx.compose:compose-bom:2024.04.00')
+    def composeBom = platform('androidx.compose:compose-bom:2024.04.01')
     implementation(composeBom)
 
     // For Health Connect
     implementation "androidx.health.connect:connect-client:$health_connect_version"
 
     // Fix permissions issue until 1.1.0-alpha02
-    implementation "androidx.core:core:1.12.0"
-    implementation "androidx.core:core-ktx:1.12.0"
+    implementation "androidx.core:core:1.13.0"
+    implementation "androidx.core:core-ktx:1.13.0"
 
     // For viewmodel support
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version"
