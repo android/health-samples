@@ -230,9 +230,6 @@ class HealthConnectManager(private val context: Context) {
             HeartRateRecord.BPM_AVG,
             HeartRateRecord.BPM_MAX,
             HeartRateRecord.BPM_MIN,
-            SpeedRecord.SPEED_AVG,
-            SpeedRecord.SPEED_MAX,
-            SpeedRecord.SPEED_MIN
         )
         // Limit the data read to just the application that wrote the session. This may or may not
         // be desirable depending on the use case: In some cases, it may be useful to combine with
@@ -258,9 +255,6 @@ class HealthConnectManager(private val context: Context) {
             avgHeartRate = aggregateData[HeartRateRecord.BPM_AVG],
             heartRateSeries = heartRateData,
             speedRecord = speedData,
-            minSpeed = aggregateData[SpeedRecord.SPEED_MIN],
-            maxSpeed = aggregateData[SpeedRecord.SPEED_MAX],
-            avgSpeed = aggregateData[SpeedRecord.SPEED_AVG],
         )
     }
 

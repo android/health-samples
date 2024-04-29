@@ -111,23 +111,6 @@ fun ExerciseSessionDetailScreen(
                 sessionDetailsItem(labelId = R.string.total_energy) {
                     Text(sessionMetrics.totalEnergyBurned?.inCalories.toString())
                 }
-                sessionDetailsItem(labelId = R.string.speed_stats) {
-                    ExerciseSessionDetailsMinMaxAvg(
-                        sessionMetrics.minSpeed?.inMetersPerSecond.let {
-                            String.format(
-                                "%.1f",
-                                it
-                            )
-                        },
-                        sessionMetrics.maxSpeed?.inMetersPerSecond.let {
-                            String.format(
-                                "%.1f",
-                                it
-                            )
-                        },
-                        sessionMetrics.avgSpeed?.inMetersPerSecond.let { String.format("%.1f", it) }
-                    )
-                }
                 speedSeries(
                     labelId = R.string.speed_series,
                     series = sessionMetrics.speedRecord
