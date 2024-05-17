@@ -23,7 +23,7 @@ buildscript {
 
         concurrent_futures_version = '1.1.0'
         health_connect_version = '1.1.0-alpha07'
-        lifecycle_version = '2.7.0'
+        lifecycle_version = '2.8.0'
     }
     repositories {
         google()
