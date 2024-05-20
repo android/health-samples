@@ -1,5 +1,5 @@
 [versions]
-android-gradle-plugin = "8.4.0"
+android-gradle-plugin = "8.4.1"
 androidx-activity = "1.9.0"
 androidx-compose = "1.6.7"
 androidx-lifecycle = "2.8.0"
@@ -10,11 +10,11 @@ health-services = "1.0.0-rc02"
 horologist = "0.5.27"
 org-jetbrains-kotlin = "1.9.23"
 ui-test-junit4 = "1.6.7"
-robolectric = "4.12.1"
-roborazzi = "1.16.0"
+robolectric = "4.12.2"
+roborazzi = "1.16.1"
 
 [libraries]
-android-lint-gradle = "com.android.tools.lint:lint-gradle:31.4.0"
+android-lint-gradle = "com.android.tools.lint:lint-gradle:31.4.1"
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-compose-navigation = "androidx.navigation:navigation-compose:2.7.7"
 androidx-compose-runtime = "androidx.compose.runtime:runtime:1.6.7"
