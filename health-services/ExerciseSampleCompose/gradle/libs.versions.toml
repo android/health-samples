@@ -11,7 +11,7 @@ horologist = "0.5.27"
 org-jetbrains-kotlin = "1.9.23"
 ui-test-junit4 = "1.6.7"
 robolectric = "4.12.2"
-roborazzi = "1.18.0"
+roborazzi = "1.19.0"
 
 [libraries]
 android-lint-gradle = "com.android.tools.lint:lint-gradle:31.4.1"
