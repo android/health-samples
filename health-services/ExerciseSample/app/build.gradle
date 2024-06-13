@@ -56,7 +56,7 @@ android {
 dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.core:core-ktx:1.13.1'
-    implementation "androidx.fragment:fragment-ktx:1.7.1"
+    implementation "androidx.fragment:fragment-ktx:1.8.0"
 
     // Hilt dependency injection
     implementation "com.google.dagger:hilt-android:$hilt_version"
@@ -71,7 +71,7 @@ dependencies {
     implementation 'androidx.health:health-services-client:1.0.0-rc02'
     // Used to bridge between Futures and coroutines
     implementation 'com.google.guava:guava:33.2.1-android'
-    implementation "androidx.concurrent:concurrent-futures-ktx:1.1.0"
+    implementation "androidx.concurrent:concurrent-futures-ktx:1.2.0"
 
     // Lifecycle
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
