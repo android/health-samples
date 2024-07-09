@@ -20,8 +20,10 @@ import android.content.ContentValues.TAG
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Binder
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import androidx.core.app.ServiceCompat
 import androidx.health.services.client.data.ExerciseState
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleService
@@ -197,11 +199,13 @@ class ExerciseService : LifecycleService() {
 
             exerciseNotificationManager.createNotificationChannel()
             val serviceState = exerciseServiceMonitor.exerciseServiceState.value
-            startForeground(
+            ServiceCompat.startForeground(
+                this,
                 ExerciseNotificationManager.NOTIFICATION_ID,
                 exerciseNotificationManager.buildNotification(
                     serviceState.activeDurationCheckpoint?.activeDuration ?: Duration.ZERO
-                )
+                ),
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION or if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH else 0
             )
         }
     }
