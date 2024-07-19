@@ -23,14 +23,14 @@ buildscript {
 
         concurrent_futures_version = '1.2.0'
         health_connect_version = '1.1.0-alpha07'
-        lifecycle_version = '2.8.2'
+        lifecycle_version = '2.8.3'
     }
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.4.2'
+        classpath 'com.android.tools.build:gradle:8.5.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         // NOTE: Do not place your application dependencies here; they belong
