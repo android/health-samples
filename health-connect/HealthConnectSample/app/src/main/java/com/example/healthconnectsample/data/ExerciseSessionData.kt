@@ -15,13 +15,9 @@
  */
 package com.example.healthconnectsample.data
 
-import androidx.health.connect.client.records.HeartRateRecord
-import androidx.health.connect.client.records.SpeedRecord
 import androidx.health.connect.client.units.Energy
 import androidx.health.connect.client.units.Length
-import androidx.health.connect.client.units.Velocity
 import java.time.Duration
-import java.time.Instant
 
 /**
  * Represents data, both aggregated and raw, associated with a single exercise session. Used to

@@ -17,18 +17,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.Record
-import androidx.health.connect.client.records.SpeedRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.metadata.Metadata
-import androidx.health.connect.client.units.Velocity
 import com.example.healthconnectsample.R
 import com.example.healthconnectsample.formatDisplayTimeStartEnd
 import com.example.healthconnectsample.presentation.theme.HealthConnectTheme
 import java.time.Instant
 import java.time.ZonedDateTime
 import java.time.ZonedDateTime.now
-import java.time.temporal.ChronoUnit
 import java.util.UUID
 import kotlin.random.Random
 
