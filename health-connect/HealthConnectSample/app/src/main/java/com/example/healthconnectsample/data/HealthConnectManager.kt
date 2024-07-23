@@ -35,7 +35,6 @@ import androidx.health.connect.client.records.SpeedRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.WeightRecord
-import androidx.health.connect.client.records.metadata.DataOrigin
 import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.request.ChangesTokenRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
@@ -44,11 +43,11 @@ import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.health.connect.client.units.Energy
 import androidx.health.connect.client.units.Length
 import androidx.health.connect.client.units.Mass
-import androidx.health.connect.client.units.Velocity
 import com.example.healthconnectsample.R
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.io.IOException
+import java.io.InvalidObjectException
 import java.time.Instant
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
@@ -58,9 +57,7 @@ import kotlin.reflect.KClass
 // The minimum android level that can use Health Connect
 const val MIN_SUPPORTED_SDK = Build.VERSION_CODES.O_MR1
 
-/**
- * Demonstrates reading and writing from Health Connect.
- */
+/** Demonstrates reading and writing from Health Connect. */
 class HealthConnectManager(private val context: Context) {
     private val healthConnectClient by lazy { HealthConnectClient.getOrCreate(context) }
 
@@ -178,9 +175,9 @@ class HealthConnectManager(private val context: Context) {
                     startZoneOffset = start.offset,
                     endTime = end.toInstant(),
                     endZoneOffset = end.offset,
-                    energy = Energy.calories((140 + Random.nextInt(20)) * 0.01)
+                    energy = Energy.calories(140 + (Random.nextInt(20)) * 0.01)
                 )
-            ) + buildHeartRateSeries(start, end) + buildSpeedSeries(start, end)
+            ) + buildHeartRateSeries(start, end)
         )
     }
 
@@ -238,11 +235,8 @@ class HealthConnectManager(private val context: Context) {
         val aggregateRequest = AggregateRequest(
             metrics = aggregateDataTypes,
             timeRangeFilter = timeRangeFilter,
-            dataOriginFilter = dataOriginFilter
-        )
+            dataOriginFilter = dataOriginFilter)
         val aggregateData = healthConnectClient.aggregate(aggregateRequest)
-        val speedData = readData<SpeedRecord>(timeRangeFilter, dataOriginFilter)
-        val heartRateData = readData<HeartRateRecord>(timeRangeFilter, dataOriginFilter)
 
         return ExerciseSessionData(
             uid = uid,
@@ -253,8 +247,6 @@ class HealthConnectManager(private val context: Context) {
             minHeartRate = aggregateData[HeartRateRecord.BPM_MIN],
             maxHeartRate = aggregateData[HeartRateRecord.BPM_MAX],
             avgHeartRate = aggregateData[HeartRateRecord.BPM_AVG],
-            heartRateSeries = heartRateData,
-            speedRecord = speedData,
         )
     }
 
@@ -416,9 +408,7 @@ class HealthConnectManager(private val context: Context) {
         emit(ChangesMessage.NoMoreChanges(nextChangesToken))
     }
 
-    /**
-     * Creates a random sleep stage that spans the specified [start] to [end] time.
-     */
+    /** Creates a random sleep stage that spans the specified [start] to [end] time. */
     private fun generateSleepStages(
         start: ZonedDateTime,
         end: ZonedDateTime
@@ -432,26 +422,45 @@ class HealthConnectManager(private val context: Context) {
                 SleepSessionRecord.Stage(
                     stage = randomSleepStage(),
                     startTime = stageStart.toInstant(),
-                    endTime = checkedEnd.toInstant()
-                )
-            )
+                    endTime = checkedEnd.toInstant()))
             stageStart = checkedEnd
         }
         return sleepStages
     }
 
     /**
-     * Convenience function to reuse code for reading data.
+     * Convenience function to fetch a time-based record and return series data based on the record.
+     * Record types compatible with this function must be declared in the
+     * [com.example.healthconnectsample.presentation.screen.recordlist.RecordType] enum.
      */
-    private suspend inline fun <reified T : Record> readData(
-        timeRangeFilter: TimeRangeFilter,
-        dataOriginFilter: Set<DataOrigin> = setOf()
-    ): List<T> {
-        val request = ReadRecordsRequest(
-            recordType = T::class,
-            dataOriginFilter = dataOriginFilter,
-            timeRangeFilter = timeRangeFilter
-        )
+    suspend fun fetchSeriesRecordsFromUid(recordType: KClass<out Record>, uid: String, seriesRecordsType: KClass<out Record>): List<Record> {
+        val recordResponse = healthConnectClient.readRecord(recordType, uid)
+        // Use the start time and end time from the session, for reading raw and aggregate data.
+        val timeRangeFilter =
+            when (recordResponse.record) {
+                // Change to use series record instead
+                is ExerciseSessionRecord -> {
+                    val record = recordResponse.record as ExerciseSessionRecord
+                    TimeRangeFilter.between(startTime = record.startTime, endTime = record.endTime)
+                }
+                is SleepSessionRecord -> {
+                    val record = recordResponse.record as SleepSessionRecord
+                    TimeRangeFilter.between(startTime = record.startTime, endTime = record.endTime)
+                }
+                else -> {
+                    throw InvalidObjectException("Record with unregistered data type returned")
+                }
+            }
+
+        // Limit the data read to just the application that wrote the session. This may or may not
+        // be desirable depending on the use case: In some cases, it may be useful to combine with
+        // data written by other apps.
+        val dataOriginFilter = setOf(recordResponse.record.metadata.dataOrigin)
+        val request =
+            ReadRecordsRequest(
+                recordType = seriesRecordsType,
+                dataOriginFilter = dataOriginFilter,
+                timeRangeFilter = timeRangeFilter)
         return healthConnectClient.readRecords(request).records
     }
 
@@ -464,10 +473,7 @@ class HealthConnectManager(private val context: Context) {
         while (time.isBefore(sessionEndTime)) {
             samples.add(
                 HeartRateRecord.Sample(
-                    time = time.toInstant(),
-                    beatsPerMinute = (80 + Random.nextInt(80)).toLong()
-                )
-            )
+                    time = time.toInstant(), beatsPerMinute = (80 + Random.nextInt(80)).toLong()))
             time = time.plusSeconds(30)
         }
         return HeartRateRecord(
@@ -475,37 +481,13 @@ class HealthConnectManager(private val context: Context) {
             startZoneOffset = sessionStartTime.offset,
             endTime = sessionEndTime.toInstant(),
             endZoneOffset = sessionEndTime.offset,
-            samples = samples
-        )
+            samples = samples)
     }
-
-    private fun buildSpeedSeries(
-        sessionStartTime: ZonedDateTime,
-        sessionEndTime: ZonedDateTime
-    ) = SpeedRecord(
-        startTime = sessionStartTime.toInstant(),
-        startZoneOffset = sessionStartTime.offset,
-        endTime = sessionEndTime.toInstant(),
-        endZoneOffset = sessionEndTime.offset,
-        samples = listOf(
-            SpeedRecord.Sample(
-                time = sessionStartTime.toInstant(),
-                speed = Velocity.metersPerSecond(2.5)
-            ),
-            SpeedRecord.Sample(
-                time = sessionStartTime.toInstant().plus(5, ChronoUnit.MINUTES),
-                speed = Velocity.metersPerSecond(2.7)
-            ),
-            SpeedRecord.Sample(
-                time = sessionStartTime.toInstant().plus(10, ChronoUnit.MINUTES),
-                speed = Velocity.metersPerSecond(2.9)
-            )
-        )
-    )
 
     // Represents the two types of messages that can be sent in a Changes flow.
     sealed class ChangesMessage {
         data class NoMoreChanges(val nextChangesToken: String) : ChangesMessage()
+
         data class ChangeList(val changes: List<Change>) : ChangesMessage()
     }
 }

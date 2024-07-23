@@ -35,9 +35,7 @@ fun ExerciseSessionDetailsMinMaxAvg(
     maximum: String?,
     average: String?
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    Row {
         Text(
             modifier = Modifier
                 .weight(1f),

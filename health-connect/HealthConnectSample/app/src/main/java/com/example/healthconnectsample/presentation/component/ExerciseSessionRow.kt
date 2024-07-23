@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -71,6 +72,11 @@ fun ExerciseSessionRow(
             onClick = { onDeleteClick(uid) },
         ) {
             Icon(Icons.Default.Delete, stringResource(R.string.delete_button))
+        }
+        IconButton(
+            onClick = { onDetailsClick(uid) },
+        ) {
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, stringResource(R.string.details_button))
         }
     }
 }

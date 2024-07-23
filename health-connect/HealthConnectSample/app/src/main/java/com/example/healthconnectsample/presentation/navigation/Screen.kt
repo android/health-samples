@@ -18,6 +18,8 @@ package com.example.healthconnectsample.presentation.navigation
 import com.example.healthconnectsample.R
 
 const val UID_NAV_ARGUMENT = "uid"
+const val RECORD_TYPE = "recordType"
+const val SERIES_RECORDS_TYPE = "seriesRecordsType"
 
 /**
  * Represent all Screens in the app.
@@ -36,5 +38,6 @@ enum class Screen(val route: String, val titleId: Int, val hasMenuItem: Boolean 
     InputReadings("input_readings", R.string.input_readings),
     DifferentialChanges("differential_changes", R.string.differential_changes),
     PrivacyPolicy("privacy_policy", R.string.privacy_policy, false),
-    SettingsScreen("settings_screen", R.string.settings)
+    SettingsScreen("settings_screen", R.string.settings),
+    RecordListScreen("record_list", R.string.record_list),
 }
