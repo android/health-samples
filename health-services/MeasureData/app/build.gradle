@@ -56,7 +56,7 @@ android {
 dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.core:core-ktx:1.13.1'
-    implementation "androidx.fragment:fragment-ktx:1.8.1"
+    implementation "androidx.fragment:fragment-ktx:1.8.2"
     implementation 'androidx.work:work-runtime:2.9.0'
 
     // Hilt dependency injection
@@ -74,8 +74,8 @@ dependencies {
     implementation "androidx.concurrent:concurrent-futures-ktx:1.2.0"
 
     // Lifecycle
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.3"
-    implementation "androidx.lifecycle:lifecycle-service:2.8.3"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.4"
+    implementation "androidx.lifecycle:lifecycle-service:2.8.4"
 
     // Material
     implementation 'com.google.android.material:material:1.12.0'

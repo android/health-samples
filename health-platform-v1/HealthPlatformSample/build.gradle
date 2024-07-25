@@ -17,13 +17,13 @@
 buildscript {
     ext.kotlin_version = '1.9.24'
     ext {
-        activity_compose_version = '1.9.0'
+        activity_compose_version = '1.9.1'
         hilt_navigation_compose_version = '1.2.0'
         navigation_compose_version = '2.7.7'
 
         concurrent_futures_version = '1.2.0'
         health_platform_version = '1.0.0-alpha01'
-        lifecycle_version = '2.8.3'
+        lifecycle_version = '2.8.4'
     }
     repositories {
         google()
