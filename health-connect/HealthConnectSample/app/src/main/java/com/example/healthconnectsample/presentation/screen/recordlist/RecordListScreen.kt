@@ -1,10 +1,12 @@
 package com.example.healthconnectsample.presentation.screen.recordlist
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.Button
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -14,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.Record
@@ -63,57 +66,73 @@ fun RecordListScreen(
     }
 
     if (uiState != RecordListScreenViewModel.UiState.Uninitialized) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Top,
-            /*horizontalAlignment = Alignment.CenterHorizontally*/ ) {
-            if (!permissionsGranted) {
-                item {
-                    Button(onClick = { onPermissionsLaunch(permissions) }) {
-                        Text(text = stringResource(R.string.permissions_button_label))
-                    }
-                }
-            } else {
-                item {
-                    Text(
-                        text = "${recordType.clazz.simpleName} [$uid]",
-                        overflow = TextOverflow.Ellipsis,
-                        maxLines = 1)
-                }
-                item {
-                    Text(
-                        text = "${seriesRecordsType.clazz.simpleName} list",
-                    )
-                }
-                when (seriesRecordsType) {
-                    SeriesRecordsType.STEPS -> {
-                        for (record in recordList.map { it as StepsRecord }) {
-                            renderData(record, record.startTime, record.endTime) {
-                                Text(text = "count: " + record.count)
-                            }
+        HealthConnectTheme {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = 5.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                if (!permissionsGranted) {
+                    item {
+                        Button(onClick = { onPermissionsLaunch(permissions) }) {
+                            Text(text = stringResource(R.string.permissions_button_label))
                         }
                     }
-                    SeriesRecordsType.DISTANCE -> {
-                        for (record in recordList.map { it as DistanceRecord }) {
-                            renderData(record, record.startTime, record.endTime) {
-                                Text(text = "count: " + record.distance + " m")
+                } else {
+                    item {
+                        Text(
+                            text = "${recordType.clazz.simpleName}",
+                            style = MaterialTheme.typography.h6,
+                            color = MaterialTheme.colors.primary,
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 1
+                        )
+                        Text(
+                            text = uid,
+                            style = MaterialTheme.typography.body2,
+                            color = MaterialTheme.colors.primary
+                        )
+                    }
+                    item {
+                        Text(
+                            text = "${seriesRecordsType.clazz.simpleName} list",
+                            style = MaterialTheme.typography.h6,
+                            color = MaterialTheme.colors.primary
+                        )
+                    }
+                    when (seriesRecordsType) {
+                        SeriesRecordsType.STEPS -> {
+                            for (record in recordList.map { it as StepsRecord }) {
+                                renderData(record, record.startTime, record.endTime,
+                                    "Count: " + record.count
+                                )
                             }
                         }
-                    }
-                    SeriesRecordsType.CALORIES -> {
-                        for (record in recordList.map { it as TotalCaloriesBurnedRecord }) {
-                            renderData(record, record.startTime, record.endTime) {
-                                Text(text = "Energy: " + record.energy)
+
+                        SeriesRecordsType.DISTANCE -> {
+                            for (record in recordList.map { it as DistanceRecord }) {
+                                renderData(record, record.startTime, record.endTime,
+                                    "Count: " + record.distance
+                                )
                             }
                         }
-                    }
-                    SeriesRecordsType.HEARTRATE -> {
-                        for (record in recordList.map { it as HeartRateRecord }) {
-                            renderData(record, record.startTime, record.endTime) {
-                                Text(
-                                    text =
+
+                        SeriesRecordsType.CALORIES -> {
+                            for (record in recordList.map { it as TotalCaloriesBurnedRecord }) {
+                                renderData(record, record.startTime, record.endTime,
+                                    "Energy: " + record.energy
+                                )
+                            }
+                        }
+
+                        SeriesRecordsType.HEARTRATE -> {
+                            for (record in recordList.map { it as HeartRateRecord }) {
+                                renderData(record, record.startTime, record.endTime,
                                     "Heartbeat Samples: " +
-                                            record.samples.map { it.beatsPerMinute }.joinToString(", "))
+                                            record.samples.map { it.beatsPerMinute }
+                                                .joinToString(", ")
+
+                                )
                             }
                         }
                     }
@@ -136,12 +155,16 @@ fun LazyListScope.renderData(
     record: Record,
     startTime: Instant,
     endTime: Instant,
-    content: @Composable () -> Unit
+    data: String
 ) {
     item {
-        Text(text = "id: " + record.metadata.id)
-        Text(text = formatDisplayTimeStartEnd(startTime, null, endTime, null))
-        content()
+        Text(text = record.metadata.id,
+            style = MaterialTheme.typography.body2,
+            color = MaterialTheme.colors.primary)
+        Text(text = formatDisplayTimeStartEnd(startTime, null, endTime, null),
+            style = MaterialTheme.typography.body2)
+        Text(text = data,
+            style = MaterialTheme.typography.body2)
     }
 }
 

@@ -16,11 +16,13 @@
 package com.example.healthconnectsample.presentation.screen.exercisesessiondetail
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -98,18 +100,35 @@ fun ExerciseSessionDetailScreen(
                     }
                 }
             } else {
+                item {
+                    Text(
+                        text = stringResource(id = R.string.exercise_session_detail),
+                        style = MaterialTheme.typography.h5,
+                        color = MaterialTheme.colors.primary,
+                    )
+                    Text("id: " + sessionMetrics.uid)
+                }
                 sessionDetailsItem(labelId = R.string.total_active_duration) {
-                    val activeDuration = sessionMetrics.totalActiveTime ?: Duration.ZERO
-                    Text(activeDuration.formatTime());
+                        val activeDuration = sessionMetrics.totalActiveTime ?: Duration.ZERO
+                        Text(activeDuration.formatTime());
                 }
                 sessionDetailsItem(labelId = R.string.total_steps) {
-                    Text(sessionMetrics.totalSteps?.toString() ?: "0")
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(sessionMetrics.totalSteps?.toString() ?: "0")
+                        RecordsIconButton(sessionMetrics.uid, SeriesRecordsType.STEPS, onDetailsClick)
+                    }
                 }
                 sessionDetailsItem(labelId = R.string.total_distance) {
-                    Text(sessionMetrics.totalDistance?.toString() ?: "0.0")
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(sessionMetrics.totalDistance?.toString() ?: "0.0")
+                        RecordsIconButton(sessionMetrics.uid, SeriesRecordsType.DISTANCE, onDetailsClick)
+                    }
                 }
                 sessionDetailsItem(labelId = R.string.total_energy) {
-                    Text(sessionMetrics.totalEnergyBurned?.inCalories.toString())
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(sessionMetrics.totalEnergyBurned?.inCalories.toString())
+                        RecordsIconButton(sessionMetrics.uid, SeriesRecordsType.CALORIES, onDetailsClick)
+                    }
                 }
                 sessionDetailsItem(labelId = R.string.hr_stats) {
                     ExerciseSessionDetailsMinMaxAvg(

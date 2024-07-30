@@ -39,5 +39,5 @@ enum class Screen(val route: String, val titleId: Int, val hasMenuItem: Boolean 
     DifferentialChanges("differential_changes", R.string.differential_changes),
     PrivacyPolicy("privacy_policy", R.string.privacy_policy, false),
     SettingsScreen("settings_screen", R.string.settings),
-    RecordListScreen("record_list", R.string.record_list),
+    RecordListScreen("record_list", R.string.record_list, false),
 }
