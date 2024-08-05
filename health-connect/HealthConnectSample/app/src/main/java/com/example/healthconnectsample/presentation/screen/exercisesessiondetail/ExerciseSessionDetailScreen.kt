@@ -16,10 +16,16 @@
 package com.example.healthconnectsample.presentation.screen.exercisesessiondetail
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Button
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -29,23 +35,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.health.connect.client.records.ExerciseSessionRecord
-import androidx.health.connect.client.records.HeartRateRecord
-import androidx.health.connect.client.records.SpeedRecord
 import androidx.health.connect.client.units.Energy
 import androidx.health.connect.client.units.Length
-import androidx.health.connect.client.units.Velocity
 import com.example.healthconnectsample.R
 import com.example.healthconnectsample.data.ExerciseSessionData
 import com.example.healthconnectsample.data.formatTime
 import com.example.healthconnectsample.presentation.component.ExerciseSessionDetailsMinMaxAvg
-import com.example.healthconnectsample.presentation.component.heartRateSeries
 import com.example.healthconnectsample.presentation.component.sessionDetailsItem
-import com.example.healthconnectsample.presentation.component.speedSeries
+import com.example.healthconnectsample.presentation.screen.recordlist.RecordType
+import com.example.healthconnectsample.presentation.screen.recordlist.SeriesRecordsType
 import com.example.healthconnectsample.presentation.theme.HealthConnectTheme
 import java.time.Duration
-import java.time.ZonedDateTime
 import java.util.UUID
-import kotlin.random.Random
 
 /**
  * Shows a details of a given [ExerciseSessionRecord], including aggregates and underlying raw data.
@@ -56,6 +57,7 @@ fun ExerciseSessionDetailScreen(
     permissionsGranted: Boolean,
     sessionMetrics: ExerciseSessionData,
     uiState: ExerciseSessionDetailViewModel.UiState,
+    onDetailsClick: (String, String, String) -> Unit = { _, _, _ -> },
     onError: (Throwable?) -> Unit = {},
     onPermissionsResult: () -> Unit = {},
     onPermissionsLaunch: (Set<String>) -> Unit = {}
@@ -98,23 +100,36 @@ fun ExerciseSessionDetailScreen(
                     }
                 }
             } else {
+                item {
+                    Text(
+                        text = stringResource(id = R.string.exercise_session_detail),
+                        style = MaterialTheme.typography.h5,
+                        color = MaterialTheme.colors.primary,
+                    )
+                    Text("id: " + sessionMetrics.uid)
+                }
                 sessionDetailsItem(labelId = R.string.total_active_duration) {
-                    val activeDuration = sessionMetrics.totalActiveTime ?: Duration.ZERO
-                    Text(activeDuration.formatTime())
+                        val activeDuration = sessionMetrics.totalActiveTime ?: Duration.ZERO
+                        Text(activeDuration.formatTime());
                 }
                 sessionDetailsItem(labelId = R.string.total_steps) {
-                    Text(sessionMetrics.totalSteps?.toString() ?: "0")
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(sessionMetrics.totalSteps?.toString() ?: "0")
+                        RecordsIconButton(sessionMetrics.uid, SeriesRecordsType.STEPS, onDetailsClick)
+                    }
                 }
                 sessionDetailsItem(labelId = R.string.total_distance) {
-                    Text(sessionMetrics.totalDistance?.toString() ?: "0.0")
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(sessionMetrics.totalDistance?.toString() ?: "0.0")
+                        RecordsIconButton(sessionMetrics.uid, SeriesRecordsType.DISTANCE, onDetailsClick)
+                    }
                 }
                 sessionDetailsItem(labelId = R.string.total_energy) {
-                    Text(sessionMetrics.totalEnergyBurned?.inCalories.toString())
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(sessionMetrics.totalEnergyBurned?.inCalories.toString())
+                        RecordsIconButton(sessionMetrics.uid, SeriesRecordsType.CALORIES, onDetailsClick)
+                    }
                 }
-                speedSeries(
-                    labelId = R.string.speed_series,
-                    series = sessionMetrics.speedRecord
-                )
                 sessionDetailsItem(labelId = R.string.hr_stats) {
                     ExerciseSessionDetailsMinMaxAvg(
                         sessionMetrics.minHeartRate?.toString()
@@ -124,13 +139,28 @@ fun ExerciseSessionDetailScreen(
                         sessionMetrics.avgHeartRate?.toString()
                             ?: stringResource(id = R.string.not_available_abbrev)
                     )
+                    RecordsIconButton(sessionMetrics.uid, SeriesRecordsType.HEARTRATE, onDetailsClick)
                 }
-                heartRateSeries(
-                    labelId = R.string.hr_series,
-                    series = sessionMetrics.heartRateSeries
-                )
             }
         }
+    }
+}
+
+@Composable
+fun RecordsIconButton(uid: String, seriesRecordsType: SeriesRecordsType, onDetailsClick: (String, String, String) -> Unit = { _, _, _ -> }) {
+    IconButton(
+        onClick = {
+            onDetailsClick(
+                RecordType.EXERCISE_SESSION.toString(),
+                uid,
+                seriesRecordsType.toString()
+            )
+        },
+    ) {
+        Icon(
+            Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            stringResource(R.string.details_button)
+        )
     }
 }
 
@@ -141,17 +171,13 @@ fun ExerciseSessionScreenPreview() {
         val uid = UUID.randomUUID().toString()
         val sessionMetrics = ExerciseSessionData(
             uid = uid,
+            totalActiveTime = Duration.ofMinutes(75),
             totalSteps = 5152,
             totalDistance = Length.meters(11923.4),
             totalEnergyBurned = Energy.calories(1131.2),
             minHeartRate = 55,
             maxHeartRate = 103,
             avgHeartRate = 77,
-            heartRateSeries = generateHeartRateSeries(),
-            minSpeed = Velocity.metersPerSecond(2.5),
-            maxSpeed = Velocity.metersPerSecond(3.1),
-            avgSpeed = Velocity.metersPerSecond(2.8),
-            speedRecord = generateSpeedData(),
         )
 
         ExerciseSessionDetailScreen(
@@ -161,52 +187,4 @@ fun ExerciseSessionScreenPreview() {
             uiState = ExerciseSessionDetailViewModel.UiState.Done
         )
     }
-}
-
-private fun generateSpeedData(): List<SpeedRecord> {
-    val data = mutableListOf<SpeedRecord.Sample>()
-    val end = ZonedDateTime.now()
-    var time = ZonedDateTime.now()
-    for (index in 1..10) {
-        time = end.minusMinutes(index.toLong())
-        data.add(
-            SpeedRecord.Sample(
-                time = time.toInstant(),
-                speed = Velocity.metersPerSecond((Random.nextDouble(1.0, 5.0)))
-            )
-        )
-    }
-    return listOf(
-        SpeedRecord(
-            startTime = time.toInstant(),
-            startZoneOffset = time.offset,
-            endTime = end.toInstant(),
-            endZoneOffset = end.offset,
-            samples = data
-        )
-    )
-}
-
-private fun generateHeartRateSeries(): List<HeartRateRecord> {
-    val data = mutableListOf<HeartRateRecord.Sample>()
-    val end = ZonedDateTime.now()
-    var time = ZonedDateTime.now()
-    for (index in 1..10) {
-        time = end.minusMinutes(index.toLong())
-        data.add(
-            HeartRateRecord.Sample(
-                time = time.toInstant(),
-                beatsPerMinute = Random.nextLong(55, 180)
-            )
-        )
-    }
-    return listOf(
-        HeartRateRecord(
-            startTime = time.toInstant(),
-            startZoneOffset = time.offset,
-            endTime = end.toInstant(),
-            endZoneOffset = end.offset,
-            samples = data
-        )
-    )
 }

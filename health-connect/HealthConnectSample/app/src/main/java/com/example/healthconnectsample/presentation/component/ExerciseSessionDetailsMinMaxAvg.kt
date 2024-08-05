@@ -16,7 +16,6 @@
 package com.example.healthconnectsample.presentation.component
 
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -35,9 +34,7 @@ fun ExerciseSessionDetailsMinMaxAvg(
     maximum: String?,
     average: String?
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    Row {
         Text(
             modifier = Modifier
                 .weight(1f),

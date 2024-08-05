@@ -69,6 +69,7 @@
     <string name="no_title">[No title]</string>
     <string name="unknown_app">[Unknown app]</string>
     <string name="delete_button">Delete</string>
+    <string name="details_button">Details</string>
 
     <!-- Exercise Session detail screen -->
     <string name="total_active_duration">Total active duration</string>
@@ -127,6 +128,11 @@
     <string name="differential_changes_type_sleep_stage">Sleep stage</string>
     <string name="differential_changes_type_distance">Distance</string>
     <string name="differential_changes_type_weight">Weight</string>
+
+    <!-- Record List screen -->
+    <string name="record_list">Record list</string>
+    <string name="exercise_sessions_record_list">Exercise Sessions Record list</string>
+    <string name="sleep_sessions_record_list">Sleep Sessions Record list</string>
 
     <!-- Health Connect settings -->
     <string name="settings">Settings</string>
