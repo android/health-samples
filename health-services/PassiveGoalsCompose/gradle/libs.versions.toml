@@ -14,7 +14,7 @@ concurrent-futures = "1.2.0"
 guava = "33.2.1-android"
 health-services = "1.0.0-rc02"
 ktlint = "0.46.1"
-org-jetbrains-kotlin = "1.9.24"
+org-jetbrains-kotlin = "1.9.25"
 org-jetbrains-kotlinx = "1.6.0"
 
 [libraries]
