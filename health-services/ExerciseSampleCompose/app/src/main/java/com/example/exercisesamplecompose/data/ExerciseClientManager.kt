@@ -15,21 +15,33 @@
  */
 package com.example.exercisesamplecompose.data
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.location.Location
+import android.os.Looper
+import android.util.Log
+import androidx.annotation.RequiresPermission
 import androidx.health.services.client.ExerciseClient
 import androidx.health.services.client.ExerciseUpdateCallback
 import androidx.health.services.client.HealthServicesClient
 import androidx.health.services.client.data.Availability
 import androidx.health.services.client.data.ComparisonType
+import androidx.health.services.client.data.DataPointContainer
 import androidx.health.services.client.data.DataType
 import androidx.health.services.client.data.DataTypeCondition
 import androidx.health.services.client.data.ExerciseConfig
+import androidx.health.services.client.data.ExerciseEndReason
 import androidx.health.services.client.data.ExerciseGoal
 import androidx.health.services.client.data.ExerciseLapSummary
+import androidx.health.services.client.data.ExerciseState
+import androidx.health.services.client.data.ExerciseStateInfo
 import androidx.health.services.client.data.ExerciseType
 import androidx.health.services.client.data.ExerciseTypeCapabilities
 import androidx.health.services.client.data.ExerciseUpdate
 import androidx.health.services.client.data.LocationAvailability
+import androidx.health.services.client.data.LocationData
+import androidx.health.services.client.data.MilestoneMarkerSummary
+import androidx.health.services.client.data.SampleDataPoint
 import androidx.health.services.client.data.WarmUpConfig
 import androidx.health.services.client.endExercise
 import androidx.health.services.client.getCapabilities
@@ -39,9 +51,20 @@ import androidx.health.services.client.prepareExercise
 import androidx.health.services.client.resumeExercise
 import androidx.health.services.client.startExercise
 import com.example.exercisesamplecompose.service.ExerciseLogger
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationListener
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.Priority
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import java.time.Duration
+import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -51,8 +74,9 @@ import javax.inject.Singleton
 @SuppressLint("RestrictedApi")
 @Singleton
 class ExerciseClientManager @Inject constructor(
-    val healthServicesClient: HealthServicesClient,
-    val logger: ExerciseLogger
+    private val healthServicesClient: HealthServicesClient,
+    private val flpClient: FusedLocationProviderClient,
+    private val logger: ExerciseLogger
 ) {
     val exerciseClient: ExerciseClient = healthServicesClient.exerciseClient
 
@@ -170,6 +194,9 @@ class ExerciseClientManager @Inject constructor(
      * cancelled, this flow will unregister the listener.
      * [callbackFlow] is used to bridge between a callback-based API and Kotlin flows.
      */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @SuppressLint("MissingPermission")
+    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     val exerciseUpdateFlow = callbackFlow {
         val callback = object : ExerciseUpdateCallback {
             override fun onExerciseUpdateReceived(update: ExerciseUpdate) {
@@ -196,7 +223,7 @@ class ExerciseClientManager @Inject constructor(
             }
         }
 
-        exerciseClient.setUpdateCallback(callback)
+        exerciseClient.setUpdateCallback(callback, flpClient)
         awaitClose {
             // Ignore async result
             exerciseClient.clearUpdateCallbackAsync(callback)
@@ -217,5 +244,76 @@ sealed class ExerciseMessage {
         ExerciseMessage()
 }
 
+@OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
+@RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+suspend fun ExerciseClient.setUpdateCallback(
+    callback: ExerciseUpdateCallback,
+    ftpClient: FusedLocationProviderClient
+) {
+    val locationRequest =
+        LocationRequest.Builder(10000).setPriority(Priority.PRIORITY_HIGH_ACCURACY).build()
 
+    val locationListener = LocationListener { location -> callback.onExerciseUpdateReceived(
+        ExerciseUpdate.fromLocation(location))
+        Log.d("qqqqqq", "Got location from FLP: $location")
+    }
 
+    ftpClient.requestLocationUpdates(locationRequest, locationListener, Looper.getMainLooper())
+
+    class Proxy(val obj: ExerciseUpdateCallback) : ExerciseUpdateCallback by obj {
+
+        override fun onExerciseUpdateReceived(update: ExerciseUpdate) {
+
+            val hasLocation = update.latestMetrics.getData(DataType.LOCATION).isNotEmpty()
+
+            if (hasLocation) {
+                Log.d("qqqqqq", "Removing FLP")
+                ftpClient.removeLocationUpdates(locationListener)
+            }
+
+            return obj.onExerciseUpdateReceived(update)
+        }
+    }
+
+    val proxy = Proxy(callback)
+
+    return setUpdateCallback(proxy)
+}
+
+@SuppressLint("RestrictedApi")
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+fun ExerciseUpdate.Companion.fromLocation(l: Location): ExerciseUpdate {
+    val latestMetrics: DataPointContainer = DataPointContainer(
+        mapOf(
+            Pair(
+                DataType.LOCATION,
+                listOf(
+                    SampleDataPoint(
+                        DataType.LOCATION,
+                        LocationData(l.latitude, l.longitude),
+                        Duration.ZERO
+                    )
+                )
+            )
+        )
+    )
+    val latestAchievedGoals: Set<ExerciseGoal<Number>> = emptySet()
+    val latestMilestoneMarkerSummaries: Set<MilestoneMarkerSummary> = emptySet()
+    val exerciseStateInfo = ExerciseStateInfo(ExerciseState.ACTIVE, ExerciseEndReason.UNKNOWN)
+    val exerciseConfig: ExerciseConfig? = null
+    val activeDurationCheckpoint: ExerciseUpdate.ActiveDurationCheckpoint? = null
+    val updateDurationFromBoot: Duration? = null
+    val startTime: Instant? = null
+    val activeDurationLegacy: Duration = Duration.ZERO
+    return ExerciseUpdate(
+        latestMetrics,
+        latestAchievedGoals,
+        latestMilestoneMarkerSummaries,
+        exerciseStateInfo,
+        exerciseConfig,
+        activeDurationCheckpoint,
+        updateDurationFromBoot,
+        startTime,
+        activeDurationLegacy
+    )
+}

@@ -58,7 +58,7 @@ test-ext-junit = "androidx.test.ext:junit:1.2.1"
 wear-compose-foundation = { module = "androidx.wear.compose:compose-foundation", version.ref = "androidx-wear-compose" }
 wear-compose-material = { module = "androidx.wear.compose:compose-material", version.ref = "androidx-wear-compose" }
 wear-ongoing-activity = "androidx.wear:wear-ongoing:1.0.0"
-
+play-services-location = "com.google.android.gms:play-services-location:21.0.1"
 
 [plugins]
 com-android-application = { id = "com.android.application", version.ref = "android-gradle-plugin" }
