@@ -17,7 +17,9 @@
 
     <!-- For receiving exercise metrics. -->
     <uses-permission android:name="android.permission.BODY_SENSORS" />
+
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
@@ -25,7 +27,9 @@
 
     <uses-feature android:name="android.hardware.type.watch" />
 
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 
     <queries>
         <package android:name="com.google.android.wearable.healthservices" />
@@ -48,7 +52,8 @@
         <activity
             android:name="com.example.exercisesamplecompose.app.MainActivity"
             android:exported="true"
-            android:launchMode="singleTask">
+            android:launchMode="singleTask"
+            android:taskAffinity=".main">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -58,6 +63,6 @@
         <service
             android:name=".service.ExerciseService"
             android:exported="false"
-            android:foregroundServiceType="location" />
+            android:foregroundServiceType="health|location" />
     </application>
 </manifest>
