@@ -24,6 +24,7 @@ sealed class Screen(
     object Exercise : Screen("exercise")
     object ExerciseNotAvailable : Screen("exerciseNotAvailable")
     object PreparingExercise : Screen("preparingExercise")
+    object Goals : Screen(route = "goals")
     object Summary : Screen("summaryScreen") {
         fun buildRoute(summary: SummaryScreenState): String {
             return "$route/${summary.averageHeartRate}/${summary.totalDistance}/${summary.totalCalories}/${summary.elapsedTime}"

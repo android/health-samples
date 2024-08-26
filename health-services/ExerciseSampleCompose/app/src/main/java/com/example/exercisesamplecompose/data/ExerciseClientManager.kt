@@ -44,6 +44,7 @@ import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.callbackFlow
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration
 
 /**
  * Entry point for [HealthServicesClient] APIs, wrapping them in coroutine-friendly APIs.
@@ -51,8 +52,8 @@ import javax.inject.Singleton
 @SuppressLint("RestrictedApi")
 @Singleton
 class ExerciseClientManager @Inject constructor(
-    val healthServicesClient: HealthServicesClient,
-    val logger: ExerciseLogger
+    healthServicesClient: HealthServicesClient,
+    private val logger: ExerciseLogger
 ) {
     val exerciseClient: ExerciseClient = healthServicesClient.exerciseClient
 
@@ -64,6 +65,12 @@ class ExerciseClientManager @Inject constructor(
         } else {
             null
         }
+    }
+
+    private var thresholds = Thresholds(0.0, Duration.ZERO)
+
+    fun updateGoals(newThresholds: Thresholds){
+       thresholds = newThresholds.copy()
     }
 
     suspend fun startExercise() {
@@ -82,7 +89,7 @@ class ExerciseClientManager @Inject constructor(
             DataType.CALORIES_TOTAL,
             DataType.DISTANCE_TOTAL,
         ).intersect(capabilities.supportedDataTypes)
-        val exerciseGoals = mutableListOf<ExerciseGoal<Double>>()
+        val exerciseGoals = mutableListOf<ExerciseGoal<*>>()
         if (supportsCalorieGoal(capabilities)) {
             // Create a one-time goal.
             exerciseGoals.add(
@@ -96,19 +103,32 @@ class ExerciseClientManager @Inject constructor(
             )
         }
 
-        if (supportsDistanceMilestone(capabilities)) {
-            // Create a milestone goal. To make a milestone for every kilometer, set the initial
-            // threshold to 1km and the period to 1km.
+        // Set a distance goal if it's supported by the exercise and the user has entered one
+        if (supportsDistanceMilestone(capabilities) && thresholds.distanceIsSet) {
             exerciseGoals.add(
-                ExerciseGoal.createMilestone(
+                ExerciseGoal.createOneTimeGoal(
                     condition = DataTypeCondition(
                         dataType = DataType.DISTANCE_TOTAL,
-                        threshold = DISTANCE_THRESHOLD,
+                        threshold = thresholds.distance * 1000, //our app uses kilometers
                         comparisonType = ComparisonType.GREATER_THAN_OR_EQUAL
-                    ), period = DISTANCE_THRESHOLD
+                    )
                 )
             )
         }
+
+        // Set a duration goal if it's supported by the exercise and the user has entered one
+        if (supportsDurationMilestone(capabilities) && thresholds.durationIsSet) {
+            exerciseGoals.add(
+                ExerciseGoal.createOneTimeGoal(
+                    DataTypeCondition(
+                        dataType = DataType.ACTIVE_EXERCISE_DURATION_TOTAL,
+                        threshold = thresholds.duration.inWholeSeconds,
+                        comparisonType = ComparisonType.GREATER_THAN_OR_EQUAL
+                    )
+                )
+            )
+        }
+
 
         val supportsAutoPauseAndResume = capabilities.supportsAutoPauseAndResume
 
@@ -205,9 +225,15 @@ class ExerciseClientManager @Inject constructor(
 
     private companion object {
         const val CALORIES_THRESHOLD = 250.0
-        const val DISTANCE_THRESHOLD = 1_000.0 // meters
     }
 }
+
+data class Thresholds(
+    var distance: Double,
+    var duration: Duration,
+    var durationIsSet: Boolean = duration!= Duration.ZERO,
+    var distanceIsSet: Boolean = distance!=0.0,
+)
 
 
 sealed class ExerciseMessage {

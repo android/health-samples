@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@file:OptIn(ExperimentalHorologistApi::class)
 
 package com.example.exercisesamplecompose.presentation
 
+import ExerciseGoalsRoute
+import ExerciseGoalsScreen
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
@@ -25,6 +26,7 @@ import androidx.navigation.navArgument
 import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.currentBackStackEntryAsState
+import com.example.exercisesamplecompose.app.Screen
 import com.example.exercisesamplecompose.app.Screen.Exercise
 import com.example.exercisesamplecompose.app.Screen.ExerciseNotAvailable
 import com.example.exercisesamplecompose.app.Screen.PreparingExercise
@@ -34,7 +36,6 @@ import com.example.exercisesamplecompose.presentation.dialogs.ExerciseNotAvailab
 import com.example.exercisesamplecompose.presentation.exercise.ExerciseRoute
 import com.example.exercisesamplecompose.presentation.preparing.PreparingExerciseRoute
 import com.example.exercisesamplecompose.presentation.summary.SummaryRoute
-import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.google.android.horologist.compose.ambient.AmbientAware
 import com.google.android.horologist.compose.ambient.AmbientState
 import com.google.android.horologist.compose.layout.AppScaffold
@@ -83,7 +84,8 @@ fun ExerciseSampleApp(
                                 }
                             }
                         },
-                        onFinishActivity = onFinishActivity
+                        onFinishActivity = onFinishActivity,
+                        onGoals = { navController.navigate(Screen.Goals.route) }
                     )
                 }
 
@@ -118,6 +120,9 @@ fun ExerciseSampleApp(
                             navController.navigateToTopLevel(PreparingExercise)
                         }
                     )
+                }
+                composable(Screen.Goals.route) {
+                    ExerciseGoalsRoute(onSet = { navController.popBackStack() })
                 }
             }
         }

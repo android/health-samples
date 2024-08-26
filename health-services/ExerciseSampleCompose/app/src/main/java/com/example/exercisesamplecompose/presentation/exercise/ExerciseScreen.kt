@@ -17,6 +17,7 @@
 
 package com.example.exercisesamplecompose.presentation.exercise
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -47,6 +48,7 @@ import com.example.exercisesamplecompose.presentation.component.ResumeButton
 import com.example.exercisesamplecompose.presentation.component.StartButton
 import com.example.exercisesamplecompose.presentation.component.StopButton
 import com.example.exercisesamplecompose.presentation.component.formatElapsedTime
+import com.example.exercisesamplecompose.presentation.dialogs.ExerciseGoalMet
 import com.example.exercisesamplecompose.presentation.summary.SummaryScreenState
 import com.example.exercisesamplecompose.presentation.theme.ThemePreview
 import com.example.exercisesamplecompose.service.ExerciseServiceState
@@ -95,7 +97,7 @@ fun ExerciseRoute(
 }
 
 /**
- * Shows an error that occured when starting an exercise
+ * Shows an error that occurred when starting an exercise
  */
 @Composable
 fun ErrorStartingExerciseScreen(
@@ -161,6 +163,14 @@ fun ExerciseScreen(
                 )
             }
         }
+    }
+    //If we meet an exercise goal, show our exercise met dialog.
+    //This approach is for the sample, and doesn't guarantee processing of this event in all cases,
+    //such as the user exiting the app while this is in-progress. Consider alternatives to exposing
+    //state in a production app.
+    uiState.exerciseState?.exerciseGoal?.let {
+        Log.d("ExerciseGoalMet", "Showing exercise goal met dialog")
+        ExerciseGoalMet(it.isNotEmpty())
     }
 }
 
