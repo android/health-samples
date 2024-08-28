@@ -19,32 +19,13 @@ On devices where heart rate data is not available, you will see a screen like th
 
 ### Try it with synthetic data
 
-With the sample running, you can turn on the synthetic data provider by running the below command
-from a shell. This will mimic the user performing an activity and generating heart rate data. Check
-the app UI or logcat messages to see these data updates.
+With the sample running on an emulator running Wear OS 4 or higher, the emulator will automatically
+generate synthetic data.
 
-```shell
-adb shell am broadcast \
--a "whs.USE_SYNTHETIC_PROVIDERS" \
-com.google.android.wearable.healthservices
-```
+This sample demonstrates using `MeasureClient` to measure heart rate. With this datatype, the default
+behavior of the emulator is to cycle between 60 - 150 bpm, in 5 bpm increments.
 
-To see different heart rate values, try simulating different exercises:
-```shell
-# walking
-adb shell am broadcast \
--a "whs.synthetic.user.START_WALKING" \
-com.google.android.wearable.healthservices
+To use synthetic data on emulators or physical devices running Wear OS 3,
+consult [the documentation](https://developer.android.com/health-and-fitness/guides/health-services/simulated-data#use_synthetic_data_on_wear_os_3)
+for synthetic data commands.
 
-# running
-adb shell am broadcast \
--a "whs.synthetic.user.START_RUNNING" \
-com.google.android.wearable.healthservices
-```
-
-To stop using the synthetic provider, run this command:
-```shell
-adb shell am broadcast -a \
-"whs.USE_SENSOR_PROVIDERS" \
-com.google.android.wearable.healthservices
-```
