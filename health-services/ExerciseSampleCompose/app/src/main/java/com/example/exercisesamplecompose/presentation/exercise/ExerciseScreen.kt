@@ -19,23 +19,27 @@ package com.example.exercisesamplecompose.presentation.exercise
 
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.TrendingUp
-import androidx.compose.material.icons.automirrored.filled._360
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.LocalFireDepartment
-import androidx.compose.material.icons.filled.WatchLater
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.wear.compose.material.Icon
+import androidx.wear.compose.material.HorizontalPageIndicator
+import androidx.wear.compose.material.MaterialTheme
+import androidx.wear.compose.material.PageIndicatorState
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import com.example.exercisesamplecompose.R
@@ -80,13 +84,10 @@ fun ExerciseRoute(
 
     if (uiState.error != null) {
         ErrorStartingExerciseScreen(
-            onRestart = onRestart,
-            onFinishActivity = onFinishActivity,
-            uiState = uiState
+            onRestart = onRestart, onFinishActivity = onFinishActivity, uiState = uiState
         )
     } else if (ambientState is AmbientState.Interactive) {
-        ExerciseScreen(
-            onPauseClick = { viewModel.pauseExercise() },
+        ExerciseScreen(onPauseClick = { viewModel.pauseExercise() },
             onEndClick = { viewModel.endExercise() },
             onResumeClick = { viewModel.resumeExercise() },
             onStartClick = { viewModel.startExercise() },
@@ -101,9 +102,7 @@ fun ExerciseRoute(
  */
 @Composable
 fun ErrorStartingExerciseScreen(
-    onRestart: () -> Unit,
-    onFinishActivity: () -> Unit,
-    uiState: ExerciseScreenState
+    onRestart: () -> Unit, onFinishActivity: () -> Unit, uiState: ExerciseScreenState
 ) {
     AlertDialog(
         title = stringResource(id = R.string.error_starting_exercise),
@@ -130,40 +129,78 @@ fun ExerciseScreen(
     uiState: ExerciseScreenState,
     modifier: Modifier = Modifier
 ) {
+
+    //Page Indicator Values
+    val maxPages = 2
+    val pagerState = rememberPagerState(initialPage = 1, pageCount = { maxPages })
+
+    val pageIndicatorState = remember {
+        object : PageIndicatorState {
+            override val selectedPage: Int
+                get() = pagerState.currentPage
+            override val pageCount: Int
+                get() = maxPages
+            override val pageOffset: Float
+                get() = 0f
+        }
+    }
     val columnState = rememberResponsiveColumnState(
         contentPadding = ScalingLazyColumnDefaults.padding(
             first = ScalingLazyColumnDefaults.ItemType.Text,
             last = ScalingLazyColumnDefaults.ItemType.Chip
         )
     )
-    ScreenScaffold(scrollState = columnState) {
-        ScalingLazyColumn(
-            modifier = modifier.fillMaxSize(),
-            columnState = columnState
-        ) {
-            item {
-                DurationRow(uiState)
-            }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(6.dp)
+    ) {
+        HorizontalPageIndicator(
+            pageIndicatorState = pageIndicatorState,
+            selectedColor = MaterialTheme.colors.secondary,
+            unselectedColor = MaterialTheme.colors.onSecondary,
+        )
+        ScreenScaffold(scrollState = columnState) {
+            HorizontalPager(state = pagerState) { page ->
+                when (page) {
+                    0 -> {
+                        ExerciseControlButtons(
+                            uiState,
+                            onStartClick,
+                            onEndClick,
+                            onResumeClick,
+                            onPauseClick,
 
-            item {
-                HeartRateAndCaloriesRow(uiState)
-            }
+                            )
+                    }
 
-            item {
-                DistanceAndLapsRow(uiState)
-            }
+                    1 -> {
+                        ScalingLazyColumn(
+                            modifier = modifier.fillMaxSize(), columnState = columnState
+                        ) {
+                            item {
+                                HeartRateRow(uiState)
+                            }
+                            item {
+                                CaloriesRow(uiState)
+                            }
+                            item {
+                                DistanceAndLapsRow(uiState)
+                            }
+                            item {
+                                DurationRow(uiState)
+                            }
 
-            item {
-                ExerciseControlButtons(
-                    uiState,
-                    onStartClick,
-                    onEndClick,
-                    onResumeClick,
-                    onPauseClick
-                )
+                        }
+                    }
+
+                }
             }
         }
+
     }
+
+
     //If we meet an exercise goal, show our exercise met dialog.
     //This approach is for the sample, and doesn't guarantee processing of this event in all cases,
     //such as the user exiting the app while this is in-progress. Consider alternatives to exposing
@@ -180,22 +217,21 @@ private fun ExerciseControlButtons(
     onStartClick: () -> Unit,
     onEndClick: () -> Unit,
     onResumeClick: () -> Unit,
-    onPauseClick: () -> Unit
+    onPauseClick: () -> Unit,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly
+        modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         if (uiState.isEnding) {
             StartButton(onStartClick)
         } else {
             StopButton(onEndClick)
         }
-
         if (uiState.isPaused) {
             ResumeButton(onResumeClick)
         } else {
             PauseButton(onPauseClick)
+
         }
     }
 }
@@ -207,47 +243,31 @@ private fun DistanceAndLapsRow(uiState: ExerciseScreenState) {
         horizontalArrangement = Arrangement.SpaceAround,
     ) {
         Row {
-            Icon(
-                imageVector = Icons.AutoMirrored.Default.TrendingUp,
-                contentDescription = stringResource(id = R.string.distance)
-            )
             DistanceText(uiState.exerciseState?.exerciseMetrics?.distance)
-        }
-
-        Row {
-            Icon(
-                imageVector = Icons.AutoMirrored.Default._360,
-                contentDescription = stringResource(id = R.string.laps)
-            )
-            Text(text = uiState.exerciseState?.exerciseLaps?.toString() ?: "--")
         }
     }
 }
 
 @Composable
-private fun HeartRateAndCaloriesRow(uiState: ExerciseScreenState) {
+private fun HeartRateRow(uiState: ExerciseScreenState) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceAround,
     ) {
         Row {
-            Icon(
-                imageVector = Icons.Filled.Favorite,
-                contentDescription = stringResource(id = R.string.heart_rate)
-            )
             HRText(
                 hr = uiState.exerciseState?.exerciseMetrics?.heartRate
             )
         }
-        Row {
-            Icon(
-                imageVector = Icons.Default.LocalFireDepartment,
-                contentDescription = stringResource(id = R.string.calories)
-            )
-            CaloriesText(
-                uiState.exerciseState?.exerciseMetrics?.calories
-            )
-        }
+    }
+}
+
+@Composable
+private fun CaloriesRow(uiState: ExerciseScreenState) {
+    Row {
+        CaloriesText(
+            uiState.exerciseState?.exerciseMetrics?.calories
+        )
     }
 }
 
@@ -256,20 +276,20 @@ private fun DurationRow(uiState: ExerciseScreenState) {
     val lastActiveDurationCheckpoint = uiState.exerciseState?.activeDurationCheckpoint
     val exerciseState = uiState.exerciseState?.exerciseState
     Row(
-        horizontalArrangement = Arrangement.SpaceAround,
-        modifier = Modifier.fillMaxWidth()
+        horizontalArrangement = Arrangement.SpaceAround, modifier = Modifier.fillMaxWidth()
     ) {
         Row {
-            Icon(
-                imageVector = Icons.Default.WatchLater,
-                contentDescription = stringResource(id = R.string.duration)
-            )
             if (exerciseState != null && lastActiveDurationCheckpoint != null) {
                 ActiveDurationText(
                     checkpoint = lastActiveDurationCheckpoint,
                     state = uiState.exerciseState.exerciseState
                 ) {
-                    Text(text = formatElapsedTime(it, includeSeconds = true))
+                    Text(
+                        text = formatElapsedTime(it, includeSeconds = true),
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colors.secondary,
+                        fontSize = 25.sp
+                    )
                 }
             } else {
                 Text(text = "--")
@@ -303,8 +323,7 @@ fun ExerciseScreenPreview() {
 @Composable
 fun ErrorStartingExerciseScreenPreview() {
     ThemePreview {
-        ErrorStartingExerciseScreen(
-            onRestart = {},
+        ErrorStartingExerciseScreen(onRestart = {},
             onFinishActivity = {},
             uiState = ExerciseScreenState(
                 hasExerciseCapabilities = true,

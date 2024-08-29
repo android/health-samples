@@ -63,9 +63,6 @@ fun formatCalories(calories: Double?) = buildAnnotatedString {
         append("--")
     } else {
         append(calories.roundToInt().toString())
-        withStyle(style = MaterialTheme.typography.caption3.toSpanStyle()) {
-            append(" cal")
-        }
     }
 }
 
@@ -76,9 +73,6 @@ fun formatDistanceKm(meters: Double?) = buildAnnotatedString {
         append("--")
     } else {
         append("%02.2f".format(meters / 1_000))
-        withStyle(style = MaterialTheme.typography.caption3.toSpanStyle()) {
-            append("km")
-        }
     }
 }
 
