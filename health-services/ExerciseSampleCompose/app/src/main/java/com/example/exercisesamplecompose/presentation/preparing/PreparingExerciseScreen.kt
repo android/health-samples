@@ -19,7 +19,6 @@ import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,7 +27,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
@@ -57,7 +55,6 @@ import androidx.compose.ui.unit.times
 import androidx.health.services.client.data.LocationAvailability
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import com.example.exercisesamplecompose.R
@@ -69,9 +66,11 @@ import com.example.exercisesamplecompose.presentation.dialogs.ExerciseInProgress
 import com.example.exercisesamplecompose.presentation.theme.ThemePreview
 import com.example.exercisesamplecompose.service.ExerciseServiceState
 import com.google.android.horologist.compose.ambient.AmbientState
+import com.google.android.horologist.compose.layout.ScalingLazyColumn
 import com.google.android.horologist.compose.layout.ScalingLazyColumnDefaults
 import com.google.android.horologist.compose.layout.ScalingLazyColumnDefaults.ItemType
 import com.google.android.horologist.compose.layout.ScreenScaffold
+import com.google.android.horologist.compose.layout.rememberResponsiveColumnState
 import com.google.android.horologist.compose.material.Button
 import com.google.android.horologist.compose.material.ButtonSize
 import com.google.android.horologist.compose.material.CompactChip
@@ -115,15 +114,10 @@ fun PreparingExerciseRoute(
             .fillMaxSize()
             .ambientGray(ambientState)
     ) {
-        PreparingExerciseScreen(
-            ambientState = ambientState,
-            onStart = {
-                viewModel.startExercise()
-                onStart()
-            },
-            uiState = uiState,
-            onGoals = { onGoals() }
-        )
+        PreparingExerciseScreen(ambientState = ambientState, onStart = {
+            viewModel.startExercise()
+            onStart()
+        }, uiState = uiState, onGoals = { onGoals() })
 
         if (uiState.isTrackingInAnotherApp) {
             var dismissed by remember { mutableStateOf(false) }
@@ -137,11 +131,9 @@ fun PreparingExerciseRoute(
 }
 
 private val grayscale = Paint().apply {
-    colorFilter = ColorFilter.colorMatrix(
-        ColorMatrix().apply {
-            setToSaturation(0f)
-        }
-    )
+    colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply {
+        setToSaturation(0f)
+    })
     isAntiAlias = false
 }
 
@@ -173,81 +165,86 @@ fun PreparingExerciseScreen(
 ) {
     val location = (uiState as? PreparingScreenState.Preparing)?.locationAvailability
 
-    val scrollState = rememberScrollState()
+    val columnState = rememberResponsiveColumnState(
+        contentPadding = ScalingLazyColumnDefaults.padding(
+            first = ItemType.Unspecified, last = ItemType.Unspecified
+        )
+    )
 
-    ScreenScaffold(scrollState = scrollState) {
-        ScalingLazyColumnDefaults.padding(
-            first = ItemType.Unspecified,
-            last = ItemType.Unspecified
-        )()
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colors.background),
-            verticalArrangement = Arrangement.Center
+    ScreenScaffold(scrollState = columnState) {
+        ScalingLazyColumn(
+            columnState = columnState
         ) {
-            Row(
-                modifier = Modifier.height(25.dp)
-            ) {
-                Text(
-                    textAlign = TextAlign.Center,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    text = stringResource(id = R.string.preparing_exercise),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 0.15f * LocalConfiguration.current.screenWidthDp.dp)
-                )
-            }
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.height(40.dp)
-            ) {
-                when (location) {
-                    LocationAvailability.ACQUIRING, LocationAvailability.UNKNOWN -> ProgressBar(
-                        ambientState,
-                        Modifier.fillMaxSize()
+            item {
+                Row(
+                    modifier = Modifier.height(25.dp)
+                ) {
+                    Text(
+                        textAlign = TextAlign.Center,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        text = stringResource(id = R.string.preparing_exercise),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 0.15f * LocalConfiguration.current.screenWidthDp.dp)
                     )
-
-                    LocationAvailability.ACQUIRED_TETHERED, LocationAvailability.ACQUIRED_UNTETHERED -> AcquiredCheck()
-                    else -> NotAcquired()
                 }
             }
+            item {
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.height(40.dp)
+                ) {
+                    when (location) {
+                        LocationAvailability.ACQUIRING, LocationAvailability.UNKNOWN -> ProgressBar(
+                            ambientState, Modifier.fillMaxSize()
+                        )
 
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                text = updatePrepareLocationStatus(
-                    locationAvailability = location ?: LocationAvailability.UNAVAILABLE
-                ),
-            )
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 6.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Button(
-                    imageVector = Icons.Default.PlayArrow,
-                    contentDescription = stringResource(id = R.string.start),
-                    onClick = onStart,
-                    buttonSize = ButtonSize.Small,
-                    enabled = uiState is PreparingScreenState.Preparing
+                        LocationAvailability.ACQUIRED_TETHERED, LocationAvailability.ACQUIRED_UNTETHERED -> AcquiredCheck()
+                        else -> NotAcquired()
+                    }
+                }
+            }
+            item {
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    text = updatePrepareLocationStatus(
+                        locationAvailability = location ?: LocationAvailability.UNAVAILABLE
+                    ),
                 )
             }
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 6.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                CompactChip(
-                    label = stringResource(id=R.string.goal),
-                    onClick = onGoals,
-                )
+            item {
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 6.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Button(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = stringResource(id = R.string.start),
+                        onClick = onStart,
+                        buttonSize = ButtonSize.Small,
+                        enabled = uiState is PreparingScreenState.Preparing
+                    )
+                }
+            }
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 6.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    CompactChip(
+                        label = stringResource(id = R.string.goal),
+                        onClick = onGoals,
+                    )
+                }
             }
         }
     }
@@ -272,8 +269,7 @@ private fun updatePrepareLocationStatus(locationAvailability: LocationAvailabili
 @Composable
 fun PreparingExerciseScreenPreview() {
     ThemePreview {
-        PreparingExerciseScreen(
-            ambientState = AmbientState.Interactive,
+        PreparingExerciseScreen(ambientState = AmbientState.Interactive,
             onStart = {},
             uiState = PreparingScreenState.Preparing(
                 serviceState = ServiceState.Connected(
@@ -283,8 +279,7 @@ fun PreparingExerciseScreenPreview() {
                 requiredPermissions = PreparingViewModel.permissions,
                 hasExerciseCapabilities = true
             ),
-            onGoals = {}
-        )
+            onGoals = {})
     }
 }
 
@@ -292,8 +287,7 @@ fun PreparingExerciseScreenPreview() {
 @Composable
 fun PreparingExerciseScreenPreviewAmbient() {
     ThemePreview {
-        PreparingExerciseScreen(
-            ambientState = AmbientState.Ambient(),
+        PreparingExerciseScreen(ambientState = AmbientState.Ambient(),
             onStart = {},
             uiState = PreparingScreenState.Preparing(
                 serviceState = ServiceState.Connected(
@@ -303,7 +297,6 @@ fun PreparingExerciseScreenPreviewAmbient() {
                 requiredPermissions = PreparingViewModel.permissions,
                 hasExerciseCapabilities = true
             ),
-            onGoals = {}
-        )
+            onGoals = {})
     }
 }
