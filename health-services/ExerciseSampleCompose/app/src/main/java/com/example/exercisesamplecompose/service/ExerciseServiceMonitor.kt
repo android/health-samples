@@ -58,7 +58,8 @@ class ExerciseServiceMonitor @Inject constructor(
                 exerciseState = exerciseUpdate.exerciseStateInfo.state,
                 exerciseMetrics = old.exerciseMetrics.update(exerciseUpdate.latestMetrics),
                 activeDurationCheckpoint = exerciseUpdate.activeDurationCheckpoint
-                    ?: old.activeDurationCheckpoint
+                    ?: old.activeDurationCheckpoint,
+                exerciseGoal = exerciseUpdate.latestAchievedGoals
             )
         }
     }

@@ -54,8 +54,8 @@ android {
 
 dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.core:core-ktx:1.13.0'
-    implementation "androidx.fragment:fragment-ktx:1.6.2"
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation "androidx.fragment:fragment-ktx:1.8.2"
 
     // Hilt dependency injection
     implementation "com.google.dagger:hilt-android:$hilt_version"
@@ -68,20 +68,20 @@ dependencies {
     // Health Services
     implementation 'androidx.health:health-services-client:1.0.0-rc02'
     // Used to bridge between Futures and coroutines
-    implementation 'com.google.guava:guava:33.1.0-android'
-    implementation "androidx.concurrent:concurrent-futures-ktx:1.1.0"
+    implementation 'com.google.guava:guava:33.3.0-android'
+    implementation "androidx.concurrent:concurrent-futures-ktx:1.2.0"
 
     // Datastore
-    implementation "androidx.datastore:datastore-preferences:1.1.0"
+    implementation "androidx.datastore:datastore-preferences:1.1.1"
 
     // Lifecycle
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-service:$lifecycle_version"
 
     // WorkManager
-    implementation "androidx.work:work-runtime:2.9.0"
-    implementation "androidx.work:work-runtime-ktx:2.9.0"
+    implementation "androidx.work:work-runtime:2.9.1"
+    implementation "androidx.work:work-runtime-ktx:2.9.1"
 
     // Material
-    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'com.google.android.material:material:1.12.0'
 }

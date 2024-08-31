@@ -16,9 +16,6 @@
 
 package com.example.exercisesamplecompose.presentation
 
-import androidx.compose.ui.test.hasScrollToIndexAction
-import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.swipeUp
 import com.example.exercisesamplecompose.presentation.summary.SummaryScreen
 import com.example.exercisesamplecompose.presentation.summary.SummaryScreenState
 import com.google.android.horologist.compose.layout.AppScaffold
@@ -51,14 +48,15 @@ class SummaryScreenTest(override val device: WearDevice) : WearDeviceScreenshotT
             }
         }
 
-        composeRule.onNode(hasScrollToIndexAction())
-            .performTouchInput {
-                repeat(10) {
-                    swipeUp()
-                }
-            }
-
-        captureScreenshot("_end")
+        // TODO reinstate swipe tests after robolectric/compose fix
+//        composeRule.onNode(hasScrollToIndexAction())
+//            .performTouchInput {
+//                repeat(10) {
+//                    swipeUp()
+//                }
+//            }
+//
+//        captureScreenshot("_end")
     }
 
 }

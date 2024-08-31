@@ -34,10 +34,16 @@ jobs:
           java-version: 17
 
       - name: Unit Tests
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           build-root-directory: ${{ env.SAMPLE_PATH }}
           arguments: testDebug
+
+      - name: Screenshot Tests
+        uses: gradle/gradle-build-action@v3
+        with:
+          build-root-directory: ${{ env.SAMPLE_PATH }}
+          arguments: verifyRoborazziDebug
 
       - name: Upload test results and reports
         if: always()

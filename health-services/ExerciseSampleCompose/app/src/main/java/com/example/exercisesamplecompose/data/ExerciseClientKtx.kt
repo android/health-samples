@@ -30,3 +30,8 @@ fun supportsDistanceMilestone(capabilities: ExerciseTypeCapabilities): Boolean {
     val supported = capabilities.supportedMilestones[DataType.DISTANCE_TOTAL]
     return supported != null && ComparisonType.GREATER_THAN_OR_EQUAL in supported
 }
+
+fun supportsDurationMilestone(capabilities: ExerciseTypeCapabilities) : Boolean{
+    val supported = capabilities.supportedGoals[DataType.ACTIVE_EXERCISE_DURATION_TOTAL]
+    return supported != null && ComparisonType.GREATER_THAN_OR_EQUAL in supported
+}

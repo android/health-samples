@@ -41,13 +41,16 @@ import com.example.healthconnectsample.presentation.screen.inputreadings.InputRe
 import com.example.healthconnectsample.presentation.screen.inputreadings.InputReadingsViewModel
 import com.example.healthconnectsample.presentation.screen.inputreadings.InputReadingsViewModelFactory
 import com.example.healthconnectsample.presentation.screen.privacypolicy.PrivacyPolicyScreen
+import com.example.healthconnectsample.presentation.screen.recordlist.RecordType
+import com.example.healthconnectsample.presentation.screen.recordlist.RecordListScreen
+import com.example.healthconnectsample.presentation.screen.recordlist.RecordListScreenViewModel
+import com.example.healthconnectsample.presentation.screen.recordlist.RecordListViewModelFactory
+import com.example.healthconnectsample.presentation.screen.recordlist.SeriesRecordsType
 import com.example.healthconnectsample.presentation.screen.sleepsession.SleepSessionScreen
 import com.example.healthconnectsample.presentation.screen.sleepsession.SleepSessionViewModel
 import com.example.healthconnectsample.presentation.screen.sleepsession.SleepSessionViewModelFactory
 import com.example.healthconnectsample.showExceptionSnackbar
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 /**
  * Provides the navigation in the app.
@@ -139,9 +142,46 @@ fun HealthConnectNavigation(
                 permissionsGranted = permissionsGranted,
                 sessionMetrics = sessionMetrics,
                 uiState = viewModel.uiState,
+                onDetailsClick = { recordType, uid, seriesRecordsType ->
+                    navController.navigate(Screen.RecordListScreen.route + "/" + recordType + "/"+ uid + "/" + seriesRecordsType)
+                },
                 onError = { exception ->
                     showExceptionSnackbar(scaffoldState, scope, exception)
                 },
+                onPermissionsResult = {
+                    viewModel.initialLoad()
+                },
+                onPermissionsLaunch = { values ->
+                    permissionsLauncher.launch(values)}
+            )
+        }
+        composable(Screen.RecordListScreen.route + "/{$RECORD_TYPE}" + "/{$UID_NAV_ARGUMENT}" + "/{$SERIES_RECORDS_TYPE}") {
+            val uid = it.arguments?.getString(UID_NAV_ARGUMENT)!!
+            val recordTypeString = it.arguments?.getString(RECORD_TYPE)!!
+            val seriesRecordsTypeString = it.arguments?.getString(SERIES_RECORDS_TYPE)!!
+            val viewModel: RecordListScreenViewModel = viewModel(
+                factory = RecordListViewModelFactory(
+                    uid = uid,
+                    recordTypeString = recordTypeString,
+                    seriesRecordsTypeString = seriesRecordsTypeString,
+                    healthConnectManager = healthConnectManager
+                )
+            )
+            val permissionsGranted by viewModel.permissionsGranted
+            val recordList = viewModel.recordList
+            val permissions = viewModel.permissions
+            val onPermissionsResult = {viewModel.initialLoad()}
+            val permissionsLauncher =
+                rememberLauncherForActivityResult(viewModel.permissionsLauncher) {
+                    onPermissionsResult()}
+            RecordListScreen(
+                uid = uid,
+                permissions = permissions,
+                permissionsGranted = permissionsGranted,
+                recordType = RecordType.valueOf(recordTypeString),
+                seriesRecordsType = SeriesRecordsType.valueOf(seriesRecordsTypeString),
+                recordList = recordList,
+                uiState = viewModel.uiState,
                 onPermissionsResult = {
                     viewModel.initialLoad()
                 },

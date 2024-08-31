@@ -2,6 +2,7 @@ package com.example.exercisesamplecompose.service
 
 import androidx.health.services.client.data.DataPointContainer
 import androidx.health.services.client.data.DataType
+import androidx.health.services.client.data.ExerciseGoal
 import androidx.health.services.client.data.ExerciseState
 import androidx.health.services.client.data.ExerciseUpdate.ActiveDurationCheckpoint
 import androidx.health.services.client.data.LocationAvailability
@@ -19,7 +20,7 @@ data class ExerciseMetrics(
             distance = latestMetrics.getData(DataType.DISTANCE_TOTAL)?.total ?: distance,
             calories = latestMetrics.getData(DataType.CALORIES_TOTAL)?.total ?: calories,
             heartRateAverage = latestMetrics.getData(DataType.HEART_RATE_BPM_STATS)?.average
-                ?: heartRateAverage
+                ?: heartRateAverage,
         )
     }
 }
@@ -32,4 +33,5 @@ data class ExerciseServiceState(
     val activeDurationCheckpoint: ActiveDurationCheckpoint? = null,
     val locationAvailability: LocationAvailability = LocationAvailability.UNKNOWN,
     val error: String? = null,
+    val exerciseGoal: Set<ExerciseGoal<out Number>> = emptySet()
 )
