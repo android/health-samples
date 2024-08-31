@@ -176,10 +176,6 @@ fun PreparingExerciseScreen(
     val scrollState = rememberScrollState()
 
     ScreenScaffold(scrollState = scrollState) {
-        ScalingLazyColumnDefaults.padding(
-            first = ItemType.Unspecified,
-            last = ItemType.Unspecified
-        )()
         Column(
             modifier = Modifier
                 .fillMaxSize()
