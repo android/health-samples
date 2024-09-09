@@ -114,10 +114,15 @@ fun PreparingExerciseRoute(
             .fillMaxSize()
             .ambientGray(ambientState)
     ) {
-        PreparingExerciseScreen(ambientState = ambientState, onStart = {
-            viewModel.startExercise()
-            onStart()
-        }, uiState = uiState, onGoals = { onGoals() })
+        PreparingExerciseScreen(
+            ambientState = ambientState,
+            onStart = {
+                viewModel.startExercise()
+                onStart()
+            },
+            uiState = uiState,
+            onGoals = { onGoals() }
+        )
 
         if (uiState.isTrackingInAnotherApp) {
             var dismissed by remember { mutableStateOf(false) }
@@ -131,9 +136,11 @@ fun PreparingExerciseRoute(
 }
 
 private val grayscale = Paint().apply {
-    colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply {
-        setToSaturation(0f)
-    })
+    colorFilter = ColorFilter.colorMatrix(
+        ColorMatrix().apply {
+            setToSaturation(0f)
+        }
+    )
     isAntiAlias = false
 }
 
@@ -269,7 +276,8 @@ private fun updatePrepareLocationStatus(locationAvailability: LocationAvailabili
 @Composable
 fun PreparingExerciseScreenPreview() {
     ThemePreview {
-        PreparingExerciseScreen(ambientState = AmbientState.Interactive,
+        PreparingExerciseScreen(
+            ambientState = AmbientState.Interactive,
             onStart = {},
             uiState = PreparingScreenState.Preparing(
                 serviceState = ServiceState.Connected(
@@ -287,7 +295,8 @@ fun PreparingExerciseScreenPreview() {
 @Composable
 fun PreparingExerciseScreenPreviewAmbient() {
     ThemePreview {
-        PreparingExerciseScreen(ambientState = AmbientState.Ambient(),
+        PreparingExerciseScreen(
+            ambientState = AmbientState.Ambient(),
             onStart = {},
             uiState = PreparingScreenState.Preparing(
                 serviceState = ServiceState.Connected(
