@@ -38,8 +38,8 @@ import com.example.healthconnectsample.R
 @Composable
 fun SettingsScreen(
     revokeAllPermissions: () -> Unit
-){
-    val activity = LocalContext.current
+) {
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -51,7 +51,7 @@ fun SettingsScreen(
             val settingsIntent = Intent()
             settingsIntent.action =
                 HealthConnectClient.ACTION_HEALTH_CONNECT_SETTINGS
-            activity.startActivity(settingsIntent) }
+            context.startActivity(settingsIntent) }
         ) {
             Text(text = stringResource(id = R.string.manage))
         }
@@ -59,7 +59,6 @@ fun SettingsScreen(
             revokeAllPermissions() }
         ) {
             Text(text = stringResource(id = R.string.disconnect))
-            
         }
     }
 
