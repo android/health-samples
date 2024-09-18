@@ -22,10 +22,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
@@ -51,17 +49,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
 import androidx.health.services.client.data.LocationAvailability
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.wear.compose.foundation.CurvedLayout
 import androidx.wear.compose.material.Text
+import androidx.wear.compose.material.curvedText
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import com.example.exercisesamplecompose.R
 import com.example.exercisesamplecompose.data.ServiceState
-import com.example.exercisesamplecompose.presentation.component.AcquiredCheck
-import com.example.exercisesamplecompose.presentation.component.NotAcquired
-import com.example.exercisesamplecompose.presentation.component.ProgressBar
 import com.example.exercisesamplecompose.presentation.dialogs.ExerciseInProgressAlert
 import com.example.exercisesamplecompose.presentation.theme.ThemePreview
 import com.example.exercisesamplecompose.service.ExerciseServiceState
@@ -115,7 +113,6 @@ fun PreparingExerciseRoute(
             .ambientGray(ambientState)
     ) {
         PreparingExerciseScreen(
-            ambientState = ambientState,
             onStart = {
                 viewModel.startExercise()
                 onStart()
@@ -165,7 +162,6 @@ internal fun Modifier.ambientGray(ambientState: AmbientState): Modifier =
  */
 @Composable
 fun PreparingExerciseScreen(
-    ambientState: AmbientState,
     onStart: () -> Unit = {},
     uiState: PreparingScreenState,
     onGoals: () -> Unit = {}
@@ -179,46 +175,21 @@ fun PreparingExerciseScreen(
     )
 
     ScreenScaffold(scrollState = columnState) {
+        LocationStatusText(updatePrepareLocationStatus(
+            locationAvailability = location ?: LocationAvailability.UNAVAILABLE
+        ))
         ScalingLazyColumn(
             columnState = columnState
         ) {
             item {
-                Row(
-                    modifier = Modifier.height(25.dp)
-                ) {
-                    Text(
-                        textAlign = TextAlign.Center,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        text = stringResource(id = R.string.preparing_exercise),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 0.15f * LocalConfiguration.current.screenWidthDp.dp)
-                    )
-                }
-            }
-            item {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.height(40.dp)
-                ) {
-                    when (location) {
-                        LocationAvailability.ACQUIRING, LocationAvailability.UNKNOWN -> ProgressBar(
-                            ambientState, Modifier.fillMaxSize()
-                        )
-
-                        LocationAvailability.ACQUIRED_TETHERED, LocationAvailability.ACQUIRED_UNTETHERED -> AcquiredCheck()
-                        else -> NotAcquired()
-                    }
-                }
-            }
-            item {
                 Text(
-                    modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center,
-                    text = updatePrepareLocationStatus(
-                        locationAvailability = location ?: LocationAvailability.UNAVAILABLE
-                    ),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    text = stringResource(id = R.string.preparing_exercise),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 0.15f * LocalConfiguration.current.screenWidthDp.dp)
                 )
             }
             item {
@@ -237,6 +208,7 @@ fun PreparingExerciseScreen(
                         buttonSize = ButtonSize.Small,
                         enabled = uiState is PreparingScreenState.Preparing
                     )
+
                 }
             }
             item {
@@ -272,12 +244,18 @@ private fun updatePrepareLocationStatus(locationAvailability: LocationAvailabili
     return stringResource(id = gpsText)
 }
 
+@Composable
+private fun LocationStatusText(status: String) {
+    CurvedLayout {
+        curvedText(text = status, fontSize = 12.sp)
+    }
+}
+
 @WearPreviewDevices
 @Composable
 fun PreparingExerciseScreenPreview() {
     ThemePreview {
         PreparingExerciseScreen(
-            ambientState = AmbientState.Interactive,
             onStart = {},
             uiState = PreparingScreenState.Preparing(
                 serviceState = ServiceState.Connected(
@@ -296,7 +274,6 @@ fun PreparingExerciseScreenPreview() {
 fun PreparingExerciseScreenPreviewAmbient() {
     ThemePreview {
         PreparingExerciseScreen(
-            ambientState = AmbientState.Ambient(),
             onStart = {},
             uiState = PreparingScreenState.Preparing(
                 serviceState = ServiceState.Connected(

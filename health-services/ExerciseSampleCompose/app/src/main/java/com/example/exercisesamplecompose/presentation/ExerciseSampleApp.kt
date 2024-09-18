@@ -17,7 +17,6 @@
 package com.example.exercisesamplecompose.presentation
 
 import ExerciseGoalsRoute
-import ExerciseGoalsScreen
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
@@ -57,8 +56,10 @@ fun ExerciseSampleApp(
 
         AppScaffold(
             timeText = {
-                if (ambientStateUpdate.ambientState is AmbientState.Interactive) {
-                    ResponsiveTimeText()
+                if (ambientStateUpdate.ambientState is AmbientState.Interactive &&
+                    currentScreen?.destination?.route != PreparingExercise.route
+                    ) {
+                        ResponsiveTimeText()
                 }
             }
         ) {
