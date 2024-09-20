@@ -173,8 +173,7 @@ fun PreparingExerciseScreen(
             first = ItemType.Unspecified, last = ItemType.Unspecified
         )
     )
-
-    ScreenScaffold(scrollState = columnState) {
+    ScreenScaffold(scrollState = columnState, timeText = {}) {
         LocationStatusText(updatePrepareLocationStatus(
             locationAvailability = location ?: LocationAvailability.UNAVAILABLE
         ))

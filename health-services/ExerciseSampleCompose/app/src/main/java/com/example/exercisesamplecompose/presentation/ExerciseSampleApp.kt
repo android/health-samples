@@ -56,9 +56,7 @@ fun ExerciseSampleApp(
 
         AppScaffold(
             timeText = {
-                if (ambientStateUpdate.ambientState is AmbientState.Interactive &&
-                    currentScreen?.destination?.route != PreparingExercise.route
-                    ) {
+                if (ambientStateUpdate.ambientState is AmbientState.Interactive) {
                         ResponsiveTimeText()
                 }
             }

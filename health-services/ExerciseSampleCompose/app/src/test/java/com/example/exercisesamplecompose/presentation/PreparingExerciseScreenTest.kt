@@ -21,6 +21,9 @@ import com.example.exercisesamplecompose.presentation.preparing.PreparingExercis
 import com.example.exercisesamplecompose.presentation.preparing.PreparingScreenState
 import com.example.exercisesamplecompose.presentation.preparing.PreparingViewModel
 import com.example.exercisesamplecompose.service.ExerciseServiceState
+import com.google.android.horologist.compose.layout.AppScaffold
+import com.google.android.horologist.compose.layout.ResponsiveTimeText
+import com.google.android.horologist.screenshots.FixedTimeSource
 import com.google.android.horologist.screenshots.rng.WearDevice
 import com.google.android.horologist.screenshots.rng.WearDeviceScreenshotTest
 import org.junit.Test
@@ -32,6 +35,14 @@ class PreparingExerciseScreenTest(override val device: WearDevice) :
     WearDeviceScreenshotTest(device) {
     @Test
     fun preparing() = runTest {
+        AppScaffold(
+            timeText = {
+                ResponsiveTimeText(
+                    timeSource =
+                    FixedTimeSource
+                )
+            }
+        ) {
             PreparingExerciseScreen(
                 onStart = {},
                 uiState = PreparingScreenState.Preparing(
@@ -44,9 +55,14 @@ class PreparingExerciseScreenTest(override val device: WearDevice) :
                 )
             )
         }
+    }
 
     @Test
     fun failed() = runTest {
+        AppScaffold(
+            timeText = { ResponsiveTimeText(timeSource =
+            FixedTimeSource) }
+        ) {
             PreparingExerciseScreen(
                 onStart = {},
                 uiState = PreparingScreenState.Preparing(
@@ -58,5 +74,7 @@ class PreparingExerciseScreenTest(override val device: WearDevice) :
                     hasExerciseCapabilities = true
                 )
             )
+
+        }
     }
 }
