@@ -19,11 +19,11 @@ buildscript {
     ext {
         activity_compose_version = '1.9.2'
         hilt_navigation_compose_version = '1.0.0'
-        navigation_compose_version = '2.8.0'
+        navigation_compose_version = '2.8.1'
 
         concurrent_futures_version = '1.2.0'
-        health_connect_version = '1.1.0-alpha08'
-        lifecycle_version = '2.8.5'
+        health_connect_version = '1.1.0-alpha09'
+        lifecycle_version = '2.8.6'
     }
     repositories {
         google()

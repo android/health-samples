@@ -70,7 +70,7 @@ dependencies {
     // Health Services
     implementation 'androidx.health:health-services-client:1.0.0-rc02'
     // Used to bridge between Futures and coroutines
-    implementation 'com.google.guava:guava:33.3.0-android'
+    implementation 'com.google.guava:guava:33.3.1-android'
     implementation "androidx.concurrent:concurrent-futures-ktx:1.2.0"
 
     // Lifecycle
@@ -81,8 +81,8 @@ dependencies {
     implementation 'com.google.android.material:material:1.12.0'
 
     // Navigation
-    implementation "androidx.navigation:navigation-fragment-ktx:2.8.0"
-    implementation "androidx.navigation:navigation-ui-ktx:2.8.0"
+    implementation "androidx.navigation:navigation-fragment-ktx:2.8.1"
+    implementation "androidx.navigation:navigation-ui-ktx:2.8.1"
 
     // Ongoing Activity.
     implementation "androidx.wear:wear-ongoing:1.0.0"
