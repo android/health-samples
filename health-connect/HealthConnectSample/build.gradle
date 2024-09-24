@@ -17,20 +17,20 @@
 buildscript {
     ext.kotlin_version = '1.9.25'
     ext {
-        activity_compose_version = '1.9.1'
+        activity_compose_version = '1.9.2'
         hilt_navigation_compose_version = '1.0.0'
-        navigation_compose_version = '2.7.7'
+        navigation_compose_version = '2.8.1'
 
         concurrent_futures_version = '1.2.0'
-        health_connect_version = '1.1.0-alpha07'
-        lifecycle_version = '2.8.4'
+        health_connect_version = '1.1.0-alpha09'
+        lifecycle_version = '2.8.6'
     }
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.5.2'
+        classpath 'com.android.tools.build:gradle:8.6.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         // NOTE: Do not place your application dependencies here; they belong

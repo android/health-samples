@@ -39,6 +39,12 @@ jobs:
           build-root-directory: ${{ env.SAMPLE_PATH }}
           arguments: testDebug
 
+      - name: Screenshot Tests
+        uses: gradle/gradle-build-action@v3
+        with:
+          build-root-directory: ${{ env.SAMPLE_PATH }}
+          arguments: verifyRoborazziDebug
+
       - name: Upload test results and reports
         if: always()
         uses: actions/upload-artifact@v4
