@@ -17,7 +17,7 @@
     <string name="app_name">Exercise Sample</string>
 
     <!-- Screens -->
-    <string name="preparing_exercise">Preparing exercise</string>
+    <string name="preparing_exercise">Preparing\nsensors</string>
     <string name="start">Start</string>
     <string name="starting_up">Starting up</string>
     <string name="not_avail">Exercise not available on this device</string>
@@ -26,11 +26,11 @@
     <string name="try_again">Would you like to try again?</string>
 
     <!-- GPS -->
-    <string name="GPS_acquiring">GPS Acquiring</string>
+    <string name="GPS_acquiring">GPS Acquiring…</string>
     <string name="GPS_acquired">GPS Acquired!</string>
     <string name="GPS_disabled">GPS Disabled on Device</string>
     <string name="GPS_unavailable">GPS Unavailable</string>
-    <string name="GPS_initializing">GPS Initializing</string>
+    <string name="GPS_initializing">GPS Initializing…</string>
 
 
     <!-- Summary Screen -->
@@ -58,7 +58,7 @@
     <!-- Exercise Goals -->
     <string name="km"> km</string>
     <string name="minutes"> min</string>
-    <string name="goal"> Goal</string>
+    <string name="goal"> Add a goal</string>
     <string name="set_goal">Set Goals</string>
     <string name="plus"> Plus </string>
     <string name="minus"> Minus </string>
