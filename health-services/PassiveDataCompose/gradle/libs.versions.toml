@@ -1,6 +1,6 @@
 [versions]
 accompanist-permissions = "0.36.0"
-android-gradle-plugin = "8.6.1"
+android-gradle-plugin = "8.7.0"
 androidx-activity = "1.9.2"
 androidx-datastore = "1.1.1"
 androidx-lifecycle = "2.8.6"
@@ -19,7 +19,7 @@ org-jetbrains-kotlinx = "1.6.0"
 
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist-permissions" }
-android-lint-gradle = "com.android.tools.lint:lint-gradle:31.6.1"
+android-lint-gradle = "com.android.tools.lint:lint-gradle:31.7.0"
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-datastore = { module = "androidx.datastore:datastore-preferences", version.ref = "androidx-datastore" }
 androidx-health-services = { module = "androidx.health:health-services-client", version.ref = "health-services" }
