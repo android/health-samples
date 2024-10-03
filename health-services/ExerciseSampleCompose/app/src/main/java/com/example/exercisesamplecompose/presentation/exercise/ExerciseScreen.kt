@@ -20,16 +20,20 @@ package com.example.exercisesamplecompose.presentation.exercise
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -58,10 +62,7 @@ import com.example.exercisesamplecompose.presentation.theme.ThemePreview
 import com.example.exercisesamplecompose.service.ExerciseServiceState
 import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.google.android.horologist.compose.ambient.AmbientState
-import com.google.android.horologist.compose.layout.ScalingLazyColumn
-import com.google.android.horologist.compose.layout.ScalingLazyColumnDefaults
 import com.google.android.horologist.compose.layout.ScreenScaffold
-import com.google.android.horologist.compose.layout.rememberResponsiveColumnState
 import com.google.android.horologist.compose.material.AlertDialog
 import com.google.android.horologist.health.composables.ActiveDurationText
 
@@ -144,12 +145,7 @@ fun ExerciseScreen(
                 get() = 0f
         }
     }
-    val columnState = rememberResponsiveColumnState(
-        contentPadding = ScalingLazyColumnDefaults.padding(
-            first = ScalingLazyColumnDefaults.ItemType.Text,
-            last = ScalingLazyColumnDefaults.ItemType.Chip
-        )
-    )
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -160,7 +156,7 @@ fun ExerciseScreen(
             selectedColor = MaterialTheme.colors.secondary,
             unselectedColor = MaterialTheme.colors.onSecondary,
         )
-        ScreenScaffold(scrollState = columnState) {
+        ScreenScaffold{
             HorizontalPager(state = pagerState) { page ->
                 when (page) {
                     0 -> {
@@ -170,27 +166,22 @@ fun ExerciseScreen(
                             onEndClick,
                             onResumeClick,
                             onPauseClick,
-
+                            pagerState
                             )
                     }
 
                     1 -> {
-                        ScalingLazyColumn(
-                            modifier = modifier.fillMaxSize(), columnState = columnState
+                       Column(
+                           modifier = modifier.fillMaxSize().padding(vertical = 20.dp),
+                           verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            item {
-                                HeartRateRow(uiState)
-                            }
-                            item {
-                                CaloriesRow(uiState)
-                            }
-                            item {
-                                DistanceAndLapsRow(uiState)
-                            }
-                            item {
-                                DurationRow(uiState)
-                            }
+                            HeartRateRow(uiState)
 
+                            CaloriesRow(uiState)
+
+                            DistanceAndLapsRow(uiState)
+
+                            DurationRow(uiState)
                         }
                     }
 
@@ -199,7 +190,6 @@ fun ExerciseScreen(
         }
 
     }
-
 
     //If we meet an exercise goal, show our exercise met dialog.
     //This approach is for the sample, and doesn't guarantee processing of this event in all cases,
@@ -218,20 +208,32 @@ private fun ExerciseControlButtons(
     onEndClick: () -> Unit,
     onResumeClick: () -> Unit,
     onPauseClick: () -> Unit,
+    pagerState: PagerState
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
-        if (uiState.isEnding) {
-            StartButton(onStartClick)
-        } else {
-            StopButton(onEndClick)
-        }
-        if (uiState.isPaused) {
-            ResumeButton(onResumeClick)
-        } else {
-            PauseButton(onPauseClick)
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (uiState.isEnding) {
+                StartButton(onStartClick)
+            } else {
+                StopButton(onEndClick)
+            }
+            if (uiState.isPaused) {
+                ResumeButton(onResumeClick)
+                //When the user clicks resume, scroll to the main screen
+                LaunchedEffect(pagerState) {
+                    pagerState.animateScrollToPage(1)}
 
+            } else {
+                PauseButton(onPauseClick)
+                //When the user clicks pause, scroll to the main screen
+                LaunchedEffect(pagerState) {
+                    pagerState.animateScrollToPage(1)}
+
+            }
         }
     }
 }
@@ -334,5 +336,24 @@ fun ErrorStartingExerciseScreenPreview() {
                 exerciseState = ExerciseServiceState()
             )
         )
+    }
+}
+
+@WearPreviewDevices
+@Composable
+fun ExerciseControlButtonsPreview() {
+    ThemePreview {
+        ExerciseControlButtons( uiState = ExerciseScreenState(
+            hasExerciseCapabilities = true,
+            isTrackingAnotherExercise = false,
+            serviceState = ServiceState.Connected(
+                ExerciseServiceState()
+            ),
+            exerciseState = ExerciseServiceState()
+        ),  onStartClick = {},
+            onEndClick = {},
+            onResumeClick = {},
+            onPauseClick = {},
+            pagerState = PagerState {0})
     }
 }

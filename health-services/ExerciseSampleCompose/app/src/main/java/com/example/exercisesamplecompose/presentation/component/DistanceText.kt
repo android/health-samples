@@ -21,8 +21,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import androidx.wear.compose.material.MaterialTheme
@@ -31,21 +33,25 @@ import androidx.wear.compose.material.Text
 @Composable
 fun DistanceText(distance: Double?) {
     Column {
-        Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Text(
                 text = formatDistanceKm(distance), fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colors.primaryVariant,
-                fontSize = 30.sp
+                color = MaterialTheme.colors.primary,
+                fontSize = 20.sp
             )
-        }
-        Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()){
             Text(
                 text = "km", fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colors.primaryVariant,
-                fontSize = 10.sp
+                color = MaterialTheme.colors.primary,
+                fontSize = 10.sp,
+                textAlign = TextAlign.Center
             )
         }
     }
+
 }
 
 @Preview
