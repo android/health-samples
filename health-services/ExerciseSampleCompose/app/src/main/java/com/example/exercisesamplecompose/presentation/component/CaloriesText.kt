@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -32,21 +33,22 @@ import androidx.wear.compose.material.Text
 @Composable
 fun CaloriesText(calories: Double?) {
     Column {
-        Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth() ){
+        Row(horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth() ){
             if (calories != null)
                 Text(
                     text = formatCalories(calories), fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colors.primary,
-                    fontSize = 30.sp
+                    fontSize = 20.sp
                 )
             else
                 Text(text = "--")
-        }
-        Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = "cal", fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colors.primary,
-                fontSize = 10.sp, textAlign = TextAlign.Center
+                fontSize = 10.sp,
+                textAlign = TextAlign.Center
             )
         }
     }
