@@ -20,7 +20,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -68,8 +70,8 @@ fun ExerciseGoalsRoute(
 
 @Composable
 fun ExerciseGoalsScreen(
-    onSet: () -> Unit = {}, setGoals: (Thresholds) -> Unit)
-{
+    onSet: () -> Unit = {}, setGoals: (Thresholds) -> Unit
+) {
     // Clear up screen real-estate while toggling goal values
     val showDistanceRow = rememberExpandableState(initiallyExpanded = false)
     val showDurationRow = rememberExpandableState(initiallyExpanded = false)
@@ -91,7 +93,8 @@ fun ExerciseGoalsScreen(
                 ToggleChip(
                     checked = showDistanceRow.expanded,
                     onCheckedChanged = { showDistanceRow.expanded = it },
-                    label = stringResource(R.string.add_distance),
+                    label = stringResource(R.string.distance),
+                    icon = Icons.Default.LocationOn,
                     toggleControl = ToggleChipToggleControl.Switch,
                     secondaryLabel = if (showDistanceRow.expanded) "${thresholds.distance}" + stringResource(
                         R.string.km
@@ -108,7 +111,8 @@ fun ExerciseGoalsScreen(
                 ToggleChip(
                     checked = showDurationRow.expanded,
                     onCheckedChanged = { showDurationRow.expanded = it },
-                    label = stringResource(R.string.add_duration),
+                    label = stringResource(R.string.duration),
+                    icon = Icons.Default.Timer,
                     toggleControl = ToggleChipToggleControl.Switch,
                     secondaryLabel = if (showDurationRow.expanded) "${
                         thresholds.duration.inWholeMinutes

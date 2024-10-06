@@ -58,12 +58,10 @@
     <!-- Exercise Goals -->
     <string name="km"> km</string>
     <string name="minutes"> min</string>
-    <string name="goal"> Add a goal</string>
+    <string name="goal"> Add Goal</string>
     <string name="set_goal">Set Goals</string>
     <string name="plus"> Plus </string>
     <string name="minus"> Minus </string>
-    <string name="add_distance"> Distance Goal</string>
-    <string name="add_duration"> Duration Goal</string>
     <string name="increase">Increase</string>
     <string name="decrease">Decrease</string>
 
