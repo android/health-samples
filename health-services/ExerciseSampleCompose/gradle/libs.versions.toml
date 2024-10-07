@@ -11,7 +11,7 @@ horologist = "0.5.28"
 org-jetbrains-kotlin = "1.9.25"
 ui-test-junit4 = "1.7.3"
 robolectric = "4.13"
-roborazzi = "1.27.0"
+roborazzi = "1.28.0"
 
 
 [libraries]
