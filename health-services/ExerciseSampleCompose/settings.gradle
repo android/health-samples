@@ -29,6 +29,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // Use for testing of androidx snapshots
+//        maven {
+//            url = uri("https://androidx.dev/snapshots/builds/[build number]/artifacts/repository")
+//        }
     }
 }
 

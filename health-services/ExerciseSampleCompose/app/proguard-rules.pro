@@ -33,3 +33,9 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Remove with WHS 1.1.0-alpha05 or later
+# Ignore warnings of runtime only dependency
+-keepclassmembers class * extends androidx.health.services.client.proto.GeneratedMessageLite {
+  <fields>;
+}
