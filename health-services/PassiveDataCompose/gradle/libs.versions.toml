@@ -1,14 +1,14 @@
 [versions]
 accompanist-permissions = "0.36.0"
-android-gradle-plugin = "8.7.0"
-androidx-activity = "1.9.2"
+android-gradle-plugin = "8.7.2"
+androidx-activity = "1.9.3"
 androidx-datastore = "1.1.1"
-androidx-lifecycle = "2.8.6"
+androidx-lifecycle = "2.8.7"
 androidx-wear-compose = "1.4.0"
 androidx-wear-tiles = "1.0.1"
 androidx-wear-watchface = "1.0.1"
-androidx-work = "2.9.1"
-compose = "1.7.3"
+androidx-work = "2.10.0"
+compose = "1.7.5"
 compose-compiler = "1.5.15"
 concurrent-futures = "1.2.0"
 guava = "33.3.1-android"
@@ -19,7 +19,7 @@ org-jetbrains-kotlinx = "1.6.0"
 
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist-permissions" }
-android-lint-gradle = "com.android.tools.lint:lint-gradle:31.7.0"
+android-lint-gradle = "com.android.tools.lint:lint-gradle:31.7.2"
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-datastore = { module = "androidx.datastore:datastore-preferences", version.ref = "androidx-datastore" }
 androidx-health-services = { module = "androidx.health:health-services-client", version.ref = "health-services" }
