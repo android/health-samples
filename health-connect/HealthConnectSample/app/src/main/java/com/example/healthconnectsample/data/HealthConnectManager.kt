@@ -24,8 +24,10 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.compose.runtime.mutableStateOf
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.HealthConnectClient.Companion.SDK_UNAVAILABLE
+import androidx.health.connect.client.HealthConnectFeatures
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.changes.Change
+import androidx.health.connect.client.feature.ExperimentalFeatureAvailabilityApi
 import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
@@ -482,6 +484,13 @@ class HealthConnectManager(private val context: Context) {
             endTime = sessionEndTime.toInstant(),
             endZoneOffset = sessionEndTime.offset,
             samples = samples)
+    }
+
+    @OptIn(ExperimentalFeatureAvailabilityApi::class)
+    fun isFeatureAvailable(feature: Int): Boolean{
+        return healthConnectClient
+            .features
+            .getFeatureStatus(feature) == HealthConnectFeatures.FEATURE_STATUS_AVAILABLE
     }
 
     // Represents the two types of messages that can be sent in a Changes flow.
