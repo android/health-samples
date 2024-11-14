@@ -6,28 +6,28 @@ get started writing Health Services apps on Wear OS.
 
 Read below for a description of each sample.
 
-> Note: The Health Services API is in alpha release, meaning that [APIs may be added, removed, or changed](https://developer.android.com/jetpack/androidx/versions). We do not recommend developing a production app against the API at the current time, or making plans that depend on the API becoming stable or widely available at a specific time.
+> Note: The Health Services API is in beta release, meaning that [APIs may be added, removed, or changed](https://developer.android.com/jetpack/androidx/versions). We do not recommend developing a production app against the API at the current time, or making plans that depend on the API becoming stable or widely available at a specific time.
 
 > Note: Many of these sample apps make use of fragments which have [some drawbacks](https://developer.android.com/training/wearables/views/navigation#implement-nav). For new apps, we now recommend using [Wear Compose](https://developer.android.com/training/wearables/compose) for your UI.
 
 Samples
 -------
 
-**PassiveData**
+**PassiveDataCompose**
 
 Demonstrates receiving background data updates from Health Services using
 `PassiveMonitoringClient`.
 
-**PassiveGoals**
+**PassiveGoalsCompose**
 
 Demonstrates receiving goal notifications in the background from Health
 Services using `PassiveMonitoringClient`.
 
-**MeasureData**
+**MeasureDataCompose**
 
 Demonstrates receiving receiving rapid data updates in the foreground using
 `MeasureClient`.
 
-**ExerciseSample**
+**ExerciseSampleCompose**
 
 Demonstrates managing an exercise experience using the `ExerciseClient` API.

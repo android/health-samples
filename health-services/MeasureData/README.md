@@ -1,3 +1,7 @@
+This project is now deprecated and unmaintained. To learn how to use `MeasureClient`, refer to
+the [MeasureDataCompose](https://github.com/android/health-samples/tree/main/health-services/MeasureDataCompose)
+project.
+
 # Measure Data Sample
 
 This sample demonstrates receiving rapid data updates in the foreground using the `MeasureClient`
