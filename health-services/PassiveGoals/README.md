@@ -1,3 +1,8 @@
+This project is now deprecated and unmaintained. To learn how to receive passive goal notifications
+with `PassiveMonitoringClient`, refer to the
+[PassiveGoalsCompose](https://github.com/android/health-samples/tree/main/health-services/PassiveGoalsCompose)
+project.
+
 # Passive Goals Sample
 
 This sample demonstrates receiving passive goal notifications in the background using the

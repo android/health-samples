@@ -1,3 +1,8 @@
+This project is now deprecated and unmaintained. To learn how to receive passive data updates with 
+`PassiveMonitoringClient`, refer to
+the [PassiveDataCompose](https://github.com/android/health-samples/tree/main/health-services/PassiveDataCompose)
+project.
+
 # Passive Data Sample
 
 This sample demonstrates receiving passive data updates in the background using the

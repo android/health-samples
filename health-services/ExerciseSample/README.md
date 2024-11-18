@@ -1,3 +1,7 @@
+This project is now deprecated and unmaintained. To learn how to use `ExerciseClient`, refer to
+the [ExerciseSampleCompose](https://github.com/android/health-samples/tree/main/health-services/ExerciseSampleCompose) 
+project.
+
 # Exercise Sample
 
 This sample demonstrates managing an exercise experience using the `ExerciseClient` API.
