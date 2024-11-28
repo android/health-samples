@@ -4,9 +4,7 @@ This repository contains a sample to help you get started writing [Recording API
 
 ## Screenshots
 
-<img src="screenshots/request-permission.png" height="300" alt="Request Permission"/> 
-<img src="screenshots/read-raw.png" height="300" alt="Read Raw Data"/> 
-<img src="screenshots/read-aggregate.png" height="300" alt="Read Aggregate Data"/>
+<img src="screenshots/request-permission.png" height="300" alt="Request Permission"/><img src="screenshots/read-raw.png" height="300" alt="Read Raw Data"/><img src="screenshots/read-aggregate.png" height="300" alt="Read Aggregate Data"/>
 
 ## Getting started
 
