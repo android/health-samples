@@ -47,7 +47,9 @@ import androidx.wear.compose.material.PageIndicatorState
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import com.example.exercisesamplecompose.R
+import com.example.exercisesamplecompose.ambient.AmbientAware
 import com.example.exercisesamplecompose.data.ServiceState
+import com.example.exercisesamplecompose.presentation.ambient.ambientBlank
 import com.example.exercisesamplecompose.presentation.component.CaloriesText
 import com.example.exercisesamplecompose.presentation.component.DistanceText
 import com.example.exercisesamplecompose.presentation.component.HRText
@@ -61,14 +63,12 @@ import com.example.exercisesamplecompose.presentation.summary.SummaryScreenState
 import com.example.exercisesamplecompose.presentation.theme.ThemePreview
 import com.example.exercisesamplecompose.service.ExerciseServiceState
 import com.google.android.horologist.annotations.ExperimentalHorologistApi
-import com.google.android.horologist.compose.ambient.AmbientState
 import com.google.android.horologist.compose.layout.ScreenScaffold
 import com.google.android.horologist.compose.material.AlertDialog
 import com.google.android.horologist.health.composables.ActiveDurationText
 
 @Composable
 fun ExerciseRoute(
-    ambientState: AmbientState,
     modifier: Modifier = Modifier,
     onSummary: (SummaryScreenState) -> Unit,
     onRestart: () -> Unit,
@@ -87,8 +87,9 @@ fun ExerciseRoute(
         ErrorStartingExerciseScreen(
             onRestart = onRestart, onFinishActivity = onFinishActivity, uiState = uiState
         )
-    } else if (ambientState is AmbientState.Interactive) {
-        ExerciseScreen(onPauseClick = { viewModel.pauseExercise() },
+    } else {
+        ExerciseScreen(
+            onPauseClick = { viewModel.pauseExercise() },
             onEndClick = { viewModel.endExercise() },
             onResumeClick = { viewModel.resumeExercise() },
             onStartClick = { viewModel.startExercise() },
@@ -130,74 +131,80 @@ fun ExerciseScreen(
     uiState: ExerciseScreenState,
     modifier: Modifier = Modifier
 ) {
+    AmbientAware { ambientState ->
 
-    //Page Indicator Values
-    val maxPages = 2
-    val pagerState = rememberPagerState(initialPage = 1, pageCount = { maxPages })
+        //Page Indicator Values
+        val maxPages = 2
+        val pagerState = rememberPagerState(initialPage = 1, pageCount = { maxPages })
 
-    val pageIndicatorState = remember {
-        object : PageIndicatorState {
-            override val selectedPage: Int
-                get() = pagerState.currentPage
-            override val pageCount: Int
-                get() = maxPages
-            override val pageOffset: Float
-                get() = 0f
-        }
-    }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(6.dp)
-    ) {
-        HorizontalPageIndicator(
-            pageIndicatorState = pageIndicatorState,
-            selectedColor = MaterialTheme.colors.secondary,
-            unselectedColor = MaterialTheme.colors.onSecondary,
-        )
-        ScreenScaffold{
-            HorizontalPager(state = pagerState) { page ->
-                when (page) {
-                    0 -> {
-                        ExerciseControlButtons(
-                            uiState,
-                            onStartClick,
-                            onEndClick,
-                            onResumeClick,
-                            onPauseClick,
-                            pagerState
-                            )
-                    }
-
-                    1 -> {
-                       Column(
-                           modifier = modifier.fillMaxSize().padding(vertical = 20.dp),
-                           verticalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            HeartRateRow(uiState)
-
-                            CaloriesRow(uiState)
-
-                            DistanceAndLapsRow(uiState)
-
-                            DurationRow(uiState)
-                        }
-                    }
-
-                }
+        val pageIndicatorState = remember {
+            object : PageIndicatorState {
+                override val selectedPage: Int
+                    get() = pagerState.currentPage
+                override val pageCount: Int
+                    get() = maxPages
+                override val pageOffset: Float
+                    get() = 0f
             }
         }
 
-    }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .ambientBlank(ambientState)
+                .padding(6.dp)
+        ) {
+            HorizontalPageIndicator(
+                pageIndicatorState = pageIndicatorState,
+                selectedColor = MaterialTheme.colors.secondary,
+                unselectedColor = MaterialTheme.colors.onSecondary,
+            )
+            ScreenScaffold {
+                HorizontalPager(state = pagerState) { page ->
+                    when (page) {
+                        0 -> {
+                            ExerciseControlButtons(
+                                uiState,
+                                onStartClick,
+                                onEndClick,
+                                onResumeClick,
+                                onPauseClick,
+                                pagerState
+                            )
+                        }
 
-    //If we meet an exercise goal, show our exercise met dialog.
-    //This approach is for the sample, and doesn't guarantee processing of this event in all cases,
-    //such as the user exiting the app while this is in-progress. Consider alternatives to exposing
-    //state in a production app.
-    uiState.exerciseState?.exerciseGoal?.let {
-        Log.d("ExerciseGoalMet", "Showing exercise goal met dialog")
-        ExerciseGoalMet(it.isNotEmpty())
+                        1 -> {
+                            Column(
+                                modifier = modifier
+                                    .fillMaxSize()
+                                    .padding(vertical = 20.dp),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                HeartRateRow(uiState)
+
+                                CaloriesRow(uiState)
+
+                                DistanceAndLapsRow(uiState)
+
+                                DurationRow(uiState)
+                            }
+                        }
+
+                    }
+                }
+            }
+
+        }
+
+        //If we meet an exercise goal, show our exercise met dialog.
+        //This approach is for the sample, and doesn't guarantee processing of this event in all cases,
+        //such as the user exiting the app while this is in-progress. Consider alternatives to exposing
+        //state in a production app.
+        uiState.exerciseState?.exerciseGoal?.let {
+            Log.d("ExerciseGoalMet", "Showing exercise goal met dialog")
+            ExerciseGoalMet(it.isNotEmpty())
+        }
+
     }
 }
 
@@ -225,13 +232,15 @@ private fun ExerciseControlButtons(
                 ResumeButton(onResumeClick)
                 //When the user clicks resume, scroll to the main screen
                 LaunchedEffect(pagerState) {
-                    pagerState.animateScrollToPage(1)}
+                    pagerState.animateScrollToPage(1)
+                }
 
             } else {
                 PauseButton(onPauseClick)
                 //When the user clicks pause, scroll to the main screen
                 LaunchedEffect(pagerState) {
-                    pagerState.animateScrollToPage(1)}
+                    pagerState.animateScrollToPage(1)
+                }
 
             }
         }
@@ -325,7 +334,8 @@ fun ExerciseScreenPreview() {
 @Composable
 fun ErrorStartingExerciseScreenPreview() {
     ThemePreview {
-        ErrorStartingExerciseScreen(onRestart = {},
+        ErrorStartingExerciseScreen(
+            onRestart = {},
             onFinishActivity = {},
             uiState = ExerciseScreenState(
                 hasExerciseCapabilities = true,
@@ -343,17 +353,18 @@ fun ErrorStartingExerciseScreenPreview() {
 @Composable
 fun ExerciseControlButtonsPreview() {
     ThemePreview {
-        ExerciseControlButtons( uiState = ExerciseScreenState(
-            hasExerciseCapabilities = true,
-            isTrackingAnotherExercise = false,
-            serviceState = ServiceState.Connected(
-                ExerciseServiceState()
-            ),
-            exerciseState = ExerciseServiceState()
-        ),  onStartClick = {},
+        ExerciseControlButtons(
+            uiState = ExerciseScreenState(
+                hasExerciseCapabilities = true,
+                isTrackingAnotherExercise = false,
+                serviceState = ServiceState.Connected(
+                    ExerciseServiceState()
+                ),
+                exerciseState = ExerciseServiceState()
+            ), onStartClick = {},
             onEndClick = {},
             onResumeClick = {},
             onPauseClick = {},
-            pagerState = PagerState {0})
+            pagerState = PagerState { 0 })
     }
 }

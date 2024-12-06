@@ -36,14 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.toRect
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ColorMatrix
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.withSaveLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -59,11 +51,12 @@ import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.curvedText
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import com.example.exercisesamplecompose.R
+import com.example.exercisesamplecompose.ambient.AmbientAware
 import com.example.exercisesamplecompose.data.ServiceState
 import com.example.exercisesamplecompose.presentation.dialogs.ExerciseInProgressAlert
 import com.example.exercisesamplecompose.presentation.theme.ThemePreview
 import com.example.exercisesamplecompose.service.ExerciseServiceState
-import com.google.android.horologist.compose.ambient.AmbientState
+import com.example.exercisesamplecompose.presentation.ambient.ambientGray
 import com.google.android.horologist.compose.layout.ScalingLazyColumn
 import com.google.android.horologist.compose.layout.ScalingLazyColumnDefaults
 import com.google.android.horologist.compose.layout.ScalingLazyColumnDefaults.ItemType
@@ -75,7 +68,6 @@ import com.google.android.horologist.compose.material.CompactChip
 
 @Composable
 fun PreparingExerciseRoute(
-    ambientState: AmbientState,
     onStart: () -> Unit,
     onFinishActivity: () -> Unit,
     onNoExerciseCapabilities: () -> Unit,
@@ -107,55 +99,32 @@ fun PreparingExerciseRoute(
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .ambientGray(ambientState)
-    ) {
-        PreparingExerciseScreen(
-            onStart = {
-                viewModel.startExercise()
-                onStart()
-            },
-            uiState = uiState,
-            onGoals = { onGoals() }
-        )
-
-        if (uiState.isTrackingInAnotherApp) {
-            var dismissed by remember { mutableStateOf(false) }
-            ExerciseInProgressAlert(
-                onNegative = onFinishActivity,
-                onPositive = { dismissed = true },
-                showDialog = !dismissed
+    AmbientAware { ambientState ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .ambientGray(ambientState)
+        ) {
+            PreparingExerciseScreen(
+                onStart = {
+                    viewModel.startExercise()
+                    onStart()
+                },
+                uiState = uiState,
+                onGoals = { onGoals() }
             )
-        }
-    }
-}
 
-private val grayscale = Paint().apply {
-    colorFilter = ColorFilter.colorMatrix(
-        ColorMatrix().apply {
-            setToSaturation(0f)
-        }
-    )
-    isAntiAlias = false
-}
-
-internal fun Modifier.ambientGray(ambientState: AmbientState): Modifier =
-    if (ambientState is AmbientState.Ambient) {
-        graphicsLayer {
-            scaleX = 0.9f
-            scaleY = 0.9f
-        }.drawWithContent {
-            drawIntoCanvas {
-                it.withSaveLayer(size.toRect(), grayscale) {
-                    drawContent()
-                }
+            if (uiState.isTrackingInAnotherApp) {
+                var dismissed by remember { mutableStateOf(false) }
+                ExerciseInProgressAlert(
+                    onNegative = onFinishActivity,
+                    onPositive = { dismissed = true },
+                    showDialog = !dismissed
+                )
             }
         }
-    } else {
-        this
     }
+}
 
 /**
  * Screen that appears while the device is preparing the exercise.
