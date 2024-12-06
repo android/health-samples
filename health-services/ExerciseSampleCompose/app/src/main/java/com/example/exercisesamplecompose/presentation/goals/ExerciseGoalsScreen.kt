@@ -94,7 +94,7 @@ fun ExerciseGoalsScreen(
                     checked = showDistanceRow.expanded,
                     onCheckedChanged = { showDistanceRow.expanded = it },
                     label = stringResource(R.string.distance),
-                    icon = Icons.Default.LocationOn,
+                    icon = Icons.Default.LocationOn.asPaintable(),
                     toggleControl = ToggleChipToggleControl.Switch,
                     secondaryLabel = if (showDistanceRow.expanded) "${thresholds.distance}" + stringResource(
                         R.string.km
@@ -112,7 +112,7 @@ fun ExerciseGoalsScreen(
                     checked = showDurationRow.expanded,
                     onCheckedChanged = { showDurationRow.expanded = it },
                     label = stringResource(R.string.duration),
-                    icon = Icons.Default.Timer,
+                    icon = Icons.Default.Timer.asPaintable(),
                     toggleControl = ToggleChipToggleControl.Switch,
                     secondaryLabel = if (showDurationRow.expanded) "${
                         thresholds.duration.inWholeMinutes
@@ -128,10 +128,12 @@ fun ExerciseGoalsScreen(
             }
             item {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    CompactChip(label = { Text(stringResource(R.string.set_goal)) },
+                    CompactChip(
+                        label = { Text(stringResource(R.string.set_goal)) },
                         // Set the goal and pass the values to the view model
                         onClick = {
-                            setGoals(thresholds); onSet() // Close the screen
+                            setGoals(thresholds)
+                            onSet() // Close the screen
                         })
                 }
             }
