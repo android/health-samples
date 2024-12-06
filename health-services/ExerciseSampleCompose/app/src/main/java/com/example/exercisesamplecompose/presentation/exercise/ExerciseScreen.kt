@@ -25,14 +25,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerState
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -41,13 +37,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.wear.compose.material.HorizontalPageIndicator
+import androidx.wear.compose.foundation.pager.rememberPagerState
 import androidx.wear.compose.material.MaterialTheme
-import androidx.wear.compose.material.PageIndicatorState
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import com.example.exercisesamplecompose.R
+import com.google.android.horologist.compose.ambient.AmbientAware
+import com.google.android.horologist.compose.ambient.AmbientState
 import com.example.exercisesamplecompose.data.ServiceState
+import com.example.exercisesamplecompose.presentation.ambient.ambientBlank
 import com.example.exercisesamplecompose.presentation.component.CaloriesText
 import com.example.exercisesamplecompose.presentation.component.DistanceText
 import com.example.exercisesamplecompose.presentation.component.HRText
@@ -61,14 +59,13 @@ import com.example.exercisesamplecompose.presentation.summary.SummaryScreenState
 import com.example.exercisesamplecompose.presentation.theme.ThemePreview
 import com.example.exercisesamplecompose.service.ExerciseServiceState
 import com.google.android.horologist.annotations.ExperimentalHorologistApi
-import com.google.android.horologist.compose.ambient.AmbientState
-import com.google.android.horologist.compose.layout.ScreenScaffold
 import com.google.android.horologist.compose.material.AlertDialog
+import com.google.android.horologist.compose.pager.PagerScreen
 import com.google.android.horologist.health.composables.ActiveDurationText
+import kotlinx.coroutines.launch
 
 @Composable
 fun ExerciseRoute(
-    ambientState: AmbientState,
     modifier: Modifier = Modifier,
     onSummary: (SummaryScreenState) -> Unit,
     onRestart: () -> Unit,
@@ -87,14 +84,18 @@ fun ExerciseRoute(
         ErrorStartingExerciseScreen(
             onRestart = onRestart, onFinishActivity = onFinishActivity, uiState = uiState
         )
-    } else if (ambientState is AmbientState.Interactive) {
-        ExerciseScreen(onPauseClick = { viewModel.pauseExercise() },
-            onEndClick = { viewModel.endExercise() },
-            onResumeClick = { viewModel.resumeExercise() },
-            onStartClick = { viewModel.startExercise() },
-            uiState = uiState,
-            modifier = modifier
-        )
+    } else {
+        AmbientAware { ambientState ->
+            ExerciseScreen(
+                ambientState = ambientState,
+                onPauseClick = { viewModel.pauseExercise() },
+                onEndClick = { viewModel.endExercise() },
+                onResumeClick = { viewModel.resumeExercise() },
+                onStartClick = { viewModel.startExercise() },
+                uiState = uiState,
+                modifier = modifier
+            )
+        }
     }
 }
 
@@ -123,6 +124,7 @@ fun ErrorStartingExerciseScreen(
  */
 @Composable
 fun ExerciseScreen(
+    ambientState: AmbientState,
     onPauseClick: () -> Unit,
     onEndClick: () -> Unit,
     onResumeClick: () -> Unit,
@@ -130,65 +132,46 @@ fun ExerciseScreen(
     uiState: ExerciseScreenState,
     modifier: Modifier = Modifier
 ) {
+    val coroutineScope = rememberCoroutineScope()
+    val pagerState = rememberPagerState(initialPage = 1, pageCount = { 2 })
 
-    //Page Indicator Values
-    val maxPages = 2
-    val pagerState = rememberPagerState(initialPage = 1, pageCount = { maxPages })
-
-    val pageIndicatorState = remember {
-        object : PageIndicatorState {
-            override val selectedPage: Int
-                get() = pagerState.currentPage
-            override val pageCount: Int
-                get() = maxPages
-            override val pageOffset: Float
-                get() = 0f
-        }
-    }
-
+    // Workaround bug in modifier placement in PagerScreen
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(6.dp)
+        modifier = modifier.ambientBlank(ambientState)
     ) {
-        HorizontalPageIndicator(
-            pageIndicatorState = pageIndicatorState,
-            selectedColor = MaterialTheme.colors.secondary,
-            unselectedColor = MaterialTheme.colors.onSecondary,
-        )
-        ScreenScaffold{
-            HorizontalPager(state = pagerState) { page ->
-                when (page) {
-                    0 -> {
-                        ExerciseControlButtons(
-                            uiState,
-                            onStartClick,
-                            onEndClick,
-                            onResumeClick,
-                            onPauseClick,
-                            pagerState
-                            )
-                    }
+        PagerScreen(
+            state = pagerState,
+            modifier = modifier
+                .fillMaxSize()
+                .padding(6.dp)
+        ) { page ->
+            when (page) {
+                0 -> {
+                    ExerciseControlButtons(
+                        uiState = uiState,
+                        onStartClick = onStartClick,
+                        onEndClick = onEndClick,
+                        onResumeClick = {
+                            onResumeClick()
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(1)
+                            }
 
-                    1 -> {
-                       Column(
-                           modifier = modifier.fillMaxSize().padding(vertical = 20.dp),
-                           verticalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            HeartRateRow(uiState)
+                        },
+                        onPauseClick = {
+                            onPauseClick()
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(1)
+                            }
+                        },
+                    )
+                }
 
-                            CaloriesRow(uiState)
-
-                            DistanceAndLapsRow(uiState)
-
-                            DurationRow(uiState)
-                        }
-                    }
-
+                1 -> {
+                    ExerciseMetrics(uiState = uiState)
                 }
             }
         }
-
     }
 
     //If we meet an exercise goal, show our exercise met dialog.
@@ -202,15 +185,36 @@ fun ExerciseScreen(
 }
 
 @Composable
+private fun ExerciseMetrics(
+    uiState: ExerciseScreenState,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(vertical = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        HeartRateRow(uiState)
+
+        CaloriesRow(uiState)
+
+        DistanceAndLapsRow(uiState)
+
+        DurationRow(uiState)
+    }
+}
+
+@Composable
 private fun ExerciseControlButtons(
     uiState: ExerciseScreenState,
     onStartClick: () -> Unit,
     onEndClick: () -> Unit,
     onResumeClick: () -> Unit,
     onPauseClick: () -> Unit,
-    pagerState: PagerState
+    modifier: Modifier = Modifier,
 ) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -221,18 +225,11 @@ private fun ExerciseControlButtons(
             } else {
                 StopButton(onEndClick)
             }
+
             if (uiState.isPaused) {
                 ResumeButton(onResumeClick)
-                //When the user clicks resume, scroll to the main screen
-                LaunchedEffect(pagerState) {
-                    pagerState.animateScrollToPage(1)}
-
             } else {
                 PauseButton(onPauseClick)
-                //When the user clicks pause, scroll to the main screen
-                LaunchedEffect(pagerState) {
-                    pagerState.animateScrollToPage(1)}
-
             }
         }
     }
@@ -317,6 +314,7 @@ fun ExerciseScreenPreview() {
                 ),
                 exerciseState = ExerciseServiceState()
             ),
+            ambientState = AmbientState.Interactive,
         )
     }
 }
@@ -325,7 +323,8 @@ fun ExerciseScreenPreview() {
 @Composable
 fun ErrorStartingExerciseScreenPreview() {
     ThemePreview {
-        ErrorStartingExerciseScreen(onRestart = {},
+        ErrorStartingExerciseScreen(
+            onRestart = {},
             onFinishActivity = {},
             uiState = ExerciseScreenState(
                 hasExerciseCapabilities = true,
@@ -343,17 +342,19 @@ fun ErrorStartingExerciseScreenPreview() {
 @Composable
 fun ExerciseControlButtonsPreview() {
     ThemePreview {
-        ExerciseControlButtons( uiState = ExerciseScreenState(
-            hasExerciseCapabilities = true,
-            isTrackingAnotherExercise = false,
-            serviceState = ServiceState.Connected(
-                ExerciseServiceState()
+        ExerciseControlButtons(
+            uiState = ExerciseScreenState(
+                hasExerciseCapabilities = true,
+                isTrackingAnotherExercise = false,
+                serviceState = ServiceState.Connected(
+                    ExerciseServiceState()
+                ),
+                exerciseState = ExerciseServiceState()
             ),
-            exerciseState = ExerciseServiceState()
-        ),  onStartClick = {},
+            onStartClick = {},
             onEndClick = {},
             onResumeClick = {},
             onPauseClick = {},
-            pagerState = PagerState {0})
+        )
     }
 }
