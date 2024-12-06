@@ -16,7 +16,7 @@
 
 package com.example.exercisesamplecompose.presentation
 
-import com.example.exercisesamplecompose.ambient.AmbientState
+import com.google.android.horologist.compose.ambient.AmbientState
 import com.example.exercisesamplecompose.data.ServiceState
 import com.example.exercisesamplecompose.presentation.preparing.PreparingExerciseScreen
 import com.example.exercisesamplecompose.presentation.preparing.PreparingScreenState

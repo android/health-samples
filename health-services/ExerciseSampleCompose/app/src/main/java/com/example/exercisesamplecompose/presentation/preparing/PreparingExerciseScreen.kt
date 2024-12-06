@@ -51,8 +51,8 @@ import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.curvedText
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import com.example.exercisesamplecompose.R
-import com.example.exercisesamplecompose.ambient.AmbientAware
-import com.example.exercisesamplecompose.ambient.AmbientState
+import com.google.android.horologist.compose.ambient.AmbientAware
+import com.google.android.horologist.compose.ambient.AmbientState
 import com.example.exercisesamplecompose.data.ServiceState
 import com.example.exercisesamplecompose.presentation.ambient.ambientGray
 import com.example.exercisesamplecompose.presentation.dialogs.ExerciseInProgressAlert

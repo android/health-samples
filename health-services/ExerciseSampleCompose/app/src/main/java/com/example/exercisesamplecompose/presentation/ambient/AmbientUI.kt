@@ -9,7 +9,7 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.withSaveLayer
-import com.example.exercisesamplecompose.ambient.AmbientState
+import com.google.android.horologist.compose.ambient.AmbientState
 
 /**
  * A Paint object configured to apply a grayscale effect.

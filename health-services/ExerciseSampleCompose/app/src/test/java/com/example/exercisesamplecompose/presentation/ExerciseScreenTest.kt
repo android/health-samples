@@ -17,8 +17,8 @@
 package com.example.exercisesamplecompose.presentation
 
 import androidx.compose.runtime.CompositionLocalProvider
-import com.example.exercisesamplecompose.ambient.AmbientState
-import com.example.exercisesamplecompose.ambient.LocalAmbientState
+import com.google.android.horologist.compose.ambient.AmbientState
+import com.google.android.horologist.compose.ambient.LocalAmbientState
 import com.example.exercisesamplecompose.data.ServiceState
 import com.example.exercisesamplecompose.presentation.exercise.ExerciseScreen
 import com.example.exercisesamplecompose.presentation.exercise.ExerciseScreenState
