@@ -43,6 +43,7 @@ import androidx.wear.compose.material.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import com.example.exercisesamplecompose.R
 import com.example.exercisesamplecompose.ambient.AmbientAware
+import com.example.exercisesamplecompose.ambient.AmbientState
 import com.example.exercisesamplecompose.data.ServiceState
 import com.example.exercisesamplecompose.presentation.ambient.ambientBlank
 import com.example.exercisesamplecompose.presentation.component.CaloriesText
@@ -84,14 +85,17 @@ fun ExerciseRoute(
             onRestart = onRestart, onFinishActivity = onFinishActivity, uiState = uiState
         )
     } else {
-        ExerciseScreen(
-            onPauseClick = { viewModel.pauseExercise() },
-            onEndClick = { viewModel.endExercise() },
-            onResumeClick = { viewModel.resumeExercise() },
-            onStartClick = { viewModel.startExercise() },
-            uiState = uiState,
-            modifier = modifier
-        )
+        AmbientAware { ambientState ->
+            ExerciseScreen(
+                ambientState = ambientState,
+                onPauseClick = { viewModel.pauseExercise() },
+                onEndClick = { viewModel.endExercise() },
+                onResumeClick = { viewModel.resumeExercise() },
+                onStartClick = { viewModel.startExercise() },
+                uiState = uiState,
+                modifier = modifier
+            )
+        }
     }
 }
 
@@ -120,6 +124,7 @@ fun ErrorStartingExerciseScreen(
  */
 @Composable
 fun ExerciseScreen(
+    ambientState: AmbientState,
     onPauseClick: () -> Unit,
     onEndClick: () -> Unit,
     onResumeClick: () -> Unit,
@@ -130,42 +135,40 @@ fun ExerciseScreen(
     val coroutineScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(initialPage = 1, pageCount = { 2 })
 
-    AmbientAware { ambientState ->
-        // Workaround bug in modifier placement in PagerScreen
-        Box(
-            modifier = modifier.ambientBlank(ambientState)
-        ) {
-            PagerScreen(
-                state = pagerState,
-                modifier = modifier
-                    .fillMaxSize()
-                    .padding(6.dp)
-            ) { page ->
-                when (page) {
-                    0 -> {
-                        ExerciseControlButtons(
-                            uiState = uiState,
-                            onStartClick = onStartClick,
-                            onEndClick = onEndClick,
-                            onResumeClick = {
-                                onResumeClick()
-                                coroutineScope.launch {
-                                    pagerState.animateScrollToPage(1)
-                                }
+    // Workaround bug in modifier placement in PagerScreen
+    Box(
+        modifier = modifier.ambientBlank(ambientState)
+    ) {
+        PagerScreen(
+            state = pagerState,
+            modifier = modifier
+                .fillMaxSize()
+                .padding(6.dp)
+        ) { page ->
+            when (page) {
+                0 -> {
+                    ExerciseControlButtons(
+                        uiState = uiState,
+                        onStartClick = onStartClick,
+                        onEndClick = onEndClick,
+                        onResumeClick = {
+                            onResumeClick()
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(1)
+                            }
 
-                            },
-                            onPauseClick = {
-                                onPauseClick()
-                                coroutineScope.launch {
-                                    pagerState.animateScrollToPage(1)
-                                }
-                            },
-                        )
-                    }
+                        },
+                        onPauseClick = {
+                            onPauseClick()
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(1)
+                            }
+                        },
+                    )
+                }
 
-                    1 -> {
-                        ExerciseMetrics(uiState = uiState)
-                    }
+                1 -> {
+                    ExerciseMetrics(uiState = uiState)
                 }
             }
         }
@@ -311,6 +314,7 @@ fun ExerciseScreenPreview() {
                 ),
                 exerciseState = ExerciseServiceState()
             ),
+            ambientState = AmbientState.Interactive,
         )
     }
 }

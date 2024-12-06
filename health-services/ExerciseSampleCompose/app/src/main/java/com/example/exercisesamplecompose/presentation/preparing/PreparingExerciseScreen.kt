@@ -52,11 +52,12 @@ import androidx.wear.compose.material.curvedText
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import com.example.exercisesamplecompose.R
 import com.example.exercisesamplecompose.ambient.AmbientAware
+import com.example.exercisesamplecompose.ambient.AmbientState
 import com.example.exercisesamplecompose.data.ServiceState
+import com.example.exercisesamplecompose.presentation.ambient.ambientGray
 import com.example.exercisesamplecompose.presentation.dialogs.ExerciseInProgressAlert
 import com.example.exercisesamplecompose.presentation.theme.ThemePreview
 import com.example.exercisesamplecompose.service.ExerciseServiceState
-import com.example.exercisesamplecompose.presentation.ambient.ambientGray
 import com.google.android.horologist.compose.layout.ScalingLazyColumn
 import com.google.android.horologist.compose.layout.ScalingLazyColumnDefaults
 import com.google.android.horologist.compose.layout.ScalingLazyColumnDefaults.ItemType
@@ -100,29 +101,24 @@ fun PreparingExerciseRoute(
     }
 
     AmbientAware { ambientState ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .ambientGray(ambientState)
-        ) {
-            PreparingExerciseScreen(
-                onStart = {
-                    viewModel.startExercise()
-                    onStart()
-                },
-                uiState = uiState,
-                onGoals = { onGoals() }
-            )
+        PreparingExerciseScreen(
+            onStart = {
+                viewModel.startExercise()
+                onStart()
+            },
+            uiState = uiState,
+            onGoals = { onGoals() },
+            ambientState = ambientState,
+        )
+    }
 
-            if (uiState.isTrackingInAnotherApp) {
-                var dismissed by remember { mutableStateOf(false) }
-                ExerciseInProgressAlert(
-                    onNegative = onFinishActivity,
-                    onPositive = { dismissed = true },
-                    showDialog = !dismissed
-                )
-            }
-        }
+    if (uiState.isTrackingInAnotherApp) {
+        var dismissed by remember { mutableStateOf(false) }
+        ExerciseInProgressAlert(
+            onNegative = onFinishActivity,
+            onPositive = { dismissed = true },
+            showDialog = !dismissed
+        )
     }
 }
 
@@ -131,8 +127,9 @@ fun PreparingExerciseRoute(
  */
 @Composable
 fun PreparingExerciseScreen(
-    onStart: () -> Unit = {},
     uiState: PreparingScreenState,
+    ambientState: AmbientState,
+    onStart: () -> Unit = {},
     onGoals: () -> Unit = {}
 ) {
     val location = (uiState as? PreparingScreenState.Preparing)?.locationAvailability
@@ -142,55 +139,66 @@ fun PreparingExerciseScreen(
             first = ItemType.Unspecified, last = ItemType.Unspecified
         )
     )
-    ScreenScaffold(scrollState = columnState, timeText = {}) {
-        LocationStatusText(updatePrepareLocationStatus(
-            locationAvailability = location ?: LocationAvailability.UNAVAILABLE
-        ))
-        ScalingLazyColumn(
-            columnState = columnState
-        ) {
-            item {
-                Text(
-                    textAlign = TextAlign.Center,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    text = stringResource(id = R.string.preparing_exercise),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 0.15f * LocalConfiguration.current.screenWidthDp.dp)
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .ambientGray(ambientState)
+    ) {
+        ScreenScaffold(
+            scrollState = if (ambientState.isInteractive) columnState else null,
+            timeText = {}) {
+            LocationStatusText(
+                updatePrepareLocationStatus(
+                    locationAvailability = location ?: LocationAvailability.UNAVAILABLE
                 )
-            }
-            item {
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 6.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Button(
-                        imageVector = Icons.Default.PlayArrow,
-                        contentDescription = stringResource(id = R.string.start),
-                        onClick = onStart,
-                        buttonSize = ButtonSize.Small,
-                        enabled = uiState is PreparingScreenState.Preparing
+            )
+            ScalingLazyColumn(
+                columnState = columnState
+            ) {
+                item {
+                    Text(
+                        textAlign = TextAlign.Center,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        text = stringResource(id = R.string.preparing_exercise),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 0.15f * LocalConfiguration.current.screenWidthDp.dp)
                     )
-
                 }
-            }
-            item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 6.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    CompactChip(
-                        label = stringResource(id = R.string.goal),
-                        onClick = onGoals,
-                    )
+                item {
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 6.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Button(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = stringResource(id = R.string.start),
+                            onClick = onStart,
+                            buttonSize = ButtonSize.Small,
+                            enabled = uiState is PreparingScreenState.Preparing
+                        )
+
+                    }
+                }
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 6.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        CompactChip(
+                            label = stringResource(id = R.string.goal),
+                            onClick = onGoals,
+                        )
+                    }
                 }
             }
         }
@@ -233,7 +241,9 @@ fun PreparingExerciseScreenPreview() {
                 requiredPermissions = PreparingViewModel.permissions,
                 hasExerciseCapabilities = true
             ),
-            onGoals = {})
+            onGoals = {},
+            ambientState = AmbientState.Interactive
+        )
     }
 }
 
@@ -251,6 +261,8 @@ fun PreparingExerciseScreenPreviewAmbient() {
                 requiredPermissions = PreparingViewModel.permissions,
                 hasExerciseCapabilities = true
             ),
-            onGoals = {})
+            onGoals = {},
+            ambientState = AmbientState.Ambient()
+        )
     }
 }
