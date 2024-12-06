@@ -131,37 +131,41 @@ fun ExerciseScreen(
     val pagerState = rememberPagerState(initialPage = 1, pageCount = { 2 })
 
     AmbientAware { ambientState ->
-        PagerScreen(
-            state = pagerState,
-            modifier = modifier
-                .fillMaxSize()
-                .ambientBlank(ambientState)
-                .padding(6.dp)
-        ) { page ->
-            when (page) {
-                0 -> {
-                    ExerciseControlButtons(
-                        uiState = uiState,
-                        onStartClick = onStartClick,
-                        onEndClick = onEndClick,
-                        onResumeClick = {
-                            onResumeClick()
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(1)
-                            }
+        // Workaround bug in modifier placement in PagerScreen
+        Box(
+            modifier = modifier.ambientBlank(ambientState)
+        ) {
+            PagerScreen(
+                state = pagerState,
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(6.dp)
+            ) { page ->
+                when (page) {
+                    0 -> {
+                        ExerciseControlButtons(
+                            uiState = uiState,
+                            onStartClick = onStartClick,
+                            onEndClick = onEndClick,
+                            onResumeClick = {
+                                onResumeClick()
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(1)
+                                }
 
-                        },
-                        onPauseClick = {
-                            onPauseClick()
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(1)
-                            }
-                        },
-                    )
-                }
+                            },
+                            onPauseClick = {
+                                onPauseClick()
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(1)
+                                }
+                            },
+                        )
+                    }
 
-                1 -> {
-                    ExerciseMetrics(uiState = uiState)
+                    1 -> {
+                        ExerciseMetrics(uiState = uiState)
+                    }
                 }
             }
         }
