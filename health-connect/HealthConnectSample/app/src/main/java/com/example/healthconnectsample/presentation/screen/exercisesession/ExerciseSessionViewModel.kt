@@ -21,7 +21,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.health.connect.client.HealthConnectFeatures
-import androidx.health.connect.client.feature.ExperimentalFeatureAvailabilityApi
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.permission.HealthPermission.Companion.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND
 import androidx.health.connect.client.records.DistanceRecord
@@ -140,7 +139,6 @@ class ExerciseSessionViewModel(private val healthConnectManager: HealthConnectMa
      * Where an error is caught, of the type Health Connect is known to throw, [uiState] is set to
      * [UiState.Error], which results in the snackbar being used to show the error message.
      */
-    @OptIn(ExperimentalFeatureAvailabilityApi::class)
     private suspend fun tryWithPermissionsCheck(block: suspend () -> Unit) {
         permissionsGranted.value = healthConnectManager.hasAllPermissions(permissions)
         backgroundReadAvailable.value = healthConnectManager.isFeatureAvailable(
