@@ -146,8 +146,8 @@ fun HealthConnectNavigation(
                 permissionsGranted = permissionsGranted,
                 sessionMetrics = sessionMetrics,
                 uiState = viewModel.uiState,
-                onDetailsClick = { recordType, uid, seriesRecordsType ->
-                    navController.navigate(Screen.RecordListScreen.route + "/" + recordType + "/"+ uid + "/" + seriesRecordsType)
+                onDetailsClick = { recordType, recordId, seriesRecordsType ->
+                    navController.navigate(Screen.RecordListScreen.route + "/" + recordType + "/"+ recordId + "/" + seriesRecordsType)
                 },
                 onError = { exception ->
                     showExceptionSnackbar(scaffoldState, scope, exception)

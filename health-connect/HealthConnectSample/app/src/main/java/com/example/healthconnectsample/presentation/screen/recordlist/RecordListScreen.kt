@@ -160,12 +160,13 @@ fun RecordListScreen(
 
 private fun buildStepsSeries(sessionStartTime: ZonedDateTime, sessionEndTime: ZonedDateTime) =
     StepsRecord(
+        metadata = Metadata.manualEntry(),
         startTime = sessionStartTime.toInstant(),
         startZoneOffset = sessionStartTime.offset,
         endTime = sessionEndTime.toInstant(),
         endZoneOffset = sessionEndTime.offset,
         count = Random.nextInt(9000).toLong() + 1000,
-        metadata = Metadata(id = UUID.randomUUID().toString()))
+        )
 
 fun LazyListScope.renderData(
     record: Record,

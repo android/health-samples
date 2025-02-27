@@ -22,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.WeightRecord
+import androidx.health.connect.client.records.metadata.Metadata
 import androidx.health.connect.client.units.Mass
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -71,6 +72,7 @@ class InputReadingsViewModel(private val healthConnectManager: HealthConnectMana
             tryWithPermissionsCheck {
                 val time = ZonedDateTime.now().withNano(0)
                 val weight = WeightRecord(
+                    metadata = Metadata.manualEntry(),
                     weight = Mass.kilograms(inputValue),
                     time = time.toInstant(),
                     zoneOffset = time.offset
