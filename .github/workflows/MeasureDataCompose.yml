@@ -1,6 +1,7 @@
 name: MeasureDataCompose
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -18,7 +19,7 @@ env:
 jobs:
   build:
     # Skip build if head commit contains 'skip ci'
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    if: ${{ !contains(github.event.head_commit.message, 'skip ci') }}
 
     runs-on: ubuntu-latest
     timeout-minutes: 40
