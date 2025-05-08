@@ -85,9 +85,8 @@ fun ExerciseRoute(
             onRestart = onRestart, onFinishActivity = onFinishActivity, uiState = uiState
         )
     } else {
-        AmbientAware { ambientState ->
+        AmbientAware {
             ExerciseScreen(
-                ambientState = ambientState,
                 onPauseClick = { viewModel.pauseExercise() },
                 onEndClick = { viewModel.endExercise() },
                 onResumeClick = { viewModel.resumeExercise() },
@@ -124,7 +123,6 @@ fun ErrorStartingExerciseScreen(
  */
 @Composable
 fun ExerciseScreen(
-    ambientState: AmbientState,
     onPauseClick: () -> Unit,
     onEndClick: () -> Unit,
     onResumeClick: () -> Unit,
@@ -136,9 +134,7 @@ fun ExerciseScreen(
     val pagerState = rememberPagerState(initialPage = 1, pageCount = { 2 })
 
     // Workaround bug in modifier placement in PagerScreen
-    Box(
-        modifier = modifier.ambientBlank(ambientState)
-    ) {
+    Box {
         PagerScreen(
             state = pagerState,
             modifier = modifier
@@ -313,8 +309,7 @@ fun ExerciseScreenPreview() {
                     ExerciseServiceState()
                 ),
                 exerciseState = ExerciseServiceState()
-            ),
-            ambientState = AmbientState.Interactive,
+            )
         )
     }
 }
