@@ -92,7 +92,8 @@ fun ExerciseRoute(
                 onResumeClick = { viewModel.resumeExercise() },
                 onStartClick = { viewModel.startExercise() },
                 uiState = uiState,
-                modifier = modifier
+                modifier = modifier,
+                ambientState = AmbientState.Interactive
             )
         }
     }
