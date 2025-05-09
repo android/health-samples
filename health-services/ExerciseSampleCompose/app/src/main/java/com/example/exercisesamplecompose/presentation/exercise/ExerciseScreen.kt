@@ -85,15 +85,15 @@ fun ExerciseRoute(
             onRestart = onRestart, onFinishActivity = onFinishActivity, uiState = uiState
         )
     } else {
-        AmbientAware {
+        AmbientAware { ambientState ->
             ExerciseScreen(
+                ambientState = ambientState,
                 onPauseClick = { viewModel.pauseExercise() },
                 onEndClick = { viewModel.endExercise() },
                 onResumeClick = { viewModel.resumeExercise() },
                 onStartClick = { viewModel.startExercise() },
                 uiState = uiState,
-                modifier = modifier,
-                ambientState = AmbientState.Interactive
+                modifier = modifier
             )
         }
     }
