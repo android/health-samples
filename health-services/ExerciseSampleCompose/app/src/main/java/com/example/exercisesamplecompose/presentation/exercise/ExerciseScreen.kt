@@ -123,6 +123,7 @@ fun ErrorStartingExerciseScreen(
  */
 @Composable
 fun ExerciseScreen(
+    ambientState: AmbientState,
     onPauseClick: () -> Unit,
     onEndClick: () -> Unit,
     onResumeClick: () -> Unit,
@@ -309,7 +310,8 @@ fun ExerciseScreenPreview() {
                     ExerciseServiceState()
                 ),
                 exerciseState = ExerciseServiceState()
-            )
+            ),
+            ambientState = AmbientState.Interactive
         )
     }
 }
