@@ -33,6 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.SpeedRecord
+import androidx.health.connect.client.records.metadata.Metadata
 import com.example.healthconnectsample.R
 import com.example.healthconnectsample.data.dateTimeWithOffsetOrDefault
 import com.example.healthconnectsample.presentation.theme.HealthConnectTheme
@@ -142,6 +143,7 @@ fun HeartRateSeriesPreview() {
                 labelId = R.string.hr_series,
                 series = listOf(
                     HeartRateRecord(
+                        metadata = Metadata.manualEntry(),
                         startTime = time2,
                         startZoneOffset = ZoneId.systemDefault().rules.getOffset(time2),
                         endTime = time1,
