@@ -56,7 +56,7 @@ class HealthServicesRepository(context: Context) {
         val callback = object : MeasureCallback {
             override fun onAvailabilityChanged(
                 dataType: DeltaDataType<*, *>,
-                availability: Availability
+                availability: Availability,
             ) {
                 // Only send back DataTypeAvailability (not LocationAvailability)
                 if (availability is DataTypeAvailability) {
