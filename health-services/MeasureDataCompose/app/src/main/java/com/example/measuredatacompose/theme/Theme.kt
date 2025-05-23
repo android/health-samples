@@ -17,22 +17,22 @@ package com.example.measuredatacompose.theme
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.wear.compose.material.Colors
-import androidx.wear.compose.material.MaterialTheme
+import androidx.wear.compose.material3.ColorScheme
+import androidx.wear.compose.material3.MaterialTheme
 
-internal val wearColorPalette: Colors = Colors(
+internal val wearColorScheme: ColorScheme = ColorScheme(
     primary = Color(48, 49, 51),
-    primaryVariant = Color.LightGray,
+    primaryContainer = Color.LightGray,
     error = Color.Red,
     onPrimary = Color.White,
     onSecondary = Color.Black,
-    onError = Color.Black
+    onError = Color.Black,
 )
 
 @Composable
 fun MeasureDataTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colors = wearColorPalette,
-        content = content
+        colorScheme = wearColorScheme,
+        content = content,
     )
 }

@@ -23,11 +23,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.health.services.client.data.DataTypeAvailability
-import androidx.wear.compose.material.Button
-import androidx.wear.compose.material.Text
+import androidx.wear.compose.material3.Button
+import androidx.wear.compose.material3.Text
+import androidx.wear.tooling.preview.devices.WearDevices
 import com.example.measuredatacompose.R
 import com.example.measuredatacompose.theme.MeasureDataTheme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -42,16 +43,16 @@ fun MeasureDataScreen(
     availability: DataTypeAvailability,
     enabled: Boolean,
     onButtonClick: () -> Unit,
-    permissionState: PermissionState
+    permissionState: PermissionState,
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
     ) {
         HrLabel(
             hr = hr,
-            availability = availability
+            availability = availability,
         )
         Button(
             modifier = Modifier.fillMaxWidth(0.5f),
@@ -61,23 +62,27 @@ fun MeasureDataScreen(
                 } else {
                     permissionState.launchPermissionRequest()
                 }
-            }
+            },
         ) {
             val buttonTextId = if (enabled) {
                 R.string.stop
             } else {
                 R.string.start
             }
-            Text(stringResource(buttonTextId))
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(buttonTextId),
+                textAlign = TextAlign.Center,
+            )
         }
     }
 }
 
 @ExperimentalPermissionsApi
 @Preview(
-    device = Devices.WEAR_OS_SMALL_ROUND,
+    device = WearDevices.SMALL_ROUND,
     showBackground = false,
-    showSystemUi = true
+    showSystemUi = true,
 )
 @Composable
 fun MeasureDataScreenPreview() {
@@ -92,7 +97,7 @@ fun MeasureDataScreenPreview() {
             availability = DataTypeAvailability.AVAILABLE,
             enabled = false,
             onButtonClick = {},
-            permissionState = permissionState
+            permissionState = permissionState,
         )
     }
 }

@@ -28,12 +28,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.health.services.client.data.DataTypeAvailability
-import androidx.wear.compose.material.Icon
-import androidx.wear.compose.material.MaterialTheme
-import androidx.wear.compose.material.Text
+import androidx.wear.compose.material3.Icon
+import androidx.wear.compose.material3.MaterialTheme
+import androidx.wear.compose.material3.Text
+import androidx.wear.tooling.preview.devices.WearDevices
 import com.example.measuredatacompose.R
 import com.example.measuredatacompose.theme.MeasureDataTheme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -41,13 +41,14 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 @Composable
 fun HrLabel(
     hr: Double,
-    availability: DataTypeAvailability
+    availability: DataTypeAvailability,
 ) {
     val icon = when (availability) {
         DataTypeAvailability.AVAILABLE -> Icons.Default.Favorite
         DataTypeAvailability.ACQUIRING -> Icons.Default.MonitorHeart
         DataTypeAvailability.UNAVAILABLE,
-        DataTypeAvailability.UNAVAILABLE_DEVICE_OFF_BODY -> Icons.Default.HeartBroken
+        DataTypeAvailability.UNAVAILABLE_DEVICE_OFF_BODY,
+        -> Icons.Default.HeartBroken
         else -> Icons.Default.QuestionMark
     }
     val text = if (availability == DataTypeAvailability.AVAILABLE) {
@@ -58,32 +59,32 @@ fun HrLabel(
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
             imageVector = icon,
             contentDescription = stringResource(R.string.icon),
-            tint = Color.Red
+            tint = Color.Red,
         )
         Text(
             text = text,
-            style = MaterialTheme.typography.display1
+            style = MaterialTheme.typography.displayLarge,
         )
     }
 }
 
 @ExperimentalPermissionsApi
 @Preview(
-    device = Devices.WEAR_OS_SMALL_ROUND,
+    device = WearDevices.SMALL_ROUND,
     showBackground = false,
-    showSystemUi = true
+    showSystemUi = true,
 )
 @Composable
 fun HrLabelPreview() {
     MeasureDataTheme {
         HrLabel(
             hr = 121.2,
-            availability = DataTypeAvailability.AVAILABLE
+            availability = DataTypeAvailability.AVAILABLE,
         )
     }
 }
