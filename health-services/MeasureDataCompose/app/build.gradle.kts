@@ -15,7 +15,7 @@
  */
 plugins {
     alias(libs.plugins.com.android.application)
-    id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.kotlin.android)
 }
 
 android {
@@ -66,7 +66,6 @@ dependencies {
     implementation(libs.compose.ui.tooling)
     implementation(libs.compose.ui.tooling.preview)
 
-    implementation(libs.wear.compose.material)
     implementation(libs.wear.compose.foundation)
     implementation(libs.wear.ui.tooling)
 
@@ -74,7 +73,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.compose.material.icons.extended)
     implementation(libs.wear.compose.material3)
-    implementation(libs.compose.material3)
 
     // Health Services
     implementation(libs.androidx.health.services)
