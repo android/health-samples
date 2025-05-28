@@ -18,12 +18,10 @@ package com.example.passivegoalscompose.presentation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.wear.compose.material.Icon
-import androidx.wear.compose.material.Text
-import androidx.wear.compose.material.ToggleChip
-import androidx.wear.compose.material.ToggleChipDefaults
+import androidx.wear.compose.material3.SurfaceTransformation
+import androidx.wear.compose.material3.SwitchButton
+import androidx.wear.compose.material3.Text
 import com.example.passivegoalscompose.PERMISSION
 import com.example.passivegoalscompose.R
 import com.example.passivegoalscompose.theme.PassiveGoalsTheme
@@ -33,7 +31,7 @@ import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.isGranted
 
 /**
- * A [ToggleChip] for enabling / disabling passive goals.
+ * A [SwitchButton] for enabling / disabling passive goals.
  */
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -41,12 +39,12 @@ fun PassiveGoalsToggle(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     permissionState: PermissionState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    transformation: SurfaceTransformation? = null,
 ) {
-    ToggleChip(
+    SwitchButton(
         modifier = modifier,
         checked = checked,
-        colors = ToggleChipDefaults.toggleChipColors(),
         onCheckedChange = { enabled ->
             if (permissionState.status.isGranted) {
                 onCheckedChange(enabled)
@@ -55,20 +53,12 @@ fun PassiveGoalsToggle(
             }
         },
         label = { Text(stringResource(id = R.string.goals_toggle)) },
-        toggleControl = {
-            Icon(
-                imageVector = ToggleChipDefaults.switchIcon(checked),
-                contentDescription = stringResource(id = R.string.goals_toggle)
-            )
-        }
+        transformation = transformation,
     )
 }
 
 @OptIn(ExperimentalPermissionsApi::class)
-@Preview(
-    device = Devices.WEAR_OS_SMALL_ROUND,
-    showSystemUi = true
-)
+@Preview
 @Composable
 fun HeartRateTogglePreview() {
     val permissionState = object : PermissionState {
@@ -80,7 +70,7 @@ fun HeartRateTogglePreview() {
         PassiveGoalsToggle(
             checked = true,
             onCheckedChange = {},
-            permissionState = permissionState
+            permissionState = permissionState,
         )
     }
 }
