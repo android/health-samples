@@ -21,4 +21,5 @@
 
     <string name="heart_description">Heart</string>
     <string name="broken_heart_description">Broken heart</string>
+    <string name="heart_rate_switch_button">Heart Rate Switch Button</string>
 </resources>
