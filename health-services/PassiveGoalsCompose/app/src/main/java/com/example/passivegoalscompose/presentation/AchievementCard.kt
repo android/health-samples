@@ -28,13 +28,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.wear.compose.material.Card
-import androidx.wear.compose.material.Icon
-import androidx.wear.compose.material.MaterialTheme
-import androidx.wear.compose.material.Text
+import androidx.wear.compose.material3.Card
+import androidx.wear.compose.material3.Icon
+import androidx.wear.compose.material3.MaterialTheme
+import androidx.wear.compose.material3.SurfaceTransformation
+import androidx.wear.compose.material3.Text
 import com.example.passivegoalscompose.R
 import com.example.passivegoalscompose.theme.PassiveGoalsTheme
 
@@ -49,12 +49,14 @@ fun AchievementCard(
     achievementDescription: String,
     imageVector: ImageVector,
     imageDescription: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    transformation: SurfaceTransformation? = null
 ) {
     Card(
         onClick = {},
         enabled = false,
-        modifier = modifier
+        modifier = modifier,
+        transformation = transformation,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -75,17 +77,14 @@ fun AchievementCard(
                 Text(stepsText)
                 Text(
                     text = achievementDescription,
-                    style = MaterialTheme.typography.caption3
+                    style = MaterialTheme.typography.bodyExtraSmall
                 )
             }
         }
     }
 }
 
-@Preview(
-    device = Devices.WEAR_OS_SMALL_ROUND,
-    showSystemUi = true
-)
+@Preview
 @Composable
 fun StepsChipPreview() {
     PassiveGoalsTheme {
@@ -99,7 +98,7 @@ fun StepsChipPreview() {
                 notAchievedText = stringResource(id = R.string.steps_goal_not_yet_achieved),
                 achievementDescription = stringResource(id = R.string.steps_goals_description),
                 imageVector = Icons.Default.Celebration,
-                imageDescription = stringResource(id = R.string.steps_description)
+                imageDescription = stringResource(id = R.string.steps_description),
             )
         }
     }
