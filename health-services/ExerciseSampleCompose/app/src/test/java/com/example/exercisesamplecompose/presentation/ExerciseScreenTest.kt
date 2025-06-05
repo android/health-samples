@@ -47,6 +47,7 @@ class ExerciseScreenTest(override val device: WearDevice) : WearDeviceScreenshot
         AppScaffold(
             timeText = { ResponsiveTimeText(timeSource = FixedTimeSource) }) {
             ExerciseScreen(
+                ambientState = AmbientState.Interactive,
                 onPauseClick = {},
                 onEndClick = {},
                 onResumeClick = {},
@@ -59,7 +60,6 @@ class ExerciseScreenTest(override val device: WearDevice) : WearDeviceScreenshot
                     ),
                     exerciseState = ExerciseServiceState()
                 ),
-                ambientState = AmbientState.Interactive,
             )
         }
     }

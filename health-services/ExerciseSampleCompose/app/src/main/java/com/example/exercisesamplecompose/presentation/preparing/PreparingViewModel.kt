@@ -1,6 +1,7 @@
 package com.example.exercisesamplecompose.presentation.preparing
 
 import android.Manifest
+import android.health.connect.HealthPermissions
 import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -70,7 +71,8 @@ class PreparingViewModel @Inject constructor(
         ).apply {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
                 this.add(Manifest.permission.POST_NOTIFICATIONS)
-
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA)
+                this.add(HealthPermissions.READ_HEART_RATE)
             this.toList()
         }
     }
