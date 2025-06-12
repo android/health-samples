@@ -28,7 +28,7 @@ import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 
 class MeasureDataViewModel(
-    private val healthServicesRepository: HealthServicesRepository
+    private val healthServicesRepository: HealthServicesRepository,
 ) : ViewModel() {
     val enabled: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
@@ -77,13 +77,13 @@ class MeasureDataViewModel(
 }
 
 class MeasureDataViewModelFactory(
-    private val healthServicesRepository: HealthServicesRepository
+    private val healthServicesRepository: HealthServicesRepository,
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(MeasureDataViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return MeasureDataViewModel(
-                healthServicesRepository = healthServicesRepository
+                healthServicesRepository = healthServicesRepository,
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")

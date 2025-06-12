@@ -21,8 +21,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.wear.compose.material.Scaffold
-import androidx.wear.compose.material.TimeText
+import androidx.wear.compose.material3.AppScaffold
 import com.example.measuredatacompose.PERMISSION
 import com.example.measuredatacompose.data.HealthServicesRepository
 import com.example.measuredatacompose.theme.MeasureDataTheme
@@ -32,17 +31,16 @@ import com.google.accompanist.permissions.rememberPermissionState
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun MeasureDataApp(
-    healthServicesRepository: HealthServicesRepository
+    healthServicesRepository: HealthServicesRepository,
 ) {
     MeasureDataTheme {
-        Scaffold(
+        AppScaffold(
             modifier = Modifier.fillMaxSize(),
-            timeText = { TimeText() }
         ) {
             val viewModel: MeasureDataViewModel = viewModel(
                 factory = MeasureDataViewModelFactory(
-                    healthServicesRepository = healthServicesRepository
-                )
+                    healthServicesRepository = healthServicesRepository,
+                ),
             )
             val enabled by viewModel.enabled.collectAsState()
             val hr by viewModel.hr
@@ -54,14 +52,14 @@ fun MeasureDataApp(
                     permission = PERMISSION,
                     onPermissionResult = { granted ->
                         if (granted) viewModel.toggleEnabled()
-                    }
+                    },
                 )
                 MeasureDataScreen(
                     hr = hr,
                     availability = availability,
                     enabled = enabled,
                     onButtonClick = { viewModel.toggleEnabled() },
-                    permissionState = permissionState
+                    permissionState = permissionState,
                 )
             } else if (uiState == UiState.NotSupported) {
                 NotSupportedScreen()
