@@ -18,12 +18,9 @@ package com.example.passivedatacompose.presentation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.wear.compose.material.Icon
-import androidx.wear.compose.material.Text
-import androidx.wear.compose.material.ToggleChip
-import androidx.wear.compose.material.ToggleChipDefaults
+import androidx.wear.compose.material3.SwitchButton
+import androidx.wear.compose.material3.Text
 import com.example.passivedatacompose.PERMISSION
 import com.example.passivedatacompose.R
 import com.example.passivedatacompose.theme.PassiveDataTheme
@@ -33,7 +30,7 @@ import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.isGranted
 
 /**
- * A [ToggleChip] for enabling / disabling passive monitoring.
+ * A [SwitchButton] for enabling / disabling passive monitoring.
  */
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -43,10 +40,9 @@ fun HeartRateToggle(
     permissionState: PermissionState,
     modifier: Modifier = Modifier
 ) {
-    ToggleChip(
+    SwitchButton(
         modifier = modifier,
         checked = checked,
-        colors = ToggleChipDefaults.toggleChipColors(),
         onCheckedChange = { enabled ->
             if (permissionState.status.isGranted) {
                 onCheckedChange(enabled)
@@ -55,20 +51,11 @@ fun HeartRateToggle(
             }
         },
         label = { Text(stringResource(id = R.string.heart_rate_toggle)) },
-        toggleControl = {
-            Icon(
-                imageVector = ToggleChipDefaults.switchIcon(checked),
-                contentDescription = stringResource(id = R.string.heart_rate_toggle)
-            )
-        }
     )
 }
 
 @OptIn(ExperimentalPermissionsApi::class)
-@Preview(
-    device = Devices.WEAR_OS_SMALL_ROUND,
-    showSystemUi = true
-)
+@Preview
 @Composable
 fun HeartRateTogglePreview() {
     val permissionState = object : PermissionState {
