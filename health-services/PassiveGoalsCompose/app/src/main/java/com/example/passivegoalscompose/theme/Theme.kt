@@ -17,12 +17,11 @@ package com.example.passivegoalscompose.theme
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.wear.compose.material.Colors
-import androidx.wear.compose.material.MaterialTheme
+import androidx.wear.compose.material3.MaterialTheme
+import androidx.wear.compose.material3.ColorScheme
 
-internal val wearColorPalette: Colors = Colors(
-    primary = Color(48, 49, 51),
-    primaryVariant = Color.LightGray,
+internal val wearColorPalette: ColorScheme = ColorScheme(
+    secondary = Color.LightGray,
     error = Color.Red,
     onPrimary = Color.White,
     onSecondary = Color.Black,
@@ -32,7 +31,7 @@ internal val wearColorPalette: Colors = Colors(
 @Composable
 fun PassiveGoalsTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colors = wearColorPalette,
+        colorScheme = wearColorPalette,
         content = content
     )
 }

@@ -21,8 +21,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.wear.compose.material.Scaffold
-import androidx.wear.compose.material.TimeText
+import androidx.wear.compose.material3.AppScaffold
 import com.example.passivegoalscompose.PERMISSION
 import com.example.passivegoalscompose.data.HealthServicesRepository
 import com.example.passivegoalscompose.data.PassiveGoalsRepository
@@ -37,9 +36,8 @@ fun PassiveGoalsApp(
     passiveGoalsRepository: PassiveGoalsRepository
 ) {
     PassiveGoalsTheme {
-        Scaffold(
+        AppScaffold(
             modifier = Modifier.fillMaxSize(),
-            timeText = { TimeText() }
         ) {
             val viewModel: PassiveGoalsViewModel = viewModel(
                 factory = PassiveGoalsViewModelFactory(
