@@ -136,9 +136,7 @@ fun ExerciseScreen(
     val pagerState = rememberPagerState(initialPage = 1, pageCount = { 2 })
 
     // Workaround bug in modifier placement in PagerScreen
-    Box(
-        modifier = modifier.ambientBlank(ambientState)
-    ) {
+    Box {
         PagerScreen(
             state = pagerState,
             modifier = modifier
@@ -314,7 +312,7 @@ fun ExerciseScreenPreview() {
                 ),
                 exerciseState = ExerciseServiceState()
             ),
-            ambientState = AmbientState.Interactive,
+            ambientState = AmbientState.Interactive
         )
     }
 }
