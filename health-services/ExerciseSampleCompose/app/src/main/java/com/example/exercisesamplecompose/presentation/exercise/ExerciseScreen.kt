@@ -135,39 +135,36 @@ fun ExerciseScreen(
     val coroutineScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(initialPage = 1, pageCount = { 2 })
 
-    // Workaround bug in modifier placement in PagerScreen
-    Box {
-        PagerScreen(
-            state = pagerState,
-            modifier = modifier
-                .fillMaxSize()
-                .padding(6.dp)
-        ) { page ->
-            when (page) {
-                0 -> {
-                    ExerciseControlButtons(
-                        uiState = uiState,
-                        onStartClick = onStartClick,
-                        onEndClick = onEndClick,
-                        onResumeClick = {
-                            onResumeClick()
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(1)
-                            }
+    PagerScreen(
+        state = pagerState,
+        modifier = modifier
+            .fillMaxSize()
+            .padding(6.dp)
+    ) { page ->
+        when (page) {
+            0 -> {
+                ExerciseControlButtons(
+                    uiState = uiState,
+                    onStartClick = onStartClick,
+                    onEndClick = onEndClick,
+                    onResumeClick = {
+                        onResumeClick()
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(1)
+                        }
 
-                        },
-                        onPauseClick = {
-                            onPauseClick()
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(1)
-                            }
-                        },
-                    )
-                }
+                    },
+                    onPauseClick = {
+                        onPauseClick()
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(1)
+                        }
+                    },
+                )
+            }
 
-                1 -> {
-                    ExerciseMetrics(uiState = uiState)
-                }
+            1 -> {
+                ExerciseMetrics(uiState = uiState)
             }
         }
     }

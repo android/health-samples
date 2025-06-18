@@ -64,16 +64,15 @@ class PreparingViewModel @Inject constructor(
     }
 
     companion object {
-        val permissions = mutableListOf(
-            Manifest.permission.BODY_SENSORS,
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACTIVITY_RECOGNITION,
-        ).apply {
+        val permissions = buildList {
+            Manifest.permission.BODY_SENSORS
+            Manifest.permission.ACCESS_FINE_LOCATION
+            Manifest.permission.ACTIVITY_RECOGNITION
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                this.add(Manifest.permission.POST_NOTIFICATIONS)
+                add(Manifest.permission.POST_NOTIFICATIONS)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA)
-                this.add(HealthPermissions.READ_HEART_RATE)
-            this.toList()
+                add(HealthPermissions.READ_HEART_RATE)
         }
+
     }
 }
