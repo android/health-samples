@@ -1,3 +1,18 @@
+/*
+ * Copyright 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.example.exercisesamplecompose.presentation.ambient
 
 import androidx.compose.ui.Modifier
@@ -18,14 +33,16 @@ import com.google.android.horologist.compose.ambient.AmbientState
  * effectively removing all color information from the image.
  * Anti-aliasing is disabled for this paint to potentially improve performance.
  */
-private val grayscale = Paint().apply {
-    colorFilter = ColorFilter.colorMatrix(
-        ColorMatrix().apply {
-            setToSaturation(0f)
-        }
-    )
-    isAntiAlias = false
-}
+private val grayscale =
+    Paint().apply {
+        colorFilter =
+            ColorFilter.colorMatrix(
+                ColorMatrix().apply {
+                    setToSaturation(0f)
+                }
+            )
+        isAntiAlias = false
+    }
 
 /**
  * Applies a grayscale effect and scales down the content when in ambient mode.
@@ -35,22 +52,22 @@ private val grayscale = Paint().apply {
  * filter is applied. When not in ambient mode, the content is rendered normally.
  */
 fun Modifier.ambientGray(ambientState: AmbientState): Modifier =
-        graphicsLayer {
-            if (ambientState.isAmbient) {
-                scaleX = 0.9f
-                scaleY = 0.9f
-            }
-        }.drawWithContent {
-            if (ambientState.isAmbient) {
-                drawIntoCanvas {
-                    it.withSaveLayer(size.toRect(), grayscale) {
-                        drawContent()
-                    }
-                }
-            } else {
-                drawContent()
-            }
+    graphicsLayer {
+        if (ambientState.isAmbient) {
+            scaleX = 0.9f
+            scaleY = 0.9f
         }
+    }.drawWithContent {
+        if (ambientState.isAmbient) {
+            drawIntoCanvas {
+                it.withSaveLayer(size.toRect(), grayscale) {
+                    drawContent()
+                }
+            }
+        } else {
+            drawContent()
+        }
+    }
 
 /**
  * This modifier conditionally draws the content based on the state provided by an [AmbientState].

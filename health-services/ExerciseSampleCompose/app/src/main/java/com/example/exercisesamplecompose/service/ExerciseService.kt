@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.example.exercisesamplecompose.service
 
 import android.content.ContentValues.TAG
@@ -32,18 +31,16 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.example.exercisesamplecompose.data.ExerciseClientManager
 import com.example.exercisesamplecompose.data.isExerciseInProgress
 import dagger.hilt.android.AndroidEntryPoint
+import java.time.Duration
+import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
-import java.time.Duration
-import javax.inject.Inject
-import kotlin.time.Duration.Companion.seconds
-
 
 @AndroidEntryPoint
 class ExerciseService : LifecycleService() {
-
     @Inject
     lateinit var exerciseClientManager: ExerciseClientManager
 
@@ -108,7 +105,11 @@ class ExerciseService : LifecycleService() {
         }
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(
+        intent: Intent?,
+        flags: Int,
+        startId: Int
+    ): Int {
         super.onStartCommand(intent, flags, startId)
 
         Log.d(TAG, "onStartCommand")
@@ -138,7 +139,9 @@ class ExerciseService : LifecycleService() {
             // We may have been restarted by the system. Check for an ongoing exercise.
             if (!isExerciseInProgress()) {
                 // Need to cancel [prepareExercise()] to prevent battery drain.
-                if (exerciseServiceMonitor.exerciseServiceState.value.exerciseState == ExerciseState.PREPARING) {
+                if (exerciseServiceMonitor.exerciseServiceState.value.exerciseState ==
+                    ExerciseState.PREPARING
+                ) {
                     lifecycleScope.launch {
                         endExercise()
                     }
@@ -203,14 +206,18 @@ class ExerciseService : LifecycleService() {
                 this,
                 ExerciseNotificationManager.NOTIFICATION_ID,
                 exerciseNotificationManager.buildNotification(
-                    serviceState.activeDurationCheckpoint?.activeDuration ?:
-                    Duration.ZERO
+                    serviceState.activeDurationCheckpoint?.activeDuration
+                        ?: Duration.ZERO
                 ),
-                //Starting with Wear 5 (API 34), startForeground should be called with
+                // Starting with Wear 5 (API 34), startForeground should be called with
                 // foregroundServiceTypes
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION or if
-                        (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-                    ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH else 0
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION or
+                    if
+                        (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                        ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH
+                    } else {
+                        0
+                    }
             )
         }
     }

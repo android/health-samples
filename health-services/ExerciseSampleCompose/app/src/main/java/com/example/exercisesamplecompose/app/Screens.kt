@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,13 +22,17 @@ sealed class Screen(
     val route: String
 ) {
     object Exercise : Screen("exercise")
+
     object ExerciseNotAvailable : Screen("exerciseNotAvailable")
+
     object PreparingExercise : Screen("preparingExercise")
+
     object Goals : Screen(route = "goals")
+
     object Summary : Screen("summaryScreen") {
-        fun buildRoute(summary: SummaryScreenState): String {
-            return "$route/${summary.averageHeartRate}/${summary.totalDistance}/${summary.totalCalories}/${summary.elapsedTime}"
-        }
+        fun buildRoute(summary: SummaryScreenState): String =
+            "$route/${summary.averageHeartRate}/${summary.totalDistance}" +
+                "/${summary.totalCalories}/${summary.elapsedTime}"
 
         val averageHeartRateArg = "averageHeartRate"
         val totalDistanceArg = "totalDistance"
@@ -37,7 +41,10 @@ sealed class Screen(
     }
 }
 
-fun NavController.navigateToTopLevel(screen: Screen, route: String = screen.route) {
+fun NavController.navigateToTopLevel(
+    screen: Screen,
+    route: String = screen.route
+) {
     navigate(route) {
         popUpTo(graph.id) {
             inclusive = true

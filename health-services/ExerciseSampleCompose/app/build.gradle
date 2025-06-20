@@ -16,9 +16,10 @@
 plugins {
   id 'com.android.application'
   id 'org.jetbrains.kotlin.android'
-  id 'org.jetbrains.kotlin.kapt'
   id 'dagger.hilt.android.plugin'
   alias libs.plugins.roborazzi
+  alias(libs.plugins.compose)
+  alias(libs.plugins.ksp)
 }
 
 android {
@@ -98,7 +99,6 @@ dependencies {
   implementation libs.compose.wear.navigation
   implementation libs.androidx.compose.navigation
   implementation libs.horologist.compose.layout
-  implementation libs.horologist.compose.material
   implementation libs.horologist.health.composables
   implementation libs.horologist.health.service
 
@@ -120,7 +120,7 @@ dependencies {
   // Hilt
   implementation libs.hilt.navigation.compose
   implementation libs.dagger.hilt.android
-  kapt libs.dagger.hilt.android.compiler
+  ksp(libs.hilt.compiler)
 
   coreLibraryDesugaring(libs.desugar.jdk.libs)
 

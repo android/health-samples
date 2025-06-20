@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -37,13 +37,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.wear.compose.foundation.pager.HorizontalPager
 import androidx.wear.compose.foundation.pager.rememberPagerState
-import androidx.wear.compose.material.MaterialTheme
-import androidx.wear.compose.material.Text
+import androidx.wear.compose.material3.AlertDialog
+import androidx.wear.compose.material3.Button
+import androidx.wear.compose.material3.FilledTonalButton
+import androidx.wear.compose.material3.HorizontalPagerScaffold
+import androidx.wear.compose.material3.MaterialTheme
+import androidx.wear.compose.material3.ScreenScaffold
+import androidx.wear.compose.material3.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import com.example.exercisesamplecompose.R
-import com.google.android.horologist.compose.ambient.AmbientAware
-import com.google.android.horologist.compose.ambient.AmbientState
 import com.example.exercisesamplecompose.data.ServiceState
 import com.example.exercisesamplecompose.presentation.ambient.ambientBlank
 import com.example.exercisesamplecompose.presentation.component.CaloriesText
@@ -59,8 +63,8 @@ import com.example.exercisesamplecompose.presentation.summary.SummaryScreenState
 import com.example.exercisesamplecompose.presentation.theme.ThemePreview
 import com.example.exercisesamplecompose.service.ExerciseServiceState
 import com.google.android.horologist.annotations.ExperimentalHorologistApi
-import com.google.android.horologist.compose.material.AlertDialog
-import com.google.android.horologist.compose.pager.PagerScreen
+import com.google.android.horologist.compose.ambient.AmbientAware
+import com.google.android.horologist.compose.ambient.AmbientState
 import com.google.android.horologist.health.composables.ActiveDurationText
 import kotlinx.coroutines.launch
 
@@ -69,7 +73,7 @@ fun ExerciseRoute(
     modifier: Modifier = Modifier,
     onSummary: (SummaryScreenState) -> Unit,
     onRestart: () -> Unit,
-    onFinishActivity: () -> Unit,
+    onFinishActivity: () -> Unit
 ) {
     val viewModel = hiltViewModel<ExerciseViewModel>()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -82,7 +86,9 @@ fun ExerciseRoute(
 
     if (uiState.error != null) {
         ErrorStartingExerciseScreen(
-            onRestart = onRestart, onFinishActivity = onFinishActivity, uiState = uiState
+            onRestart = onRestart,
+            onFinishActivity = onFinishActivity,
+            uiState = uiState
         )
     } else {
         AmbientAware { ambientState ->
@@ -104,18 +110,37 @@ fun ExerciseRoute(
  */
 @Composable
 fun ErrorStartingExerciseScreen(
-    onRestart: () -> Unit, onFinishActivity: () -> Unit, uiState: ExerciseScreenState
+    onRestart: () -> Unit,
+    onFinishActivity: () -> Unit,
+    uiState: ExerciseScreenState
 ) {
     AlertDialog(
-        title = stringResource(id = R.string.error_starting_exercise),
-        message = "${uiState.error ?: stringResource(id = R.string.unknown_error)}. ${
-            stringResource(
-                id = R.string.try_again
-            )
-        }",
-        onCancel = onFinishActivity,
-        onOk = onRestart,
-        showDialog = true,
+        title = { Text(stringResource(id = R.string.error_starting_exercise)) },
+        text = {
+            "${uiState.error ?: Text(stringResource(id = R.string.unknown_error))}. ${
+                Text(
+                    stringResource(
+                        id = R.string.try_again
+                    )
+                )
+            }"
+        },
+        onDismissRequest = onFinishActivity,
+        visible = true,
+        confirmButton = {
+            Button(
+                onClick = onRestart
+            ) {
+                Text(stringResource(id = R.string.yes))
+            }
+        },
+        dismissButton = {
+            FilledTonalButton(
+                onClick = onFinishActivity
+            ) {
+                Text(stringResource(id = R.string.no))
+            }
+        }
     )
 }
 
@@ -133,56 +158,53 @@ fun ExerciseScreen(
     modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(initialPage = 1, pageCount = { 2 })
+    val pagerState = rememberPagerState(
+        initialPage = 1, pageCount = { 2 })
 
-    PagerScreen(
-        state = pagerState,
-        modifier = modifier
-            .fillMaxSize()
-            .padding(6.dp)
-    ) { page ->
-        when (page) {
-            0 -> {
-                ExerciseControlButtons(
-                    uiState = uiState,
-                    onStartClick = onStartClick,
-                    onEndClick = onEndClick,
-                    onResumeClick = {
-                        onResumeClick()
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(1)
+        HorizontalPagerScaffold(pagerState = pagerState) {
+            HorizontalPager(
+                state = pagerState
+            ) { page ->
+                ScreenScaffold {
+                        if (page == 0) {
+                            ExerciseControlButtons(
+                                uiState = uiState,
+                                onStartClick = onStartClick,
+                                onEndClick = onEndClick,
+                                onResumeClick = {
+                                    onResumeClick()
+                                    coroutineScope.launch {
+                                        pagerState.animateScrollToPage(1)
+                                    }
+                                },
+                                onPauseClick = {
+                                    onPauseClick()
+                                    coroutineScope.launch {
+                                        pagerState.animateScrollToPage(1)
+                                    }
+                                }
+                            )
+                        } else {
+                            ExerciseMetrics(uiState = uiState)
                         }
+                    }
+                }
 
-                    },
-                    onPauseClick = {
-                        onPauseClick()
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(1)
-                        }
-                    },
-                )
-            }
-
-            1 -> {
-                ExerciseMetrics(uiState = uiState)
+            // If we meet an exercise goal, show our exercise met dialog.
+            // This approach is for the sample, and doesn't guarantee processing of this event in all cases,
+            // such as the user exiting the app while this is in-progress. Consider alternatives to exposing
+            // state in a production app.
+            uiState.exerciseState?.exerciseGoal?.let {
+                Log.d("ExerciseGoalMet", "Showing exercise goal met dialog")
+                ExerciseGoalMet(it.isNotEmpty())
             }
         }
-    }
-
-    //If we meet an exercise goal, show our exercise met dialog.
-    //This approach is for the sample, and doesn't guarantee processing of this event in all cases,
-    //such as the user exiting the app while this is in-progress. Consider alternatives to exposing
-    //state in a production app.
-    uiState.exerciseState?.exerciseGoal?.let {
-        Log.d("ExerciseGoalMet", "Showing exercise goal met dialog")
-        ExerciseGoalMet(it.isNotEmpty())
-    }
 }
 
 @Composable
 private fun ExerciseMetrics(
     uiState: ExerciseScreenState,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
@@ -207,7 +229,7 @@ private fun ExerciseControlButtons(
     onEndClick: () -> Unit,
     onResumeClick: () -> Unit,
     onPauseClick: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Row(
@@ -234,7 +256,7 @@ private fun ExerciseControlButtons(
 private fun DistanceAndLapsRow(uiState: ExerciseScreenState) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceAround,
+        horizontalArrangement = Arrangement.SpaceAround
     ) {
         Row {
             DistanceText(uiState.exerciseState?.exerciseMetrics?.distance)
@@ -246,7 +268,7 @@ private fun DistanceAndLapsRow(uiState: ExerciseScreenState) {
 private fun HeartRateRow(uiState: ExerciseScreenState) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceAround,
+        horizontalArrangement = Arrangement.SpaceAround
     ) {
         Row {
             HRText(
@@ -270,7 +292,8 @@ private fun DurationRow(uiState: ExerciseScreenState) {
     val lastActiveDurationCheckpoint = uiState.exerciseState?.activeDurationCheckpoint
     val exerciseState = uiState.exerciseState?.exerciseState
     Row(
-        horizontalArrangement = Arrangement.SpaceAround, modifier = Modifier.fillMaxWidth()
+        horizontalArrangement = Arrangement.SpaceAround,
+        modifier = Modifier.fillMaxWidth()
     ) {
         Row {
             if (exerciseState != null && lastActiveDurationCheckpoint != null) {
@@ -281,7 +304,7 @@ private fun DurationRow(uiState: ExerciseScreenState) {
                     Text(
                         text = formatElapsedTime(it, includeSeconds = true),
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colors.secondary,
+                        color = MaterialTheme.colorScheme.secondary,
                         fontSize = 25.sp
                     )
                 }
@@ -349,7 +372,7 @@ fun ExerciseControlButtonsPreview() {
             onStartClick = {},
             onEndClick = {},
             onResumeClick = {},
-            onPauseClick = {},
+            onPauseClick = {}
         )
     }
 }

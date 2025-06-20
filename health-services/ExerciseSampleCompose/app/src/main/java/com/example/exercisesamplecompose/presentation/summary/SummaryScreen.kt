@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,19 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@file:OptIn(ExperimentalHorologistApi::class)
-
 package com.example.exercisesamplecompose.presentation.summary
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
+import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
+import androidx.wear.compose.material3.Button
+import androidx.wear.compose.material3.ListHeader
+import androidx.wear.compose.material3.ScreenScaffold
+import androidx.wear.compose.material3.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import com.example.exercisesamplecompose.R
 import com.example.exercisesamplecompose.presentation.component.SummaryFormat
@@ -34,22 +36,14 @@ import com.example.exercisesamplecompose.presentation.component.formatDistanceKm
 import com.example.exercisesamplecompose.presentation.component.formatElapsedTime
 import com.example.exercisesamplecompose.presentation.component.formatHeartRate
 import com.example.exercisesamplecompose.presentation.theme.ThemePreview
-import com.google.android.horologist.annotations.ExperimentalHorologistApi
-import com.google.android.horologist.compose.layout.ScalingLazyColumn
-import com.google.android.horologist.compose.layout.ScalingLazyColumnDefaults.ItemType
-import com.google.android.horologist.compose.layout.ScalingLazyColumnDefaults.padding
-import com.google.android.horologist.compose.layout.ScreenScaffold
-import com.google.android.horologist.compose.layout.rememberResponsiveColumnState
-import com.google.android.horologist.compose.material.Chip
-import com.google.android.horologist.compose.material.ListHeaderDefaults.firstItemPadding
-import com.google.android.horologist.compose.material.ResponsiveListHeader
-import com.google.android.horologist.compose.material.Title
+import com.google.android.horologist.compose.layout.ColumnItemType
+import com.google.android.horologist.compose.layout.rememberResponsiveColumnPadding
 import java.time.Duration
 
 /**End-of-workout summary screen**/
 @Composable
 fun SummaryRoute(
-    onRestartClick: () -> Unit,
+    onRestartClick: () -> Unit
 ) {
     val viewModel = hiltViewModel<SummaryViewModel>()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -57,25 +51,24 @@ fun SummaryRoute(
     SummaryScreen(uiState = uiState, onRestartClick = onRestartClick)
 }
 
-
 @Composable
 fun SummaryScreen(
     uiState: SummaryScreenState,
-    onRestartClick: () -> Unit,
+    onRestartClick: () -> Unit
 ) {
-    val columnState = rememberResponsiveColumnState(
-        contentPadding = padding(
-            first = ItemType.Text,
-            last = ItemType.Chip
-        )
+    val columnState = rememberTransformingLazyColumnState()
+    val contentPadding = rememberResponsiveColumnPadding(
+        first = ColumnItemType.ListHeader,
+        last = ColumnItemType.Button
     )
-    ScreenScaffold(scrollState = columnState) {
-        ScalingLazyColumn(
-            columnState = columnState
+    ScreenScaffold(scrollState = columnState, contentPadding = contentPadding) { contentPadding ->
+        TransformingLazyColumn(
+            state = columnState,
+            contentPadding = contentPadding
         ) {
             item {
-                ResponsiveListHeader(contentPadding = firstItemPadding()) {
-                    Title(text = stringResource(id = R.string.workout_complete))
+                ListHeader(modifier = Modifier.fillMaxWidth()) {
+                    Text(text = stringResource(id = R.string.workout_complete))
                 }
             }
             item {
@@ -107,9 +100,9 @@ fun SummaryScreen(
                 )
             }
             item {
-                Chip(
-                    label = stringResource(id = R.string.restart),
-                    onClick = onRestartClick,
+                Button(
+                    label = { Text(stringResource(id = R.string.restart)) },
+                    onClick = onRestartClick
                 )
             }
         }
@@ -127,7 +120,7 @@ fun SummaryScreenPreview() {
                 totalCalories = 100.0,
                 elapsedTime = Duration.ofMinutes(17).plusSeconds(1)
             ),
-            onRestartClick = {},
+            onRestartClick = {}
         )
     }
 }

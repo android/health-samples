@@ -13,23 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.example.exercisesamplecompose.presentation
 
+import androidx.wear.compose.material3.AppScaffold
 import com.example.exercisesamplecompose.presentation.summary.SummaryScreen
 import com.example.exercisesamplecompose.presentation.summary.SummaryScreenState
-import com.google.android.horologist.compose.layout.AppScaffold
 import com.google.android.horologist.compose.layout.ResponsiveTimeText
 import com.google.android.horologist.screenshots.FixedTimeSource
 import com.google.android.horologist.screenshots.rng.WearDevice
 import com.google.android.horologist.screenshots.rng.WearDeviceScreenshotTest
+import java.time.Duration
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.ParameterizedRobolectricTestRunner
-import java.time.Duration
 
 @RunWith(ParameterizedRobolectricTestRunner::class)
-class SummaryScreenTest(override val device: WearDevice) : WearDeviceScreenshotTest(device) {
+class SummaryScreenTest(
+    override val device: WearDevice
+) : WearDeviceScreenshotTest(device) {
     @Test
     fun summary() {
         runTest {
@@ -37,13 +38,14 @@ class SummaryScreenTest(override val device: WearDevice) : WearDeviceScreenshotT
                 timeText = { ResponsiveTimeText(timeSource = FixedTimeSource) }
             ) {
                 SummaryScreen(
-                    uiState = SummaryScreenState(
+                    uiState =
+                    SummaryScreenState(
                         averageHeartRate = 75.0,
                         totalDistance = 2000.0,
                         totalCalories = 100.0,
                         elapsedTime = Duration.ofMinutes(17).plusSeconds(1)
                     ),
-                    onRestartClick = {},
+                    onRestartClick = {}
                 )
             }
         }
@@ -58,5 +60,4 @@ class SummaryScreenTest(override val device: WearDevice) : WearDeviceScreenshotT
 //
 //        captureScreenshot("_end")
     }
-
 }

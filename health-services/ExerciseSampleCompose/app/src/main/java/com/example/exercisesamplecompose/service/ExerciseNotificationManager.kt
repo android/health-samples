@@ -1,3 +1,18 @@
+/*
+ * Copyright 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.example.exercisesamplecompose.service
 
 import android.app.Notification
@@ -16,32 +31,36 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.Duration
 import javax.inject.Inject
 
-class ExerciseNotificationManager @Inject constructor(
+class ExerciseNotificationManager
+@Inject
+constructor(
     @ApplicationContext val applicationContext: Context,
     val manager: NotificationManager
 ) {
-
     fun createNotificationChannel() {
-        val notificationChannel = NotificationChannel(
-            NOTIFICATION_CHANNEL,
-            NOTIFICATION_CHANNEL_DISPLAY,
-            NotificationManager.IMPORTANCE_DEFAULT
-        )
+        val notificationChannel =
+            NotificationChannel(
+                NOTIFICATION_CHANNEL,
+                NOTIFICATION_CHANNEL_DISPLAY,
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
         manager.createNotificationChannel(notificationChannel)
     }
 
     fun buildNotification(duration: Duration): Notification {
         // Make an intent that will take the user straight to the exercise UI.
         val notificationIntent = Intent(applicationContext, MainActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(
-            applicationContext,
-            0,
-            notificationIntent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
+        val pendingIntent =
+            PendingIntent.getActivity(
+                applicationContext,
+                0,
+                notificationIntent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
         // Build the notification.
         val notificationBuilder =
-            NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL)
+            NotificationCompat
+                .Builder(applicationContext, NOTIFICATION_CHANNEL)
                 .setContentTitle(NOTIFICATION_TITLE)
                 .setContentText(NOTIFICATION_TEXT)
                 .setSmallIcon(R.drawable.ic_baseline_directions_run_24)
@@ -51,12 +70,15 @@ class ExerciseNotificationManager @Inject constructor(
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
 
         val startMillis = SystemClock.elapsedRealtime() - duration.toMillis()
-        val ongoingActivityStatus = Status.Builder()
-            .addTemplate(ONGOING_STATUS_TEMPLATE)
-            .addPart("duration", Status.StopwatchPart(startMillis))
-            .build()
+        val ongoingActivityStatus =
+            Status
+                .Builder()
+                .addTemplate(ONGOING_STATUS_TEMPLATE)
+                .addPart("duration", Status.StopwatchPart(startMillis))
+                .build()
         val ongoingActivity =
-            OngoingActivity.Builder(applicationContext, NOTIFICATION_ID, notificationBuilder)
+            OngoingActivity
+                .Builder(applicationContext, NOTIFICATION_ID, notificationBuilder)
                 .setAnimatedIcon(R.drawable.ic_baseline_directions_run_24)
                 .setStaticIcon(R.drawable.ic_baseline_directions_run_24)
                 .setTouchIntent(pendingIntent)
