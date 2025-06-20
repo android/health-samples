@@ -28,6 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
+import com.google.android.horologist.compose.ambient.LocalAmbientState
 
 @Composable
 fun HRText(hr: Double?) {
@@ -36,7 +37,7 @@ fun HRText(hr: Double?) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = "${hr ?: "--"}",
+                text = if (LocalAmbientState.current.isInteractive && hr != null) "$hr" else "--",
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colors.primary,
                 fontSize = 20.sp,

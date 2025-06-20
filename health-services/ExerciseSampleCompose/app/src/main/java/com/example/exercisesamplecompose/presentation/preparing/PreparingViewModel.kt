@@ -1,6 +1,7 @@
 package com.example.exercisesamplecompose.presentation.preparing
 
 import android.Manifest
+import android.health.connect.HealthPermissions
 import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -63,15 +64,14 @@ class PreparingViewModel @Inject constructor(
     }
 
     companion object {
-        val permissions = mutableListOf(
-            Manifest.permission.BODY_SENSORS,
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACTIVITY_RECOGNITION,
-        ).apply {
+        val permissions = buildList {
+            add(Manifest.permission.BODY_SENSORS)
+            add(Manifest.permission.ACCESS_FINE_LOCATION)
+            add(Manifest.permission.ACTIVITY_RECOGNITION)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                this.add(Manifest.permission.POST_NOTIFICATIONS)
-
-            this.toList()
+                add(Manifest.permission.POST_NOTIFICATIONS)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA)
+                add(HealthPermissions.READ_HEART_RATE)
         }
     }
 }

@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.wear.compose.material.MaterialTheme
+import com.google.android.horologist.compose.ambient.LocalAmbientState
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
@@ -48,7 +49,7 @@ fun formatElapsedTime(
         }
         if (includeSeconds) {
             val seconds = elapsedDuration.seconds % SECONDS_PER_MINUTE
-            append("%02d".format(seconds))
+            if (LocalAmbientState.current.isInteractive) append("%02d".format(seconds)) else append("--")
             withStyle(style = MaterialTheme.typography.caption3.toSpanStyle()) {
                 append("s")
             }
