@@ -67,6 +67,6 @@
 
     <!-- Exercise Goal Met Dialog -->
     <string name="goal_achieved">Goal achieved!</string>
-    <string name="yes">positive</string>
-    <string name="no">negative</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 </resources>
