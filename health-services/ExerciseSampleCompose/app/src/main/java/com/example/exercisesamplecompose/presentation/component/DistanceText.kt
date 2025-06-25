@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.example.exercisesamplecompose.presentation.component
 
 import androidx.compose.foundation.layout.Arrangement
@@ -27,8 +26,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
-import androidx.wear.compose.material.MaterialTheme
-import androidx.wear.compose.material.Text
+import androidx.wear.compose.material3.MaterialTheme
+import androidx.wear.compose.material3.Text
 
 @Composable
 fun DistanceText(distance: Double?) {
@@ -39,19 +38,20 @@ fun DistanceText(distance: Double?) {
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = formatDistanceKm(distance), fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colors.primary,
+                text = formatDistanceKm(distance),
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
                 fontSize = 20.sp
             )
             Text(
-                text = "km", fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colors.primary,
+                text = "km",
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
                 fontSize = 10.sp,
                 textAlign = TextAlign.Center
             )
         }
     }
-
 }
 
 @Preview

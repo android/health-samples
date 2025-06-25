@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,7 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter.Companion.tint
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.wear.compose.material.MaterialTheme
+import androidx.wear.compose.material3.MaterialTheme
 import com.example.exercisesamplecompose.R
 
 @Composable
@@ -34,12 +34,13 @@ fun AcquiredCheck() {
         Icons.Default.CheckCircleOutline,
         contentDescription = stringResource(
             id = R.string.GPS_acquired
-        ), colorFilter = tint(MaterialTheme.colors.secondary), modifier = Modifier
+        ),
+        colorFilter = tint(MaterialTheme.colorScheme.secondary),
+        modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
     )
 }
-
 
 @Preview
 @Composable

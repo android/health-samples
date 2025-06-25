@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -39,19 +39,21 @@ import androidx.health.services.client.prepareExercise
 import androidx.health.services.client.resumeExercise
 import androidx.health.services.client.startExercise
 import com.example.exercisesamplecompose.service.ExerciseLogger
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.channels.trySendBlocking
-import kotlinx.coroutines.flow.callbackFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.channels.trySendBlocking
+import kotlinx.coroutines.flow.callbackFlow
 
 /**
  * Entry point for [HealthServicesClient] APIs, wrapping them in coroutine-friendly APIs.
  */
 @SuppressLint("RestrictedApi")
 @Singleton
-class ExerciseClientManager @Inject constructor(
+class ExerciseClientManager
+@Inject
+constructor(
     healthServicesClient: HealthServicesClient,
     private val logger: ExerciseLogger
 ) {
@@ -69,8 +71,8 @@ class ExerciseClientManager @Inject constructor(
 
     private var thresholds = Thresholds(0.0, Duration.ZERO)
 
-    fun updateGoals(newThresholds: Thresholds){
-       thresholds = newThresholds.copy()
+    fun updateGoals(newThresholds: Thresholds) {
+        thresholds = newThresholds.copy()
     }
 
     suspend fun startExercise() {
@@ -83,12 +85,13 @@ class ExerciseClientManager @Inject constructor(
             return
         }
 
-        val dataTypes = setOf(
-            DataType.HEART_RATE_BPM,
-            DataType.HEART_RATE_BPM_STATS,
-            DataType.CALORIES_TOTAL,
-            DataType.DISTANCE_TOTAL,
-        ).intersect(capabilities.supportedDataTypes)
+        val dataTypes =
+            setOf(
+                DataType.HEART_RATE_BPM,
+                DataType.HEART_RATE_BPM_STATS,
+                DataType.CALORIES_TOTAL,
+                DataType.DISTANCE_TOTAL
+            ).intersect(capabilities.supportedDataTypes)
         val exerciseGoals = mutableListOf<ExerciseGoal<*>>()
         if (supportsCalorieGoal(capabilities)) {
             // Create a one-time goal.
@@ -107,9 +110,10 @@ class ExerciseClientManager @Inject constructor(
         if (supportsDistanceMilestone(capabilities) && thresholds.distanceIsSet) {
             exerciseGoals.add(
                 ExerciseGoal.createOneTimeGoal(
-                    condition = DataTypeCondition(
+                    condition =
+                    DataTypeCondition(
                         dataType = DataType.DISTANCE_TOTAL,
-                        threshold = thresholds.distance * 1000, //our app uses kilometers
+                        threshold = thresholds.distance * 1000, // our app uses kilometers
                         comparisonType = ComparisonType.GREATER_THAN_OR_EQUAL
                     )
                 )
@@ -129,16 +133,16 @@ class ExerciseClientManager @Inject constructor(
             )
         }
 
-
         val supportsAutoPauseAndResume = capabilities.supportsAutoPauseAndResume
 
-        val config = ExerciseConfig(
-            exerciseType = ExerciseType.RUNNING,
-            dataTypes = dataTypes,
-            isAutoPauseAndResumeEnabled = supportsAutoPauseAndResume,
-            isGpsEnabled = true,
-            exerciseGoals = exerciseGoals
-        )
+        val config =
+            ExerciseConfig(
+                exerciseType = ExerciseType.RUNNING,
+                dataTypes = dataTypes,
+                isAutoPauseAndResumeEnabled = supportsAutoPauseAndResume,
+                isGpsEnabled = true,
+                exerciseGoals = exerciseGoals
+            )
 
         exerciseClient.startExercise(config)
         logger.log("Started exercise")
@@ -150,10 +154,11 @@ class ExerciseClientManager @Inject constructor(
      */
     suspend fun prepareExercise() {
         logger.log("Preparing an exercise")
-        val warmUpConfig = WarmUpConfig(
-            exerciseType = ExerciseType.RUNNING,
-            dataTypes = setOf(DataType.HEART_RATE_BPM, DataType.LOCATION)
-        )
+        val warmUpConfig =
+            WarmUpConfig(
+                exerciseType = ExerciseType.RUNNING,
+                dataTypes = setOf(DataType.HEART_RATE_BPM, DataType.LOCATION)
+            )
         try {
             exerciseClient.prepareExercise(warmUpConfig)
         } catch (e: Exception) {
@@ -190,38 +195,43 @@ class ExerciseClientManager @Inject constructor(
      * cancelled, this flow will unregister the listener.
      * [callbackFlow] is used to bridge between a callback-based API and Kotlin flows.
      */
-    val exerciseUpdateFlow = callbackFlow {
-        val callback = object : ExerciseUpdateCallback {
-            override fun onExerciseUpdateReceived(update: ExerciseUpdate) {
-                trySendBlocking(ExerciseMessage.ExerciseUpdateMessage(update))
-            }
+    val exerciseUpdateFlow =
+        callbackFlow {
+            val callback =
+                object : ExerciseUpdateCallback {
+                    override fun onExerciseUpdateReceived(update: ExerciseUpdate) {
+                        trySendBlocking(ExerciseMessage.ExerciseUpdateMessage(update))
+                    }
 
-            override fun onLapSummaryReceived(lapSummary: ExerciseLapSummary) {
-                trySendBlocking(ExerciseMessage.LapSummaryMessage(lapSummary))
-            }
+                    override fun onLapSummaryReceived(lapSummary: ExerciseLapSummary) {
+                        trySendBlocking(ExerciseMessage.LapSummaryMessage(lapSummary))
+                    }
 
-            override fun onRegistered() {
-            }
+                    override fun onRegistered() {
+                    }
 
-            override fun onRegistrationFailed(throwable: Throwable) {
-                TODO("Not yet implemented")
-            }
+                    override fun onRegistrationFailed(throwable: Throwable) {
+                        TODO("Not yet implemented")
+                    }
 
-            override fun onAvailabilityChanged(
-                dataType: DataType<*, *>, availability: Availability
-            ) {
-                if (availability is LocationAvailability) {
-                    trySendBlocking(ExerciseMessage.LocationAvailabilityMessage(availability))
+                    override fun onAvailabilityChanged(
+                        dataType: DataType<*, *>,
+                        availability: Availability
+                    ) {
+                        if (availability is LocationAvailability) {
+                            trySendBlocking(
+                                ExerciseMessage.LocationAvailabilityMessage(availability)
+                            )
+                        }
+                    }
                 }
+
+            exerciseClient.setUpdateCallback(callback)
+            awaitClose {
+                // Ignore async result
+                exerciseClient.clearUpdateCallbackAsync(callback)
             }
         }
-
-        exerciseClient.setUpdateCallback(callback)
-        awaitClose {
-            // Ignore async result
-            exerciseClient.clearUpdateCallbackAsync(callback)
-        }
-    }
 
     private companion object {
         const val CALORIES_THRESHOLD = 250.0
@@ -231,17 +241,20 @@ class ExerciseClientManager @Inject constructor(
 data class Thresholds(
     var distance: Double,
     var duration: Duration,
-    var durationIsSet: Boolean = duration!= Duration.ZERO,
-    var distanceIsSet: Boolean = distance!=0.0,
+    var durationIsSet: Boolean = duration != Duration.ZERO,
+    var distanceIsSet: Boolean = distance != 0.0
 )
 
-
 sealed class ExerciseMessage {
-    class ExerciseUpdateMessage(val exerciseUpdate: ExerciseUpdate) : ExerciseMessage()
-    class LapSummaryMessage(val lapSummary: ExerciseLapSummary) : ExerciseMessage()
-    class LocationAvailabilityMessage(val locationAvailability: LocationAvailability) :
-        ExerciseMessage()
+    class ExerciseUpdateMessage(
+        val exerciseUpdate: ExerciseUpdate
+    ) : ExerciseMessage()
+
+    class LapSummaryMessage(
+        val lapSummary: ExerciseLapSummary
+    ) : ExerciseMessage()
+
+    class LocationAvailabilityMessage(
+        val locationAvailability: LocationAvailability
+    ) : ExerciseMessage()
 }
-
-
-

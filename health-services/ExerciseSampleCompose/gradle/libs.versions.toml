@@ -1,21 +1,23 @@
 [versions]
-android-gradle-plugin = "8.7.0"
+android-gradle-plugin = "8.10.1"
 androidx-activity = "1.9.2"
-androidx-compose = "1.7.5"
+androidx-compose = "1.7.8"
 androidx-lifecycle = "2.8.6"
-androidx-wear-compose = "1.4.0"
+androidx-wear-compose = "1.5.0-beta04"
 core-splashscreen = "1.0.1"
-dagger = "2.52"
-health-services = "1.0.0-rc02"
-horologist = "0.7.7-alpha"
-org-jetbrains-kotlin = "1.9.25"
-ui-test-junit4 = "1.7.3"
+dagger = "2.56.2"
+health-services = "1.0.0"
+horologist = "0.7.14-beta"
+kotlin = "2.1.21"
+org-jetbrains-kotlin = "2.1.21"
+ui-test-junit4 = "1.8.3"
 robolectric = "4.14.1"
-roborazzi = "1.34.0"
-
+roborazzi = "1.45.1"
+ksp = "2.1.21-2.0.1"
+hilt = "2.56.2"
+ktlint = "0.50.0"
 
 [libraries]
-android-lint-gradle = "com.android.tools.lint:lint-gradle:31.7.0"
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-compose-navigation = "androidx.navigation:navigation-compose:2.8.4"
 androidx-compose-runtime = "androidx.compose.runtime:runtime:1.7.5"
@@ -43,8 +45,8 @@ dagger-hilt-android-compiler = {module = "com.google.dagger:hilt-android-compile
 desugar-jdk-libs = "com.android.tools:desugar_jdk_libs:2.1.2"
 guava = "com.google.guava:guava:33.3.1-android"
 hilt-navigation-compose = "androidx.hilt:hilt-navigation-compose:1.2.0"
+hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
 horologist-compose-layout = { module = "com.google.android.horologist:horologist-compose-layout", version.ref = "horologist" }
-horologist-compose-material = { module = "com.google.android.horologist:horologist-compose-material", version.ref = "horologist" }
 horologist-health-composables = { module = "com.google.android.horologist:horologist-health-composables", version.ref = "horologist" }
 horologist-health-service = { module = "com.google.android.horologist:horologist-health-service", version.ref = "horologist" }
 horologist-roboscreenshots = { module = "com.google.android.horologist:horologist-roboscreenshots", version.ref = "horologist" }
@@ -57,15 +59,15 @@ roborazzi-rule = { group = "io.github.takahirom.roborazzi", name = "roborazzi-ju
 test-espresso-core = "androidx.test.espresso:espresso-core:3.6.1"
 test-ext-junit = "androidx.test.ext:junit:1.2.1"
 wear-compose-foundation = { module = "androidx.wear.compose:compose-foundation", version.ref = "androidx-wear-compose" }
-wear-compose-material = { module = "androidx.wear.compose:compose-material", version.ref = "androidx-wear-compose" }
+wear-compose-material = { module = "androidx.wear.compose:compose-material3", version.ref = "androidx-wear-compose" }
 wear-ongoing-activity = "androidx.wear:wear-ongoing:1.0.0"
-
-
 
 [plugins]
 com-android-application = { id = "com.android.application", version.ref = "android-gradle-plugin" }
 dagger-hilt = { id = "com.google.dagger.hilt.android", version.ref = "dagger"}
 org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "org-jetbrains-kotlin" }
 roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
-
+compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+com-diffplug-spotless = "com.diffplug.spotless:7.0.3"
 

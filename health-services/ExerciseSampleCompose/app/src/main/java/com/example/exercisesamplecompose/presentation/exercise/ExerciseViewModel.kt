@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,34 +27,37 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 @HiltViewModel
-class ExerciseViewModel @Inject constructor(
+class ExerciseViewModel
+@Inject
+constructor(
     private val healthServicesRepository: HealthServicesRepository
 ) : ViewModel() {
-
-    val uiState: StateFlow<ExerciseScreenState> = healthServicesRepository.serviceState.map {
-        ExerciseScreenState(
-            hasExerciseCapabilities = healthServicesRepository.hasExerciseCapability(),
-            isTrackingAnotherExercise = healthServicesRepository.isTrackingExerciseInAnotherApp(),
-            serviceState = it,
-            exerciseState = (it as? ServiceState.Connected)?.exerciseServiceState
-        )
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(3_000),
-        healthServicesRepository.serviceState.value.let {
-            ExerciseScreenState(
-                true,
-                false,
-                it,
-                (it as? ServiceState.Connected)?.exerciseServiceState
+    val uiState: StateFlow<ExerciseScreenState> =
+        healthServicesRepository.serviceState
+            .map {
+                ExerciseScreenState(
+                    hasExerciseCapabilities = healthServicesRepository.hasExerciseCapability(),
+                    isTrackingAnotherExercise =
+                    healthServicesRepository
+                        .isTrackingExerciseInAnotherApp(),
+                    serviceState = it,
+                    exerciseState = (it as? ServiceState.Connected)?.exerciseServiceState
+                )
+            }.stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(3_000),
+                healthServicesRepository.serviceState.value.let {
+                    ExerciseScreenState(
+                        true,
+                        false,
+                        it,
+                        (it as? ServiceState.Connected)?.exerciseServiceState
+                    )
+                }
             )
-        }
 
-    )
-
-    suspend fun isExerciseInProgress(): Boolean {
-        return healthServicesRepository.isExerciseInProgress()
-    }
+    suspend fun isExerciseInProgress(): Boolean =
+        healthServicesRepository.isExerciseInProgress()
 
     fun startExercise() {
         healthServicesRepository.startExercise()
@@ -72,6 +75,3 @@ class ExerciseViewModel @Inject constructor(
         healthServicesRepository.resumeExercise()
     }
 }
-
-
-

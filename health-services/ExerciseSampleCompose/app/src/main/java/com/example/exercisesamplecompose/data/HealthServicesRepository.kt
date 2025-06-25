@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -38,7 +38,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 @ActivityRetainedScoped
-class HealthServicesRepository @Inject constructor(
+class HealthServicesRepository
+@Inject
+constructor(
     @ApplicationContext private val applicationContext: Context,
     val exerciseClientManager: ExerciseClientManager,
     val logger: ExerciseLogger,
@@ -48,21 +50,27 @@ class HealthServicesRepository @Inject constructor(
     private val binderConnection =
         lifecycle.bindService<ExerciseService.LocalBinder, ExerciseService>(applicationContext)
 
-    private val exerciseServiceStateUpdates: Flow<ExerciseServiceState> = binderConnection.flowWhenConnected(ExerciseService.LocalBinder::exerciseServiceState)
+    private val exerciseServiceStateUpdates: Flow<ExerciseServiceState> =
+        binderConnection.flowWhenConnected(
+            ExerciseService.LocalBinder::exerciseServiceState
+        )
 
     private var errorState: MutableStateFlow<String?> = MutableStateFlow(null)
 
-    val serviceState: StateFlow<ServiceState> = exerciseServiceStateUpdates.combine(errorState) { exerciseServiceState, errorString ->
-        ServiceState.Connected(exerciseServiceState.copy(error = errorString))
-    }.stateIn(
-        coroutineScope,
-        started = SharingStarted.Eagerly,
-        initialValue = ServiceState.Disconnected
-    )
+    val serviceState: StateFlow<ServiceState> =
+        exerciseServiceStateUpdates
+            .combine(errorState) { exerciseServiceState, errorString ->
+                ServiceState.Connected(exerciseServiceState.copy(error = errorString))
+            }.stateIn(
+                coroutineScope,
+                started = SharingStarted.Eagerly,
+                initialValue = ServiceState.Disconnected
+            )
 
     suspend fun hasExerciseCapability(): Boolean = getExerciseCapabilities() != null
 
-    private suspend fun getExerciseCapabilities() = exerciseClientManager.getExerciseCapabilities()
+    private suspend fun getExerciseCapabilities() =
+        exerciseClientManager.getExerciseCapabilities()
 
     suspend fun isExerciseInProgress(): Boolean =
         exerciseClientManager.exerciseClient.isExerciseInProgress()
@@ -72,23 +80,28 @@ class HealthServicesRepository @Inject constructor(
 
     fun prepareExercise() = serviceCall { prepareExercise() }
 
-    private fun serviceCall(function: suspend ExerciseService.() -> Unit) = coroutineScope.launch {
-        binderConnection.runWhenConnected {
-            function(it.getService())
+    private fun serviceCall(function: suspend ExerciseService.() -> Unit) =
+        coroutineScope.launch {
+            binderConnection.runWhenConnected {
+                function(it.getService())
+            }
         }
-    }
 
-    fun startExercise() = serviceCall {
-        try {
-            errorState.value = null
-            startExercise()
-        } catch (e: Exception) {
-            errorState.value = e.message
-            logger.error("Error starting exercise", e.fillInStackTrace())
+    fun startExercise() =
+        serviceCall {
+            try {
+                errorState.value = null
+                startExercise()
+            } catch (e: Exception) {
+                errorState.value = e.message
+                logger.error("Error starting exercise", e.fillInStackTrace())
+            }
         }
-    }
+
     fun pauseExercise() = serviceCall { pauseExercise() }
+
     fun endExercise() = serviceCall { endExercise() }
+
     fun resumeExercise() = serviceCall { resumeExercise() }
 }
 
@@ -98,15 +111,9 @@ sealed class ServiceState {
     data object Disconnected : ServiceState()
 
     data class Connected(
-        val exerciseServiceState: ExerciseServiceState,
+        val exerciseServiceState: ExerciseServiceState
     ) : ServiceState() {
         val locationAvailabilityState: LocationAvailability =
             exerciseServiceState.locationAvailability
     }
 }
-
-
-
-
-
-
