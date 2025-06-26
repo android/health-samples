@@ -55,7 +55,7 @@ class ExerciseService : LifecycleService() {
     private val localBinder = LocalBinder()
 
     private val serviceRunningInForeground: Boolean
-        get() = this.foregroundServiceType != ServiceInfo.FOREGROUND_SERVICE_TYPE_NONE
+        get() = this.foregroundServiceType != 0
 
     private suspend fun isExerciseInProgress() =
         exerciseClientManager.exerciseClient.isExerciseInProgress()
