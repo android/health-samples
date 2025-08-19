@@ -37,45 +37,45 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun DataPointRow(
-    dataPointData: DataPointData
-){
-    val formatter = DateTimeFormatter
-        .ofPattern("yyyy-MM-dd HH:mm:ss")
-        .withZone(ZoneId.systemDefault())
-    val formattedStartTime = formatter.format(Instant.ofEpochSecond(dataPointData.startTime))
-    val formattedEndTime = formatter.format(Instant.ofEpochSecond(dataPointData.endTime))
+  dataPointData: DataPointData
+) {
+  val formatter = DateTimeFormatter
+    .ofPattern("yyyy-MM-dd HH:mm:ss")
+    .withZone(ZoneId.systemDefault())
+  val formattedStartTime = formatter.format(Instant.ofEpochSecond(dataPointData.startTime))
+  val formattedEndTime = formatter.format(Instant.ofEpochSecond(dataPointData.endTime))
 
-    Row (
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Column {
-            Text(text = "DataPoint #${dataPointData.index}")
-            Text(text = "Start: $formattedStartTime")
-            Text(text = "End: $formattedEndTime")
-            Text(text = "${dataPointData.fieldName}: ${dataPointData.fieldValue}")
-        }
+  Row(
+    modifier = Modifier
+        .fillMaxWidth()
+        .padding(8.dp),
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.SpaceBetween
+  ) {
+    Column {
+      Text(text = "DataPoint #${dataPointData.index}")
+      Text(text = "Start: $formattedStartTime")
+      Text(text = "End: $formattedEndTime")
+      Text(text = "${dataPointData.fieldName}: ${dataPointData.fieldValue}")
     }
+  }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun DataPointRowPreview(){
-    DataPointRow(
-        dataPointData = DataPointData(
-            index = 0,
-            startTime = LocalDateTime
-                .now()
-                .minusMinutes(1)
-                .toEpochSecond(ZoneOffset.UTC),
-            endTime = LocalDateTime
-                .now()
-                .toEpochSecond(ZoneOffset.UTC),
-            fieldName = "Steps",
-            fieldValue = 23
-        )
+fun DataPointRowPreview() {
+  DataPointRow(
+    dataPointData = DataPointData(
+      index = 0,
+      startTime = LocalDateTime
+        .now()
+        .minusMinutes(1)
+        .toEpochSecond(ZoneOffset.UTC),
+      endTime = LocalDateTime
+        .now()
+        .toEpochSecond(ZoneOffset.UTC),
+      fieldName = "Steps",
+      fieldValue = "23"
     )
+  )
 }
