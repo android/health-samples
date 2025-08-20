@@ -38,69 +38,69 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun BucketRow(
-    bucketData: BucketData
-){
-    val formatter = DateTimeFormatter
-        .ofPattern("yyyy-MM-dd HH:mm:ss")
-        .withZone(ZoneId.systemDefault())
-    val formattedStartTime = formatter.format(Instant.ofEpochSecond(bucketData.startTime))
-    val formattedEndTime = formatter.format(Instant.ofEpochSecond(bucketData.endTime))
+  bucketData: BucketData
+) {
+  val formatter = DateTimeFormatter
+    .ofPattern("yyyy-MM-dd HH:mm:ss")
+    .withZone(ZoneId.systemDefault())
+  val formattedStartTime = formatter.format(Instant.ofEpochSecond(bucketData.startTime))
+  val formattedEndTime = formatter.format(Instant.ofEpochSecond(bucketData.endTime))
 
-    Row (
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Column {
-            Text(text = "Bucket #${bucketData.index}")
-            Text(text = "Start: $formattedStartTime")
-            Text(text = "End: $formattedEndTime")
-            bucketData.dataSetDataList.forEach { dataSetData ->
-                DataSetRow(
-                    dataSetData
-                )
-            }
-        }
+  Row(
+    modifier = Modifier
+        .fillMaxWidth()
+        .padding(8.dp),
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.SpaceBetween
+  ) {
+    Column {
+      Text(text = "Bucket #${bucketData.index}")
+      Text(text = "Start: $formattedStartTime")
+      Text(text = "End: $formattedEndTime")
+      bucketData.dataSetDataList.forEach { dataSetData ->
+        DataSetRow(
+          dataSetData
+        )
+      }
     }
+  }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun BucketRowPreview(){
-    BucketRow(
-        bucketData = BucketData(
-            index = 0,
-            startTime = LocalDateTime
+fun BucketRowPreview() {
+  BucketRow(
+    bucketData = BucketData(
+      index = 0,
+      startTime = LocalDateTime
+        .now()
+        .minusHours(1)
+        .toEpochSecond(ZoneOffset.UTC),
+      endTime = LocalDateTime
+        .now()
+        .toEpochSecond(ZoneOffset.UTC),
+      dataSetDataList = listOf(
+        DataSetData(
+          index = 0,
+          dataPointDataList = listOf(
+            DataPointData(
+              index = 0,
+              startTime = LocalDateTime
                 .now()
                 .minusHours(1)
+                .plusMinutes(5)
                 .toEpochSecond(ZoneOffset.UTC),
-            endTime = LocalDateTime
+              endTime = LocalDateTime
                 .now()
+                .minusHours(1)
+                .plusMinutes(10)
                 .toEpochSecond(ZoneOffset.UTC),
-            dataSetDataList =  listOf(
-                DataSetData(
-                    index = 0,
-                    dataPointDataList = listOf(
-                        DataPointData(
-                            index = 0,
-                            startTime = LocalDateTime
-                                .now()
-                                .minusHours(1)
-                                .plusMinutes(5)
-                                .toEpochSecond(ZoneOffset.UTC),
-                            endTime = LocalDateTime
-                                .now()
-                                .minusHours(1)
-                                .plusMinutes(10)
-                                .toEpochSecond(ZoneOffset.UTC),
-                            fieldName = "Steps",
-                            fieldValue = 23
-                        )
-                    )
-                )
+              fieldName = "Steps",
+              fieldValue = "23"
             )
+          )
         )
+      )
     )
+  )
 }

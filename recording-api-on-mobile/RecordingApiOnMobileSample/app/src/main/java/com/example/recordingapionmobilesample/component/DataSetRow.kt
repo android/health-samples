@@ -34,46 +34,46 @@ import java.time.ZoneOffset
 
 @Composable
 fun DataSetRow(
-    dataSetData: DataSetData
-){
-    Row (
-        modifier = Modifier
+  dataSetData: DataSetData
+) {
+  Row(
+    modifier = Modifier
         .fillMaxWidth()
         .padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Column {
-            Text(text = "DataSet #${dataSetData.index}")
-            dataSetData.dataPointDataList.forEach { dataPointData ->
-                DataPointRow(
-                    dataPointData
-                )
-            }
-        }
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.SpaceBetween
+  ) {
+    Column {
+      Text(text = "DataSet #${dataSetData.index}")
+      dataSetData.dataPointDataList.forEach { dataPointData ->
+        DataPointRow(
+          dataPointData
+        )
+      }
     }
+  }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun DataSetRowPreview(){
-    DataSetRow(
-        dataSetData = DataSetData(
-            index = 0,
-            dataPointDataList = listOf(
-                DataPointData(
-                    index = 0,
-                    startTime = LocalDateTime
-                        .now()
-                        .minusDays(1)
-                        .toEpochSecond(ZoneOffset.UTC),
-                    endTime = LocalDateTime
-                        .now()
-                        .toEpochSecond(ZoneOffset.UTC),
-                    fieldName = "Steps",
-                    fieldValue = 23
-                )
-            )
+fun DataSetRowPreview() {
+  DataSetRow(
+    dataSetData = DataSetData(
+      index = 0,
+      dataPointDataList = listOf(
+        DataPointData(
+          index = 0,
+          startTime = LocalDateTime
+            .now()
+            .minusDays(1)
+            .toEpochSecond(ZoneOffset.UTC),
+          endTime = LocalDateTime
+            .now()
+            .toEpochSecond(ZoneOffset.UTC),
+          fieldName = "Steps",
+          fieldValue = "23"
         )
+      )
     )
+  )
 }

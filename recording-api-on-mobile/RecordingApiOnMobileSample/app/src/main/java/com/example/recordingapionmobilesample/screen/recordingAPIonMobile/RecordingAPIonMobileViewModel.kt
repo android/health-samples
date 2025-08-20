@@ -28,7 +28,6 @@ import com.example.recordingapionmobilesample.data.DataPointData
 import com.example.recordingapionmobilesample.data.DataSetData
 import com.example.recordingapionmobilesample.helper.PermissionHelper
 import com.google.android.gms.fitness.LocalRecordingClient
-import com.google.android.gms.fitness.data.LocalBucket
 import com.google.android.gms.fitness.data.LocalDataType
 import com.google.android.gms.fitness.data.LocalField
 import com.google.android.gms.fitness.request.LocalDataReadRequest
@@ -39,157 +38,159 @@ import java.util.concurrent.TimeUnit
 const val TAG = "Recording API on mobile"
 
 class RecordingAPIonMobileViewModel(
-    private val localRecordingClient: LocalRecordingClient,
-    private val permissionHelper: PermissionHelper,
-): ViewModel() {
-    var hasPermission = mutableStateOf(false)
-        private set
+  private val localRecordingClient: LocalRecordingClient,
+  private val permissionHelper: PermissionHelper,
+) : ViewModel() {
+  var hasPermission = mutableStateOf(false)
+    private set
 
-    var bucketDataList = mutableStateListOf<BucketData>()
-        private set
+  var bucketDataList = mutableStateListOf<BucketData>()
+    private set
 
-    private val permission = Manifest.permission.ACTIVITY_RECOGNITION
+  var selectedLocalDataType = mutableStateOf(LocalDataType.TYPE_STEP_COUNT_DELTA)
 
-    init {
-        viewModelScope.launch {
-            checkPermission()
+  val localDataTypes = listOf(
+    LocalDataType.TYPE_STEP_COUNT_DELTA,
+    LocalDataType.TYPE_DISTANCE_DELTA,
+    LocalDataType.TYPE_CALORIES_EXPENDED
+  )
 
-            if(hasPermission.value){
-                subscribeData()
-            }
+  private val permission = Manifest.permission.ACTIVITY_RECOGNITION
+
+  init {
+    viewModelScope.launch {
+      checkPermission()
+
+      if (hasPermission.value) {
+        localDataTypes.forEach { localDataType ->
+          subscribeData(localDataType)
         }
+      }
+    }
+  }
+
+  /**
+   * Sets the permission state to the given value.
+   */
+  fun setPermission(isGranted: Boolean) {
+    hasPermission.value = isGranted
+  }
+
+  /**
+   * Sets the selected [LocalDataType].
+   */
+  fun setSelectedLocalDataType(localDataType: LocalDataType) {
+    selectedLocalDataType.value = localDataType
+  }
+
+  /**
+   * Checks if the permission is granted.
+   */
+  private fun checkPermission() {
+    hasPermission.value = permissionHelper.hasPermission(permission)
+  }
+
+  /**
+   * Subscribes to the given [LocalDataType].
+   */
+  @SuppressLint("MissingPermission")
+  private fun subscribeData(localDataType: LocalDataType) {
+    if (!hasPermission.value) {
+      Log.e(TAG, "Permission ACTIVITY_RECOGNITION is not granted!")
+      return
     }
 
-    /**
-     * Sets the permission state to the given value.
-     */
-    fun setPermission(isGranted: Boolean){
-        hasPermission.value = isGranted
+    localRecordingClient
+      .subscribe(localDataType)
+      .addOnSuccessListener {
+        Log.i(TAG, "Successfully subscribed ${localDataType.name}!")
+      }
+      .addOnFailureListener { e ->
+        Log.e(TAG, "There was a problem of subscribing ${localDataType}.", e)
+      }
+  }
+
+  private fun getLocalField(localDataType: LocalDataType): LocalField {
+    return when (localDataType) {
+      LocalDataType.TYPE_STEP_COUNT_DELTA -> LocalField.FIELD_STEPS
+      LocalDataType.TYPE_DISTANCE_DELTA -> LocalField.FIELD_DISTANCE
+      LocalDataType.TYPE_CALORIES_EXPENDED -> LocalField.FIELD_CALORIES
+      else -> throw IllegalArgumentException("Unsupported LocalDataType: $localDataType")
     }
+  }
 
-    /**
-     * Checks if the permission is granted.
-     */
-    private fun checkPermission() {
-        hasPermission.value = permissionHelper.hasPermission(permission)
+  private fun readData(
+    startTime: ZonedDateTime,
+    endTime: ZonedDateTime,
+    isAggregate: Boolean
+  ) {
+    val builder = LocalDataReadRequest.Builder()
+    val dataType = selectedLocalDataType.value
+    if (isAggregate) {
+      builder.aggregate(dataType)
+    } else {
+      builder.read(dataType)
     }
+    val readRequest = builder
+      .bucketByTime(1, TimeUnit.HOURS)
+      .setTimeRange(
+        startTime.toEpochSecond(),
+        endTime.toEpochSecond(),
+        TimeUnit.SECONDS
+      )
+      .build()
 
-    /**
-     * Subscribes to the [LocalDataType.TYPE_STEP_COUNT_DELTA].
-     */
-    @SuppressLint("MissingPermission")
-    private fun subscribeData(){
-        if (!hasPermission.value) {
-            Log.e(TAG, "Permission ACTIVITY_RECOGNITION is not granted!")
-            return
-        }
+    val localField = getLocalField(dataType)
 
-        localRecordingClient
-            .subscribe(LocalDataType.TYPE_STEP_COUNT_DELTA)
-            .addOnSuccessListener {
-                Log.i(TAG, "Successfully subscribed!")
+    localRecordingClient.readData(readRequest)
+      .addOnSuccessListener { response ->
+        bucketDataList.clear()
+        bucketDataList.addAll(response.buckets.mapIndexed { bucketIndex, bucket ->
+          BucketData(
+            index = bucketIndex,
+            startTime = bucket.getStartTime(TimeUnit.SECONDS),
+            endTime = bucket.getEndTime(TimeUnit.SECONDS),
+            dataSetDataList = bucket.dataSets.mapIndexed { dataSetIndex, dataSet ->
+              DataSetData(
+                index = dataSetIndex,
+                dataPointDataList = dataSet.dataPoints.mapIndexed { dataPointIndex, dataPoint ->
+                  DataPointData(
+                    index = dataPointIndex,
+                    startTime = dataPoint.getStartTime(TimeUnit.SECONDS),
+                    endTime = dataPoint.getEndTime(TimeUnit.SECONDS),
+                    fieldName = localField.name,
+                    fieldValue = dataPoint.getValue(localField).toString()
+                  )
+                }
+              )
             }
-            .addOnFailureListener { e ->
-                Log.e(TAG, "There was a problem of subscribing.", e)
-            }
+          )
+        })
 
-    }
+        val readType = if (isAggregate) "aggregate" else "raw"
+        Log.i(TAG, "Successfully read $readType data")
+      }.addOnFailureListener { e ->
+        Log.w(TAG, "Error reading data between $startTime and $endTime", e)
+      }
+  }
 
-    /**
-     * Reads raw data of [LocalDataType.TYPE_STEP_COUNT_DELTA] between the given start and end time.
-     */
-    fun readRawData(
-        startTime: ZonedDateTime,
-        endTime: ZonedDateTime
-    ){
-        val readRequest = LocalDataReadRequest.Builder()
-            .read(LocalDataType.TYPE_STEP_COUNT_DELTA)
-            .bucketByTime(1, TimeUnit.HOURS)
-            .setTimeRange(
-                startTime.toEpochSecond(),
-                endTime.toEpochSecond(),
-                TimeUnit.SECONDS
-            )
-            .build()
+  /**
+   * Reads raw data of given [LocalDataType] between the given start and end time.
+   */
+  fun readRawData(
+    startTime: ZonedDateTime,
+    endTime: ZonedDateTime
+  ) {
+    readData(startTime, endTime, false)
+  }
 
-        localRecordingClient.readData(readRequest)
-            .addOnSuccessListener { response ->
-                bucketDataList.clear()
-                bucketDataList.addAll(response.buckets.mapIndexed({ bucketIndex, bucket ->
-                    BucketData(
-                        index = bucketIndex,
-                        startTime = bucket.getStartTime(TimeUnit.SECONDS),
-                        endTime = bucket.getEndTime(TimeUnit.SECONDS),
-                        dataSetDataList = bucket.dataSets.mapIndexed({ dataSetIndex, dataSet ->
-                            DataSetData(
-                                index = dataSetIndex,
-                                dataPointDataList = dataSet.dataPoints.mapIndexed({ dataPointIndex, dataPoint ->
-                                    DataPointData(
-                                        index = dataPointIndex,
-                                        startTime = dataPoint.getStartTime(TimeUnit.SECONDS),
-                                        endTime = dataPoint.getEndTime(TimeUnit.SECONDS),
-                                        fieldName = LocalField.FIELD_STEPS.name,
-                                        fieldValue = dataPoint.getValue(LocalField.FIELD_STEPS)
-                                            .asInt()
-                                    )
-                                })
-                            )
-                        })
-                    )
-                }))
-
-                Log.i(TAG, "Successfully read raw data")
-            }.addOnFailureListener { e ->
-                Log.w(TAG, "Error reading data between $startTime and $endTime", e)
-            }
-    }
-
-    /**
-     * Reads aggregate data of [LocalDataType.TYPE_STEP_COUNT_DELTA] between the given start and end time.
-     */
-    fun readAggregateData(
-        startTime: ZonedDateTime,
-        endTime: ZonedDateTime
-    ){
-        val readRequest = LocalDataReadRequest.Builder()
-            .aggregate(LocalDataType.TYPE_STEP_COUNT_DELTA)
-            .bucketByTime(1, TimeUnit.HOURS)
-            .setTimeRange(
-                startTime.toEpochSecond(),
-                endTime.toEpochSecond(),
-                TimeUnit.SECONDS
-            )
-            .build()
-
-        localRecordingClient.readData(readRequest)
-            .addOnSuccessListener { response ->
-                bucketDataList.clear()
-                bucketDataList.addAll(response.buckets.mapIndexed({ bucketIndex, bucket ->
-                    BucketData(
-                        index = bucketIndex,
-                        startTime = bucket.getStartTime(TimeUnit.SECONDS),
-                        endTime = bucket.getEndTime(TimeUnit.SECONDS),
-                        dataSetDataList = bucket.dataSets.mapIndexed({ dataSetIndex, dataSet ->
-                            DataSetData(
-                                index = dataSetIndex,
-                                dataPointDataList = dataSet.dataPoints.mapIndexed({ dataPointIndex, dataPoint ->
-                                    DataPointData(
-                                        index = dataPointIndex,
-                                        startTime = dataPoint.getStartTime(TimeUnit.SECONDS),
-                                        endTime = dataPoint.getEndTime(TimeUnit.SECONDS),
-                                        fieldName = LocalField.FIELD_STEPS.name,
-                                        fieldValue = dataPoint.getValue(LocalField.FIELD_STEPS)
-                                            .asInt()
-                                    )
-                                })
-                            )
-                        })
-                    )
-                }))
-
-                Log.i(TAG, "Successfully read aggregate data")
-            }.addOnFailureListener { e ->
-                Log.w(TAG, "Error reading data between $startTime and $endTime", e)
-            }
-    }
+  /**
+   * Reads aggregate data of given [LocalDataType] between the given start and end time.
+   */
+  fun readAggregateData(
+    startTime: ZonedDateTime,
+    endTime: ZonedDateTime
+  ) {
+    readData(startTime, endTime, true)
+  }
 }
