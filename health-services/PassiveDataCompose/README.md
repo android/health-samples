@@ -31,6 +31,34 @@ To use synthetic data on emulators or physical devices running Wear OS 3,
 consult [the documentation](https://developer.android.com/health-and-fitness/guides/health-services/simulated-data#use_synthetic_data_on_wear_os_3)
 for synthetic data commands.
 
+### Heart rate complication
+
+The sample also exposes heart rate to watch faces through a complication. Long press your watch
+face, tap **Edit**, choose a complication slot and select **Heart rate** from the *Passive Data
+Sample* app.
+
+`HeartRateComplicationService` builds its value from
+[`PlatformHealthSources.heartRateBpm()`](https://developer.android.com/reference/androidx/wear/protolayout/expression/PlatformHealthSources),
+wrapped in a `DynamicComplicationText`. The platform re-evaluates this expression roughly once a
+second while the watch face is in interactive mode, so the displayed heart rate stays live without
+the complication service being woken up at all. Because of that, `UPDATE_PERIOD_SECONDS` can be set
+to a large value.
+
+Two things still come from passive data:
+
+* **Older devices.** Dynamic values require API 33 or above; below that the complication shows the
+  most recent measurement stored by `PassiveDataService`.
+* **Fallback text.** `DynamicComplicationText` takes a fallback that is displayed whenever the
+  platform cannot evaluate the expression, and the last known passive measurement is a better
+  fallback than a placeholder.
+
+`PassiveDataService` therefore still calls
+`ComplicationDataSourceUpdateRequester.requestUpdateAll()` when new data arrives, to keep those two
+paths current.
+
+Note that the dynamic heart rate binding requires the app to hold `BODY_SENSORS` (or
+`READ_HEART_RATE` on API 36 and above), which this sample already requests for passive data.
+
 ## Troubleshooting
 
 ### App crashes with `java.lang.Exception: Not yet implemented`

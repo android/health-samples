@@ -4,6 +4,8 @@ android-gradle-plugin = "8.7.3"
 androidx-activity = "1.10.1"
 androidx-datastore = "1.1.7"
 androidx-lifecycle = "2.9.0"
+androidx-protolayout = "1.3.0"
+androidx-watchface = "1.2.1"
 androidx-work = "2.10.1"
 compose = "1.7.8"
 compose-tooling = "1.8.2"
@@ -22,6 +24,8 @@ androidx-activity-compose = { module = "androidx.activity:activity-compose", ver
 androidx-datastore = { module = "androidx.datastore:datastore-preferences", version.ref = "androidx-datastore" }
 androidx-health-services = { module = "androidx.health:health-services-client", version.ref = "health-services" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
+androidx-protolayout-expression = { module = "androidx.wear.protolayout:protolayout-expression", version.ref = "androidx-protolayout" }
+androidx-watchface-complications-datasource = { module = "androidx.wear.watchface:watchface-complications-data-source-ktx", version.ref = "androidx-watchface" }
 androidx-work = { module = "androidx.work:work-runtime", version.ref = "androidx-work" }
 androidx-work-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "androidx-work" }
 compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "compose" }

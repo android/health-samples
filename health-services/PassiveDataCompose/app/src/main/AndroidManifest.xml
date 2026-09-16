@@ -49,6 +49,30 @@
             </intent-filter>
         </receiver>
 
+        <!-- Exposes the latest passive heart rate measurement to watch faces. -->
+        <service
+            android:name=".complication.HeartRateComplicationService"
+            android:exported="true"
+            android:icon="@drawable/ic_heart"
+            android:label="@string/heart_rate_complication_label"
+            android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
+            <intent-filter>
+                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.support.wearable.complications.SUPPORTED_TYPES"
+                android:value="SHORT_TEXT" />
+
+            <!--
+              The value is evaluated by the platform (and pushed by PassiveDataService on older
+              devices), so the complication does not need frequent polling.
+            -->
+            <meta-data
+                android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
+                android:value="3600" />
+        </service>
+
     </application>
     <queries>
         <package android:name="com.google.android.wearable.healthservices" />

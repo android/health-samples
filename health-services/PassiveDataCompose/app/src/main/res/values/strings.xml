@@ -22,4 +22,8 @@
     <string name="heart_description">Heart</string>
     <string name="broken_heart_description">Broken heart</string>
     <string name="heart_rate_switch_button">Heart Rate Switch Button</string>
+
+    <string name="heart_rate_complication_label">Heart rate</string>
+    <string name="heart_rate_complication_description">Latest heart rate in beats per minute</string>
+    <string name="heart_rate_complication_placeholder">--</string>
 </resources>

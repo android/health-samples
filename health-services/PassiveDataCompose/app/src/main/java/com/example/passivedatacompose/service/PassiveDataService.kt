@@ -15,9 +15,12 @@
  */
 package com.example.passivedatacompose.service
 
+import android.content.ComponentName
 import androidx.health.services.client.PassiveListenerService
 import androidx.health.services.client.data.DataPointContainer
 import androidx.health.services.client.data.DataType
+import androidx.wear.watchface.complications.datasource.ComplicationDataSourceUpdateRequester
+import com.example.passivedatacompose.complication.HeartRateComplicationService
 import com.example.passivedatacompose.data.PassiveDataRepository
 import com.example.passivedatacompose.data.latestHeartRate
 import kotlinx.coroutines.runBlocking
@@ -37,5 +40,15 @@ class PassiveDataService : PassiveListenerService() {
                 repository.storeLatestHeartRate(it)
             }
         }
+
+        // On API 33 and above the complication value is evaluated by the platform, but this keeps
+        // the fallback text, and the complication on older devices, up to date.
+        ComplicationDataSourceUpdateRequester.create(
+            context = this,
+            complicationDataSourceComponent = ComponentName(
+                this,
+                HeartRateComplicationService::class.java
+            )
+        ).requestUpdateAll()
     }
 }
