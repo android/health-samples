@@ -74,6 +74,9 @@ dependencies {
     // Health Services
     implementation(libs.androidx.health.services)
 
+    // Used to expose health data to watch face complications
+    implementation(libs.androidx.watchface.complications.datasource)
+
     // Used to bridge between Futures and coroutines
     implementation(libs.guava)
     implementation(libs.concurrent.futures)

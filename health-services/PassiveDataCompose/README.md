@@ -31,6 +31,20 @@ To use synthetic data on emulators or physical devices running Wear OS 3,
 consult [the documentation](https://developer.android.com/health-and-fitness/guides/health-services/simulated-data#use_synthetic_data_on_wear_os_3)
 for synthetic data commands.
 
+### Heart rate complication
+
+The sample also exposes the latest measurement to watch faces through a complication. Long press
+your watch face, tap **Edit**, choose a complication slot and select **Heart rate** from the
+*Passive Data Sample* app.
+
+`HeartRateComplicationService` extends `SuspendingComplicationDataSourceService` and only reads the
+value already stored in `PassiveDataRepository`: a complication data source is short-lived and must
+not start a sensor session of its own. `PassiveDataService` calls
+`ComplicationDataSourceUpdateRequester.requestUpdateAll()` whenever new passive data arrives, so the
+complication refreshes as data comes in rather than waiting for the periodic update declared in the
+manifest. Until the first measurement is received the data source returns `NoDataComplicationData`,
+letting the watch face draw its own placeholder.
+
 ## Troubleshooting
 
 ### App crashes with `java.lang.Exception: Not yet implemented`
