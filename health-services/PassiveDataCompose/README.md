@@ -33,17 +33,31 @@ for synthetic data commands.
 
 ### Heart rate complication
 
-The sample also exposes the latest measurement to watch faces through a complication. Long press
-your watch face, tap **Edit**, choose a complication slot and select **Heart rate** from the
-*Passive Data Sample* app.
+The sample also exposes heart rate to watch faces through a complication. Long press your watch
+face, tap **Edit**, choose a complication slot and select **Heart rate** from the *Passive Data
+Sample* app.
 
-`HeartRateComplicationService` extends `SuspendingComplicationDataSourceService` and only reads the
-value already stored in `PassiveDataRepository`: a complication data source is short-lived and must
-not start a sensor session of its own. `PassiveDataService` calls
-`ComplicationDataSourceUpdateRequester.requestUpdateAll()` whenever new passive data arrives, so the
-complication refreshes as data comes in rather than waiting for the periodic update declared in the
-manifest. Until the first measurement is received the data source returns `NoDataComplicationData`,
-letting the watch face draw its own placeholder.
+`HeartRateComplicationService` builds its value from
+[`PlatformHealthSources.heartRateBpm()`](https://developer.android.com/reference/androidx/wear/protolayout/expression/PlatformHealthSources),
+wrapped in a `DynamicComplicationText`. The platform re-evaluates this expression roughly once a
+second while the watch face is in interactive mode, so the displayed heart rate stays live without
+the complication service being woken up at all. Because of that, `UPDATE_PERIOD_SECONDS` can be set
+to a large value.
+
+Two things still come from passive data:
+
+* **Older devices.** Dynamic values require API 33 or above; below that the complication shows the
+  most recent measurement stored by `PassiveDataService`.
+* **Fallback text.** `DynamicComplicationText` takes a fallback that is displayed whenever the
+  platform cannot evaluate the expression, and the last known passive measurement is a better
+  fallback than a placeholder.
+
+`PassiveDataService` therefore still calls
+`ComplicationDataSourceUpdateRequester.requestUpdateAll()` when new data arrives, to keep those two
+paths current.
+
+Note that the dynamic heart rate binding requires the app to hold `BODY_SENSORS` (or
+`READ_HEART_RATE` on API 36 and above), which this sample already requests for passive data.
 
 ## Troubleshooting
 

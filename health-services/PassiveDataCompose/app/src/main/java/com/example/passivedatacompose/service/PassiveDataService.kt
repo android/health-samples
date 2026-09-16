@@ -41,8 +41,8 @@ class PassiveDataService : PassiveListenerService() {
             }
         }
 
-        // Pushing updates as data arrives keeps the complication fresh without the watch face
-        // having to poll for it.
+        // On API 33 and above the complication value is evaluated by the platform, but this keeps
+        // the fallback text, and the complication on older devices, up to date.
         ComplicationDataSourceUpdateRequester.create(
             context = this,
             complicationDataSourceComponent = ComponentName(

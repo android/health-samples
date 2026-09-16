@@ -25,4 +25,5 @@
 
     <string name="heart_rate_complication_label">Heart rate</string>
     <string name="heart_rate_complication_description">Latest heart rate in beats per minute</string>
+    <string name="heart_rate_complication_placeholder">--</string>
 </resources>

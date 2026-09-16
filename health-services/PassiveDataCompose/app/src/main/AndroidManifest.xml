@@ -65,12 +65,12 @@
                 android:value="SHORT_TEXT" />
 
             <!--
-              Updates are pushed by PassiveDataService as data arrives, so this periodic refresh is
-              only a fallback.
+              The value is evaluated by the platform (and pushed by PassiveDataService on older
+              devices), so the complication does not need frequent polling.
             -->
             <meta-data
                 android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
-                android:value="300" />
+                android:value="3600" />
         </service>
 
     </application>

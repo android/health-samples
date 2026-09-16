@@ -18,8 +18,13 @@ package com.example.passivedatacompose.complication
 import android.app.PendingIntent
 import android.content.Intent
 import android.graphics.drawable.Icon
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.wear.protolayout.expression.PlatformHealthSources
 import androidx.wear.watchface.complications.data.ComplicationData
+import androidx.wear.watchface.complications.data.ComplicationText
 import androidx.wear.watchface.complications.data.ComplicationType
+import androidx.wear.watchface.complications.data.DynamicComplicationText
 import androidx.wear.watchface.complications.data.MonochromaticImage
 import androidx.wear.watchface.complications.data.NoDataComplicationData
 import androidx.wear.watchface.complications.data.PlainComplicationText
@@ -32,19 +37,24 @@ import com.example.passivedatacompose.data.PassiveDataRepository
 import kotlinx.coroutines.flow.first
 
 /**
- * Surfaces the latest passive heart rate measurement on the watch face.
+ * Surfaces heart rate on the watch face.
  *
- * A complication data source is short-lived: [onComplicationRequest] must return quickly and must
- * not start a sensor session. Instead, this reads the value most recently stored by
- * [com.example.passivedatacompose.service.PassiveDataService], which owns the passive registration
- * and asks the system to refresh this complication whenever new data arrives.
+ * Where possible the complication is backed by a platform binding:
+ * [PlatformHealthSources.heartRateBpm] produces a dynamic value that the system re-evaluates
+ * roughly once a second while the watch face is in interactive mode. The value therefore stays
+ * live without this service being woken up at all, which is both cheaper and far more responsive
+ * than returning a static number.
+ *
+ * On devices that predate dynamic values the complication falls back to the most recent
+ * measurement stored by [com.example.passivedatacompose.service.PassiveDataService], which also
+ * supplies the fallback text shown whenever the platform cannot evaluate the expression.
  */
 class HeartRateComplicationService : SuspendingComplicationDataSourceService() {
     private val repository by lazy { PassiveDataRepository(this) }
 
     override fun getPreviewData(type: ComplicationType): ComplicationData? =
         if (type == ComplicationType.SHORT_TEXT) {
-            heartRateComplicationData(PREVIEW_HEART_RATE)
+            complicationData(PlainComplicationText.Builder(formatBpm(PREVIEW_HEART_RATE)).build())
         } else {
             null
         }
@@ -52,21 +62,45 @@ class HeartRateComplicationService : SuspendingComplicationDataSourceService() {
     override suspend fun onComplicationRequest(request: ComplicationRequest): ComplicationData? {
         if (request.complicationType != ComplicationType.SHORT_TEXT) return null
 
-        val heartRate = repository.latestHeartRate.first()
+        // The repository reports 0.0 until the first passive measurement is received.
+        val latestHeartRate = repository.latestHeartRate.first()
 
-        // The repository reports 0.0 until the first measurement is received. Returning
-        // NoDataComplicationData lets the watch face draw its own placeholder instead of a
-        // misleading value.
-        return if (heartRate > 0.0) {
-            heartRateComplicationData(heartRate)
-        } else {
-            NoDataComplicationData()
+        return when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ->
+                complicationData(dynamicHeartRateText(latestHeartRate))
+
+            latestHeartRate > 0.0 ->
+                complicationData(
+                    PlainComplicationText.Builder(formatBpm(latestHeartRate)).build()
+                )
+
+            // Letting the watch face draw its own placeholder is better than showing a stale or
+            // zero value.
+            else -> NoDataComplicationData()
         }
     }
 
-    private fun heartRateComplicationData(heartRate: Double): ComplicationData =
+    /**
+     * Heart rate as evaluated by the platform, with the last known passive measurement as the
+     * fallback for when the expression cannot be evaluated, for example in ambient mode.
+     *
+     * Requires this app to hold `BODY_SENSORS` (or `READ_HEART_RATE` on API 36 and above), which
+     * it already does in order to receive passive data.
+     */
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun dynamicHeartRateText(latestHeartRate: Double): ComplicationText =
+        DynamicComplicationText(
+            PlatformHealthSources.heartRateBpm().asInt().format(),
+            if (latestHeartRate > 0.0) {
+                formatBpm(latestHeartRate)
+            } else {
+                getString(R.string.heart_rate_complication_placeholder)
+            }
+        )
+
+    private fun complicationData(text: ComplicationText): ComplicationData =
         ShortTextComplicationData.Builder(
-            text = PlainComplicationText.Builder(heartRate.toInt().toString()).build(),
+            text = text,
             contentDescription = PlainComplicationText.Builder(
                 getString(R.string.heart_rate_complication_description)
             ).build()
@@ -78,6 +112,8 @@ class HeartRateComplicationService : SuspendingComplicationDataSourceService() {
             )
             .setTapAction(launchAppPendingIntent())
             .build()
+
+    private fun formatBpm(heartRate: Double): String = heartRate.toInt().toString()
 
     private fun launchAppPendingIntent(): PendingIntent = PendingIntent.getActivity(
         this,
