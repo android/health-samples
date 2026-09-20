@@ -65,7 +65,11 @@ constructor(
                 .setContentText(NOTIFICATION_TEXT)
                 .setSmallIcon(R.drawable.ic_baseline_directions_run_24)
                 .setContentIntent(pendingIntent)
+                // Makes Notification an Ongoing Notification (a Notification with a background task).
                 .setOngoing(true)
+                // Android uses some pre-defined system-wide categories to determine whether to
+                // disturb the user with a given notification when the user has enabled Do Not Disturb
+                // mode. The Category determines the priority of the Ongoing Activity.
                 .setCategory(NotificationCompat.CATEGORY_WORKOUT)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
 
@@ -79,12 +83,26 @@ constructor(
         val ongoingActivity =
             OngoingActivity
                 .Builder(applicationContext, NOTIFICATION_ID, notificationBuilder)
+                // Sets icon that will appear on the watch face in active mode. If it isn't set,
+                // the watch face will use the static icon in active mode.
                 .setAnimatedIcon(R.drawable.ic_baseline_directions_run_24)
+                // Sets the icon that will appear on the watch face in ambient mode.
+                // Falls back to Notification's smallIcon if not set. If neither is set,
+                // an Exception is thrown.
                 .setStaticIcon(R.drawable.ic_baseline_directions_run_24)
+                // Sets the tap/touch event, so users can re-enter your app from the
+                // other surfaces.
+                // Falls back to Notification's contentIntent if not set. If neither is set,
+                // an Exception is thrown.
                 .setTouchIntent(pendingIntent)
+                // In our case, sets the text used for the Ongoing Activity (more options are
+                // available for timers and stop watches).
                 .setStatus(ongoingActivityStatus)
                 .build()
 
+        // Applies any Ongoing Activity updates to the notification builder.
+        // This method should always be called right before you build your notification,
+        // since an Ongoing Activity doesn't hold references to the context.
         ongoingActivity.apply(applicationContext)
 
         return notificationBuilder.build()
